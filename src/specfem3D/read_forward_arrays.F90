@@ -58,7 +58,7 @@
     if (ADIOS_FOR_FORWARD_ARRAYS) then
       call read_intermediate_forward_arrays_adios()
     else if (HDF5_ENABLED) then
-      call read_intermediate_forward_arrays_hdf5(neq)
+      call read_intermediate_forward_arrays_hdf5()
     else
       write(outputname,"('dump_all_arrays',i6.6)") myrank
       outputname = trim(LOCAL_TMP_PATH) // '/' // outputname(1:len_trim(outputname))

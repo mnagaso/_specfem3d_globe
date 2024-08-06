@@ -136,17 +136,6 @@
   if (FULL_GRAVITY_VAL) then
     call h5_read_dataset_scalar_collect_hyperslab('neq', neq_read, (/myrank/), if_col)
     call h5_read_dataset_scalar_collect_hyperslab('neq1', neq1_read, (/myrank/), if_col)
-
-    ! check if array sizes match
-    if (neq_read /= neq) then
-      print *,'Error reading forward array for startrun: rank ',myrank,'has read neq =',neq_read,' - shoud be ',neq
-      call exit_MPI(myrank,'Invalid forward array neq for startrun')
-    endif
-    if (neq1_read /= neq1) then
-      print *,'Error reading forward array for startrun: rank ',myrank,'has read neq1 =',neq1_read,' - shoud be ',neq1
-      call exit_MPI(myrank,'Invalid forward array neq1 for startrun')
-    endif
-
     call h5_read_dataset_collect_hyperslab('pgrav1', pgrav1, (/0,sum(offset_pgrav1(0:myrank-1))/), if_col)
   endif
 
