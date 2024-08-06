@@ -994,6 +994,8 @@ end subroutine save_arrays_boundary_hdf5
 #ifdef USE_HDF5
   ! local parameters
   integer, dimension(0:NPROCTOT-1) :: offset_num_abs_boundary_faces
+  ! MPI parameters
+  integer :: comm, info
 
   ! dummy arrays
   integer, dimension(1,1), parameter                    :: i2d_dummy = reshape((/0/),(/1,1/))
@@ -1004,6 +1006,15 @@ end subroutine save_arrays_boundary_hdf5
   ! variables for HDF5
   character(len=64) :: gname_region
   logical :: if_col = .true.  ! collective write
+
+  ! get MPI parameters
+  call world_get_comm(comm)
+  call world_get_info_null(info)
+
+  ! initialize HDF5
+  call h5_initialize() ! called in initialize_mesher()
+  ! set MPI
+  call h5_set_mpi_info(comm, info, myrank, NPROCTOT)
 
   ! file name
   name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/'//'stacey.h5'
