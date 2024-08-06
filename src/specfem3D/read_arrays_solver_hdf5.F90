@@ -71,7 +71,7 @@
 #ifdef USE_HDF5
 
   ! local parameters
-  integer :: ier,lnspec,lnglob
+  integer :: lnspec,lnglob
   ! group, dataset name
   character(len=64) :: gname_region
 
@@ -327,26 +327,10 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
   integer, intent(in) :: iregion_code
 
   ! local parameters
-  integer :: ierr,rank,i
-  ! ADIOS variables
-  integer(kind=8)         :: sel
-  integer(kind=8), dimension(1) :: start, count
-
+  integer :: ierr
   integer :: num_interfaces,max_nibool_interfaces, &
              num_phase_ispec,num_colors_outer,num_colors_inner
   integer :: nspec_inner,nspec_outer
-
-  integer(kind=8) :: offset_my_neighbors, offset_nibool_interfaces, &
-                     offset_ibool_interfaces, offset_phase_ispec_inner, &
-                     offset_num_elem_colors
-
-  ! temporary read arrays
-  !integer, dimension(:),allocatable :: tmp_nibool_interfaces,tmp_my_neighbors
-  !integer, dimension(:,:),allocatable :: tmp_ibool_interfaces,tmp_phase_ispec_inner
-  !integer, dimension(:),allocatable :: tmp_num_elem_colors
-
-  character(len=128)      :: region_name
-  integer :: nglob_tmp,nspec_tmp
 
   ! group, dataset name
   character(len=64) :: gname_region
@@ -698,7 +682,6 @@ subroutine read_mesh_databases_coupling_hdf5()
 #ifdef USE_HDF5
 
   character(len=64) :: gname_region
-  integer :: ierr
   logical :: if_col = .true.
 
   ! MPI variables

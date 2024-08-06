@@ -43,7 +43,7 @@ subroutine save_intermediate_forward_arrays_hdf5()
 #ifdef USE_HDF5
 
   ! MPI variables
-  integer :: ierr, info, comm
+  integer :: info, comm
 
   ! collective write
   logical :: if_col = .true.
@@ -225,7 +225,7 @@ subroutine save_forward_arrays_hdf5()
 
 #ifdef USE_HDF5
   ! MPI variables
-  integer :: ierr, info, comm
+  integer :: info, comm
 
   ! collective write
   logical :: if_col = .true.
@@ -242,7 +242,7 @@ subroutine save_forward_arrays_hdf5()
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_ic_att
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_pgrav1
 
-  character(len=MAX_STRING_LEN) :: file_name, dataset_name
+  character(len=MAX_STRING_LEN) :: file_name
 
   file_name = LOCAL_TMP_PATH(1:len_trim(LOCAL_TMP_PATH))//'/save_forward_arrays.h5'
 
@@ -387,7 +387,7 @@ subroutine save_forward_arrays_undoatt_hdf5()
 #ifdef USE_HDF5
 
   ! MPI variables
-  integer :: ierr, info, comm
+  integer :: info, comm
 
   ! collective write
   logical :: if_col = .true.
@@ -574,10 +574,10 @@ subroutine save_forward_model_at_shifted_frequency_hdf5(factor_scale_relaxed_cru
 
   ! local parameters
   integer :: ier
-  real(kind=CUSTOM_REAL) :: scaleval1,scaleval2,scale_factor_r
+  real(kind=CUSTOM_REAL) :: scaleval1,scale_factor_r
   real(kind=CUSTOM_REAL),dimension(:,:,:,:),allocatable :: temp_store
   real(kind=CUSTOM_REAL),dimension(:,:,:,:),allocatable :: muv_shifted,muh_shifted
-  integer :: iregion_code,nspec,nglob,i,j,k,ispec
+  integer :: i,j,k,ispec
 
   ! collective write
   logical :: if_col = .true.

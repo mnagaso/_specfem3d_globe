@@ -15,7 +15,6 @@
     nglob, iregion_code, &
     NCHUNKS,ABSORBING_CONDITIONS, &
     ROTATION,EXACT_MASS_MATRIX_FOR_ROTATION, &
-    OUTPUT_FILES,xstore_glob,ystore_glob,zstore_glob, &
     NPROCTOT, &
     ATT1,ATT2,ATT3
   use regions_mesh_par2, only: &
@@ -36,7 +35,7 @@
     nspec2D_xmin,nspec2D_xmax,nspec2D_ymin,nspec2D_ymax, &
     ispec_is_tiso, &
     tau_s_store,tau_e_store,Qmu_store, &
-    prname, nglob_oceans, nglob_xy
+    nglob_oceans, nglob_xy
 
 
 
@@ -66,7 +65,7 @@
   logical :: if_collective = .true.
 
   ! processor dependent group names
-  character(len=64) :: gname_region, fname
+  character(len=64) :: gname_region
 
   ! offset arrays
   integer, dimension(0:NPROCTOT-1) :: offset_nnodes
@@ -625,8 +624,7 @@ end subroutine save_arrays_solver_hdf5
     ibelm_moho_top,ibelm_moho_bot,ibelm_400_top,ibelm_400_bot, &
     ibelm_670_top,ibelm_670_bot,normal_moho,normal_400,normal_670, &
     ispec2D_moho_top,ispec2D_moho_bot,ispec2D_400_top,ispec2D_400_bot, &
-    ispec2D_670_top,ispec2D_670_bot, &
-    prname
+    ispec2D_670_top,ispec2D_670_bot
 
   use manager_hdf5
 #endif
@@ -636,7 +634,6 @@ end subroutine save_arrays_solver_hdf5
 #ifdef USE_HDF5
 
   ! local parameters
-  integer :: ier
   logical :: if_collective = .true.
 
 
@@ -825,7 +822,6 @@ end subroutine save_arrays_boundary_hdf5
 #ifdef USE_HDF5
   ! local parameters
   character(len=64) :: gname_region
-  integer :: ier
   logical :: if_collective = .true.
 
   ! offset arrays
@@ -1007,7 +1003,6 @@ end subroutine save_arrays_boundary_hdf5
 
   ! variables for HDF5
   character(len=64) :: gname_region
-  integer :: ier
   logical :: if_col = .true.  ! collective write
 
   ! file name

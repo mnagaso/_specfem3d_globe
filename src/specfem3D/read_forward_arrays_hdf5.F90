@@ -44,7 +44,7 @@
   integer :: neq_read,neq1_read
 
   ! MPI variables
-  integer :: ierr, info, comm
+  integer :: info, comm
 
   ! collective write
   logical :: if_col = .true.
@@ -61,7 +61,7 @@
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_ic_att
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_pgrav1
 
-  character(len=MAX_STRING_LEN) :: file_name, dataset_name
+  character(len=MAX_STRING_LEN) :: file_name
 
   ! gather the offset arrays
   call gather_all_all_singlei(size(displ_crust_mantle), offset_nglob_cm, NPROCTOT_VAL)
@@ -181,7 +181,7 @@
   integer :: b_neq_read, b_neq1_read
 
   ! MPI variables
-  integer :: ierr, info, comm
+  integer :: info, comm
 
   ! collective write
   logical :: if_col = .true.
@@ -198,7 +198,7 @@
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_ic_att
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_pgrav1
 
-  character(len=MAX_STRING_LEN) :: file_name, dataset_name
+  character(len=MAX_STRING_LEN) :: file_name
 
   ! gather the offset arrays
   call gather_all_all_singlei(size(displ_crust_mantle), offset_nglob_cm, NPROCTOT_VAL)
@@ -321,7 +321,7 @@
   integer :: b_neq_read, b_neq1_read
 
   ! MPI variables
-  integer :: ierr, info, comm
+  integer :: info, comm
 
   ! collective write
   logical :: if_col = .true.
@@ -338,7 +338,7 @@
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_ic_att
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_pgrav1
 
-  character(len=MAX_STRING_LEN) :: file_name, dataset_name
+  character(len=MAX_STRING_LEN) :: file_name
 
   ! gather the offset arrays
   call gather_all_all_singlei(size(displ_crust_mantle), offset_nglob_cm, NPROCTOT_VAL)

@@ -41,8 +41,7 @@
 
   use regions_mesh_par2, only: &
     rhostore,kappavstore,kappahstore,muvstore,muhstore,eta_anisostore, &
-    Qmu_store,Gc_prime_store,Gs_prime_store,mu0store, &
-    prname
+    Qmu_store,Gc_prime_store,Gs_prime_store,mu0store
 
   use model_heterogen_mantle_par
 

@@ -43,7 +43,7 @@ subroutine write_kernels_strength_noise_hdf5()
 
   ! local parameters
   character(len=MAX_STRING_LEN) :: file_name
-  integer :: ierr, info, comm
+  integer :: info, comm
   logical :: if_col = .true.
 
   ! gather the number of elements in each region
@@ -121,7 +121,7 @@ subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mant
 #ifdef USE_HDF5
   ! local parameters
   character(len=MAX_STRING_LEN) :: file_name
-  integer :: ierr, info, comm
+  integer :: info, comm
   logical :: if_col = .true.
 
   ! offset array
@@ -323,7 +323,7 @@ subroutine write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, 
 
   ! local parameters
   character(len=MAX_STRING_LEN) :: file_name
-  integer :: ierr, info, comm
+  integer :: info, comm
   logical :: if_col = .true.
 
   ! checks if anything to do
@@ -407,7 +407,7 @@ subroutine write_kernels_oc_hdf5()
 
   ! local parameters
   character(len=MAX_STRING_LEN) :: file_name
-  integer :: ierr, info, comm
+  integer :: info, comm
   logical :: if_col = .true.
 
   ! gather the number of elements in each region
@@ -471,7 +471,7 @@ subroutine write_kernels_ic_hdf5()
 
   ! local parameters
   character(len=MAX_STRING_LEN) :: file_name
-  integer :: ierr, info, comm
+  integer :: info, comm
   logical :: if_col = .true.
 
   ! gather the number of elements in each region
@@ -543,7 +543,7 @@ subroutine write_kernels_boundary_kl_hdf5()
 
   ! local parameters
   character(len=MAX_STRING_LEN) :: file_name
-  integer :: ierr, info, comm
+  integer :: info, comm
   logical :: if_col = .true.
 
   if (.not. SAVE_KERNELS_BOUNDARY) return
@@ -624,7 +624,7 @@ subroutine write_kernels_Hessian_hdf5()
 
   ! local parameters
   character(len=MAX_STRING_LEN) :: file_name
-  integer :: ierr, info, comm
+  integer :: info, comm
   logical :: if_col = .true.
 
   ! gather the number of elements in each region
