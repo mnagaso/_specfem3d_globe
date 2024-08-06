@@ -463,7 +463,6 @@
                                       NSPEC2D_TOP,NSPEC2D_BOTTOM)
       else if (HDF5_ENABLED) then
         call save_arrays_solver_hdf5(idoubling,ibool,xstore,ystore,zstore, &
-                                     NSPEC2DMAX_XMIN_XMAX, NSPEC2DMAX_YMIN_YMAX, &
                                      NSPEC2D_TOP,NSPEC2D_BOTTOM)
       else
         call save_arrays_solver(idoubling,ibool,xstore,ystore,zstore, &
