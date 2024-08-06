@@ -556,12 +556,12 @@ end subroutine save_forward_arrays_undoatt_hdf5
 subroutine save_forward_model_at_shifted_frequency_hdf5(factor_scale_relaxed_crust_mantle,factor_scale_relaxed_inner_core)
 
   use constants
-  use shared_parameters, only: R_PLANET,RHOAV,LOCAL_PATH,TRANSVERSE_ISOTROPY
 
   use specfem_par_crustmantle
   use specfem_par_innercore
 
 #ifdef USE_HDF5
+  use shared_parameters, only: R_PLANET,RHOAV,LOCAL_PATH,TRANSVERSE_ISOTROPY
   use manager_hdf5
 #endif
 

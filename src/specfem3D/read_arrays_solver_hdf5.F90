@@ -16,11 +16,11 @@
 
 
   use constants_solver
+
+#ifdef USE_HDF5
   use specfem_par, only: &
     ABSORBING_CONDITIONS, &
     LOCAL_PATH,ABSORBING_CONDITIONS
-
-#ifdef USE_HDF5
   use manager_hdf5
 #endif
 
@@ -325,6 +325,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
   implicit none
 
   integer, intent(in) :: iregion_code
+#ifdef USE_HDF5
 
   ! local parameters
   integer :: ierr
@@ -348,7 +349,6 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_num_colors_outer
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_num_colors_inner
 
-#ifdef USE_HDF5
 
   call h5_initialize()
 
@@ -647,6 +647,7 @@ end subroutine read_mesh_databases_MPI_hdf5
 
 subroutine read_mesh_databases_coupling_hdf5()
 
+#ifdef USE_HDF5
   use constants
 
   use meshfem_par, only: &
@@ -673,7 +674,6 @@ subroutine read_mesh_databases_coupling_hdf5()
   use specfem_par_trinfinite
   use specfem_par_infinite
 
-#ifdef USE_HDF5
   use manager_hdf5
 #endif
 
@@ -1222,17 +1222,15 @@ end subroutine read_mesh_databases_stacey_hdf5
 subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_s, vnspec, f_c_source)
 
   use constants_solver
-  use specfem_par, only: ATTENUATION_VAL,LOCAL_PATH
 
 #ifdef USE_HDF5
+  use specfem_par, only: ATTENUATION_VAL,LOCAL_PATH
   use manager_hdf5
 #endif
 
   implicit none
 
   integer,intent(in) :: iregion_code
-  ! offset
-  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nelems
 
   integer,intent(in) :: vnspec
   real(kind=CUSTOM_REAL), dimension(ATT1_VAL,ATT2_VAL,ATT3_VAL,vnspec),intent(inout) :: scale_factor
@@ -1241,6 +1239,8 @@ subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_
   double precision,intent(inout) :: f_c_source
 
 #ifdef USE_HDF5
+  ! offset
+  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nelems
   ! hdf5 variables
   logical :: if_col = .true. ! read in collective mode
   character(len=64) :: gname_region

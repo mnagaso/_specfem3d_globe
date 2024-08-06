@@ -28,9 +28,10 @@
 
   subroutine save_model_meshfiles_hdf5()
 
+  use constants
+#ifdef USE_HDF5
 ! outputs model files in binary format
 
-  use constants
   use shared_parameters, only: R_PLANET,RHOAV,LOCAL_PATH
 
   use meshfem_par, only: nspec,iregion_code,NPROCTOT
@@ -45,18 +46,16 @@
 
   use model_heterogen_mantle_par
 
-#ifdef USE_HDF5
   use manager_hdf5
 #endif
 
   implicit none
 
+#ifdef USE_HDF5
   ! local parameters
   integer :: i,j,k,ispec,ier
   real(kind=CUSTOM_REAL) :: scaleval1,scaleval2,scaleval,scale_GPa
   real(kind=CUSTOM_REAL),dimension(:,:,:,:),allocatable :: temp_store
-
-#ifdef USE_HDF5
 
   ! dset_name and group_name
   character(len=64) :: dset_name, gname_region
