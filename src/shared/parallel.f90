@@ -71,6 +71,7 @@ module my_mpi
   ! my MPI group for simultaneous runs
   integer :: my_local_mpi_comm_world
   integer :: my_local_mpi_comm_for_bcast
+  integer :: my_local_mpi_comm_inter        ! MPI subgroup for hdf5 i/o server
 
 end module my_mpi
 
@@ -1531,6 +1532,28 @@ end module my_mpi
 !-------------------------------------------------------------------------------------------------
 !
 
+  subroutine gather_all_all_i(sendbuf, sendcnt, recvbuf, recvcount, NPROC)
+
+  use my_mpi
+
+  implicit none
+
+  integer :: sendcnt, recvcount, NPROC
+  integer, dimension(sendcnt) :: sendbuf
+  integer, dimension(recvcount,0:NPROC-1) :: recvbuf
+
+  integer :: ier
+
+  call MPI_ALLGATHER(sendbuf,sendcnt,MPI_INTEGER, &
+                     recvbuf,recvcount,MPI_INTEGER, &
+                     my_local_mpi_comm_world,ier)
+
+  end subroutine gather_all_all_i
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
   subroutine gather_all_singlei(sendbuf, recvbuf, NPROC)
 
   use my_mpi
@@ -1548,6 +1571,28 @@ end module my_mpi
                   0,my_local_mpi_comm_world,ier)
 
   end subroutine gather_all_singlei
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+  subroutine gather_all_all_singlei(sendbuf, recvbuf, NPROC)
+
+  use my_mpi
+
+  implicit none
+
+  integer :: NPROC
+  integer :: sendbuf
+  integer, dimension(0:NPROC-1) :: recvbuf
+
+  integer :: ier
+
+  call MPI_ALLGATHER(sendbuf,1,MPI_INTEGER, &
+                     recvbuf,1,MPI_INTEGER, &
+                     my_local_mpi_comm_world,ier)
+
+  end subroutine gather_all_all_singlei
 
 !
 !-------------------------------------------------------------------------------------------------

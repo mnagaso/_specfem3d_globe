@@ -66,6 +66,8 @@
     ! saves checkpoint
     if (ADIOS_FOR_FORWARD_ARRAYS) then
       call save_intermediate_forward_arrays_adios()
+    else if (HDF5_ENABLED) then
+      call save_intermediate_forward_arrays_hdf5()
     else
       write(outputname,"('dump_all_arrays',i6.6)") myrank
       open(unit=IOUT,file=trim(LOCAL_TMP_PATH)//'/'//trim(outputname), &
@@ -141,6 +143,8 @@
 
     if (ADIOS_FOR_FORWARD_ARRAYS) then
       call save_forward_arrays_adios()
+    else if (HDF5_ENABLED) then
+      call save_forward_arrays_hdf5()
     else
       write(outputname,'(a,i6.6,a)') 'proc',myrank,'_save_forward_arrays.bin'
       outputname = trim(LOCAL_TMP_PATH)//'/'//trim(outputname)
@@ -246,6 +250,8 @@
 
   if (ADIOS_FOR_UNDO_ATTENUATION) then
     call save_forward_arrays_undoatt_adios()
+  else if (HDF5_ENABLED) then
+    call save_forward_arrays_undoatt_hdf5()
   else
     ! current subset iteration
     iteration_on_subset_tmp = iteration_on_subset

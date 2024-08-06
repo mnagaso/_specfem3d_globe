@@ -366,6 +366,17 @@
     call read_value_double_precision(FILESYSTEM_IO_BANDWIDTH, 'FILESYSTEM_IO_BANDWIDTH', ier); ier = 0
   endif
 
+  ! HDF5 file I/O
+  ! (optional) hdf5 database io flag
+  call read_value_logical(HDF5_ENABLED, 'HDF5_ENABLED', ier); ier = 0
+  ! HDF file I/O server
+  if (HDF5_ENABLED) then
+    ! (optional) movie outputs
+    call read_value_logical(HDF5_FOR_MOVIES, 'HDF5_FOR_MOVIES', ier); ier = 0
+    ! (optional) number of io dedicated nodes
+    call read_value_integer(HDF5_IO_NODES, 'HDF5_IO_NODES', ier); ier = 0
+  endif
+
   ! closes parameter file
   call close_parameter_file()
 
@@ -396,6 +407,21 @@
     print *,'**************'
     print *
     stop 'an error occurred while reading the parameter file: PETSC solver is selected but code not built with PETSc support'
+  endif
+#endif
+
+  ! checks HDF5 compilation support
+#if !defined(USE_HDF5)
+  if (HDF5_ENABLED) then
+    print *
+    print *,'**************'
+    print *,'**************'
+    print *,'HDF5 is enabled in parameter file but the code was not compiled with HDF5'
+    print *,'See --with-hdf5 configure options.'
+    print *,'**************'
+    print *,'**************'
+    print *
+    stop 'an error occurred while reading the parameter file: HDF5 is enabled but code not built with HDF5'
   endif
 #endif
 

@@ -227,7 +227,7 @@ MOVIE_START                     = 0
 MOVIE_STOP                      = 40000
 
 # save mesh files to check the mesh
-SAVE_MESH_FILES                 = .false.
+SAVE_MESH_FILES                 = .true.
 
 # restart files (number of runs can be 1 or higher, choose 1 for no restart files)
 NUMBER_OF_RUNS                  = 1
@@ -429,4 +429,10 @@ ADIOS_FOR_AVS_DX                = .true.
 ADIOS_FOR_KERNELS               = .true.
 ADIOS_FOR_MODELS                = .true.
 ADIOS_FOR_UNDO_ATTENUATION      = .true.
+
+# HDF5 Database I/O
+# (note the flags for HDF5 and ADIOS are mutually exclusive, only one can be used)
+HDF5_ENABLED                    = .true.
+HDF5_FOR_MOVIES                 = .false.
+HDF5_IO_NODES                   = 0   # HDF5 IO server with number of IO dedicated procs
 

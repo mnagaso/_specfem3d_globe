@@ -387,7 +387,30 @@
                                     rmassx_crust_mantle,rmassy_crust_mantle,rmassz_crust_mantle, &
                                     NGLOB_CRUST_MANTLE_OCEANS,rmass_ocean_load, &
                                     b_rmassx_crust_mantle,b_rmassy_crust_mantle)
-    else
+    else if (HDF5_ENABLED) then
+      call read_arrays_solver_hdf5(IREGION_CRUST_MANTLE, &
+                              NSPEC_CRUST_MANTLE,NGLOB_CRUST_MANTLE,NGLOB_XY_CM, &
+                              nspec_iso,nspec_tiso,nspec_ani, &
+                              rho_vp_crust_mantle,rho_vs_crust_mantle, &
+                              xstore_crust_mantle,ystore_crust_mantle,zstore_crust_mantle, &
+                              xix_crust_mantle,xiy_crust_mantle,xiz_crust_mantle, &
+                              etax_crust_mantle,etay_crust_mantle,etaz_crust_mantle, &
+                              gammax_crust_mantle,gammay_crust_mantle,gammaz_crust_mantle, &
+                              rhostore_crust_mantle,kappavstore_crust_mantle,muvstore_crust_mantle, &
+                              kappahstore_crust_mantle,muhstore_crust_mantle,eta_anisostore_crust_mantle, &
+                              c11store_crust_mantle,c12store_crust_mantle,c13store_crust_mantle, &
+                              c14store_crust_mantle,c15store_crust_mantle,c16store_crust_mantle, &
+                              c22store_crust_mantle,c23store_crust_mantle,c24store_crust_mantle, &
+                              c25store_crust_mantle,c26store_crust_mantle,c33store_crust_mantle, &
+                              c34store_crust_mantle,c35store_crust_mantle,c36store_crust_mantle, &
+                              c44store_crust_mantle,c45store_crust_mantle,c46store_crust_mantle, &
+                              c55store_crust_mantle,c56store_crust_mantle,c66store_crust_mantle, &
+                              mu0store_crust_mantle, &
+                              ibool_crust_mantle,dummy_idoubling,ispec_is_tiso_crust_mantle, &
+                              rmassx_crust_mantle,rmassy_crust_mantle,rmassz_crust_mantle, &
+                              NGLOB_CRUST_MANTLE_OCEANS,rmass_ocean_load, &
+                              b_rmassx_crust_mantle,b_rmassy_crust_mantle)
+     else
       call read_arrays_solver(IREGION_CRUST_MANTLE, &
                               NSPEC_CRUST_MANTLE,NGLOB_CRUST_MANTLE,NGLOB_XY_CM, &
                               nspec_iso,nspec_tiso,nspec_ani, &
@@ -582,6 +605,29 @@
                                     dummy_rmass,dummy_rmass,rmass_outer_core, &
                                     1,dummy_array, &
                                     dummy_rmass,dummy_rmass)
+    else if (HDF5_ENABLED) then
+      call read_arrays_solver_hdf5(IREGION_OUTER_CORE, &
+                              NSPEC_OUTER_CORE,NGLOB_OUTER_CORE,NGLOB_XY_dummy, &
+                              nspec_iso,nspec_tiso,nspec_ani, &
+                              vp_outer_core,dummy_array, &
+                              xstore_outer_core,ystore_outer_core,zstore_outer_core, &
+                              xix_outer_core,xiy_outer_core,xiz_outer_core, &
+                              etax_outer_core,etay_outer_core,etaz_outer_core, &
+                              gammax_outer_core,gammay_outer_core,gammaz_outer_core, &
+                              rhostore_outer_core,kappavstore_outer_core,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array, &
+                              ibool_outer_core,dummy_idoubling_outer_core,dummy_ispec_is_tiso, &
+                              dummy_rmass,dummy_rmass,rmass_outer_core, &
+                              1, dummy_array, &
+                              dummy_rmass,dummy_rmass)
     else
       call read_arrays_solver(IREGION_OUTER_CORE, &
                               NSPEC_OUTER_CORE,NGLOB_OUTER_CORE,NGLOB_XY_dummy, &
@@ -759,6 +805,29 @@
                                     rmassx_inner_core,rmassy_inner_core,rmassz_inner_core, &
                                     1,dummy_array, &
                                     b_rmassx_inner_core,b_rmassy_inner_core)
+    else if (HDF5_ENABLED) then
+      call read_arrays_solver_hdf5(IREGION_INNER_CORE, &
+                              NSPEC_INNER_CORE,NGLOB_INNER_CORE,NGLOB_XY_IC, &
+                              nspec_iso,nspec_tiso,nspec_ani, &
+                              dummy_array,dummy_array, &
+                              xstore_inner_core,ystore_inner_core,zstore_inner_core, &
+                              xix_inner_core,xiy_inner_core,xiz_inner_core, &
+                              etax_inner_core,etay_inner_core,etaz_inner_core, &
+                              gammax_inner_core,gammay_inner_core,gammaz_inner_core, &
+                              rhostore_inner_core,kappavstore_inner_core,muvstore_inner_core, &
+                              dummy_array,dummy_array,dummy_array, &
+                              c11store_inner_core,c12store_inner_core,c13store_inner_core, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,c33store_inner_core, &
+                              dummy_array,dummy_array,dummy_array, &
+                              c44store_inner_core,dummy_array,dummy_array, &
+                              dummy_array,dummy_array,dummy_array, &
+                              dummy_array, &
+                              ibool_inner_core,idoubling_inner_core,dummy_ispec_is_tiso, &
+                              rmassx_inner_core,rmassy_inner_core,rmassz_inner_core, &
+                              1,dummy_array, &
+                              b_rmassx_inner_core,b_rmassy_inner_core)
     else
       call read_arrays_solver(IREGION_INNER_CORE, &
                               NSPEC_INNER_CORE,NGLOB_INNER_CORE,NGLOB_XY_IC, &
@@ -931,6 +1000,29 @@
                                     dummy_rmass,dummy_rmass,dummy_rmass, &
                                     1,dummy_array, &
                                     dummy_rmass,dummy_rmass)
+    else if (HDF5_ENABLED) then
+      call read_arrays_solver_hdf5(IREGION_TRINFINITE, &
+                                    NSPEC_TRINFINITE,NGLOB_TRINFINITE,NGLOB_XY_dummy, &
+                                    nspec_iso,nspec_tiso,nspec_ani, &
+                                    dummy_array,dummy_array, &
+                                    xstore_trinfinite,ystore_trinfinite,zstore_trinfinite, &
+                                    xix_trinfinite,xiy_trinfinite,xiz_trinfinite, &
+                                    etax_trinfinite,etay_trinfinite,etaz_trinfinite, &
+                                    gammax_trinfinite,gammay_trinfinite,gammaz_trinfinite, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array, &
+                                    ibool_trinfinite,dummy_idoubling,dummy_ispec_is_tiso, &
+                                    dummy_rmass,dummy_rmass,dummy_rmass, &
+                                    1,dummy_array, &
+                                    dummy_rmass,dummy_rmass)
     else
       call read_arrays_solver(IREGION_TRINFINITE, &
                                     NSPEC_TRINFINITE,NGLOB_TRINFINITE,NGLOB_XY_dummy, &
@@ -1040,6 +1132,29 @@ subroutine read_mesh_databases_INF()
   if (I_should_read_the_database .and. NSPEC_INFINITE > 0) then
     if (ADIOS_FOR_ARRAYS_SOLVER) then
       call read_arrays_solver_adios(IREGION_INFINITE, &
+                                    NSPEC_INFINITE,NGLOB_INFINITE,NGLOB_XY_dummy, &
+                                    nspec_iso,nspec_tiso,nspec_ani, &
+                                    dummy_array,dummy_array, &
+                                    xstore_infinite,ystore_infinite,zstore_infinite, &
+                                    xix_infinite,xiy_infinite,xiz_infinite, &
+                                    etax_infinite,etay_infinite,etaz_infinite, &
+                                    gammax_infinite,gammay_infinite,gammaz_infinite, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array,dummy_array,dummy_array, &
+                                    dummy_array, &
+                                    ibool_infinite,dummy_idoubling,dummy_ispec_is_tiso, &
+                                    dummy_rmass,dummy_rmass,dummy_rmass, &
+                                    1,dummy_array, &
+                                    dummy_rmass,dummy_rmass)
+    else if (HDF5_ENABLED) then
+      call read_arrays_solver_hdf5(IREGION_INFINITE, &
                                     NSPEC_INFINITE,NGLOB_INFINITE,NGLOB_XY_dummy, &
                                     nspec_iso,nspec_tiso,nspec_ani, &
                                     dummy_array,dummy_array, &
@@ -1238,6 +1353,8 @@ subroutine read_mesh_databases_INF()
   if (I_should_read_the_database) then
     if (ADIOS_FOR_ARRAYS_SOLVER) then
       call read_mesh_databases_coupling_adios()
+    else if (HDF5_ENABLED) then
+      call read_mesh_databases_coupling_hdf5()
     else
       ! crust and mantle
       if (NSPEC_CRUST_MANTLE > 0) then
@@ -1450,7 +1567,7 @@ subroutine read_mesh_databases_INF()
         endif
       endif
 
-    endif ! ADIOS
+    endif ! ADIOS or HDF5
   endif
   call bcast_mesh_databases_coupling()
 
@@ -1670,6 +1787,8 @@ subroutine read_mesh_databases_INF()
   if (I_should_read_the_database .and. NSPEC_CRUST_MANTLE > 0) then
     if (ADIOS_FOR_MPI_ARRAYS) then
       call read_mesh_databases_MPI_adios(IREGION_CRUST_MANTLE)
+    else if (HDF5_ENABLED) then
+      call read_mesh_databases_MPI_hdf5(IREGION_CRUST_MANTLE)
     else
       call read_mesh_databases_MPI_CM()
     endif
@@ -1767,6 +1886,8 @@ subroutine read_mesh_databases_INF()
   if (I_should_read_the_database .and. NSPEC_OUTER_CORE > 0) then
     if (ADIOS_FOR_MPI_ARRAYS) then
       call read_mesh_databases_MPI_adios(IREGION_OUTER_CORE)
+    else if (HDF5_ENABLED) then
+      call read_mesh_databases_MPI_hdf5(IREGION_OUTER_CORE)
     else
       call read_mesh_databases_MPI_OC()
     endif
@@ -1861,6 +1982,8 @@ subroutine read_mesh_databases_INF()
   if (I_should_read_the_database .and. NSPEC_INNER_CORE > 0) then
     if (ADIOS_FOR_MPI_ARRAYS) then
       call read_mesh_databases_MPI_adios(IREGION_INNER_CORE)
+    else if (HDF5_ENABLED) then
+      call read_mesh_databases_MPI_hdf5(IREGION_INNER_CORE)
     else
       call read_mesh_databases_MPI_IC()
     endif
@@ -1961,6 +2084,8 @@ subroutine read_mesh_databases_INF()
       if (I_should_read_the_database .and. NSPEC_TRINFINITE > 0) then
         if (ADIOS_FOR_MPI_ARRAYS) then
           call read_mesh_databases_MPI_adios(IREGION_TRINFINITE)
+        else if (HDF5_ENABLED) then
+          call read_mesh_databases_MPI_hdf5(IREGION_TRINFINITE)
         else
           call read_mesh_databases_MPI_TRINF()
         endif
@@ -2056,6 +2181,8 @@ subroutine read_mesh_databases_INF()
     if (I_should_read_the_database .and. NSPEC_INFINITE > 0) then
       if (ADIOS_FOR_MPI_ARRAYS) then
         call read_mesh_databases_MPI_adios(IREGION_INFINITE)
+      else if (HDF5_ENABLED) then
+        call read_mesh_databases_MPI_hdf5(IREGION_INFINITE)
       else
         call read_mesh_databases_MPI_INF()
       endif
@@ -2671,6 +2798,8 @@ subroutine read_mesh_databases_INF()
   if (I_should_read_the_database) then
     if (ADIOS_FOR_ARRAYS_SOLVER) then
       call read_mesh_databases_stacey_adios()
+    else if (HDF5_ENABLED) then
+      call read_mesh_databases_stacey_hdf5()
     else
       ! crust and mantle
       if (NSPEC_CRUST_MANTLE > 0) then
@@ -2798,6 +2927,8 @@ subroutine read_mesh_databases_INF()
   ! checks setup
   if (ADIOS_FOR_KERNELS) &
     call exit_mpi(myrank,'saving regular kernels in ADIOS file format is not supported yet')
+  if (HDF5_ENABLED) &
+    call exit_mpi(myrank,'saving regular kernels in HDF5 file format is not supported yet')
   ! assuming 6 chunks full global simulations right now
   if (NCHUNKS_VAL /= 6 .or. NPROC_XI_VAL /= NPROC_ETA_VAL) &
     call exit_MPI(myrank, 'Only deal with 6 chunks at this moment')

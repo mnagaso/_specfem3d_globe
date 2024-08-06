@@ -645,6 +645,10 @@ LIBOBJS
 GIT_DATE_VERSION
 GIT_COMMIT_VERSION
 GIT_PACKAGE_VERSION
+HDF5_INCLUDES
+HDF5_LIBS
+HDF5_FCFLAGS
+HDF5_INC
 PETSC_LIBS
 PETSC_LDFLAGS
 PETSC_LIB
@@ -740,6 +744,8 @@ ac_ct_FC
 LDFLAGS
 FCFLAGS
 FC
+COND_HDF5_FALSE
+COND_HDF5_TRUE
 COND_PETSC_FALSE
 COND_PETSC_TRUE
 COND_NETCDF_FALSE
@@ -899,6 +905,7 @@ with_emc
 with_netcdf
 enable_netcdf
 with_petsc
+with_hdf5
 with_vtk
 with_vtk_suffix
 with_vtk_version
@@ -954,7 +961,10 @@ EMC_FCFLAGS
 EMC_LIBS
 PETSC_INC
 PETSC_FCFLAGS
-PETSC_LIB'
+PETSC_LIB
+HDF5_INC
+HDF5_FCFLAGS
+HDF5_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1613,6 +1623,7 @@ Optional Packages:
   --with-netcdf           build NetCDF enabled version (IRIS EMC & CEM models)
                           [default=no]
   --with-petsc            build PETSc enabled version [default=no]
+  --with-hdf5             build HDF5 enabled version [default=no]
   --with-vtk              The prefix where VTK is installed [default=/usr]
   --with-vtk-suffix       Suffix to append to VTK's include directory, e.g.,
                           for vtk-5.2/ the suffix is "-5.2"
@@ -1681,6 +1692,10 @@ Some influential environment variables:
   PETSC_FCFLAGS
               Fortran compiler flags (PETSC specific flags)
   PETSC_LIB   extra library directory for linking programs with PETSC
+  HDF5_INC    HDF5 include directory
+  HDF5_FCFLAGS
+              Fortran compiler flags
+  HDF5_LIBS   extra libraries for linking programs
 
 Use these variables to override the choices made by 'configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -4091,6 +4106,28 @@ else
   COND_PETSC_FALSE=
 fi
 
+
+###
+### HDF5
+###
+
+
+# Check whether --with-hdf5 was given.
+if test ${with_hdf5+y}
+then :
+  withval=$with_hdf5; want_hdf5="$withval"
+else case e in #(
+  e) want_hdf5=no ;;
+esac
+fi
+
+ if test x$"$want_hdf5" != xno; then
+  COND_HDF5_TRUE=
+  COND_HDF5_FALSE='#'
+else
+  COND_HDF5_TRUE='#'
+  COND_HDF5_FALSE=
+fi
 
 
 ############################################################
@@ -11884,6 +11921,71 @@ ac_compiler_gnu=$ac_cv_fc_compiler_gnu
 fi
 
 ##
+## HDF5
+##
+
+if test x"$want_hdf5" != xno
+then :
+
+    printf "%s\n" "## ---- ##
+## HDF5 ##
+## ---- ##"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: HDF5 is enabled" >&5
+printf "%s\n" "$as_me: HDF5 is enabled" >&6;}
+
+
+
+
+
+    # HDF5 checking for Fortran
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for HDF5 modules" >&5
+printf %s "checking for HDF5 modules... " >&6; }
+    FCFLAGS="$HDF5_FCFLAGS $FCFLAGS"
+    # adds include directory
+    if test "x$HDF5_INC" != "x"; then
+      HDF5_INCLUDES="-I$HDF5_INC"
+      FCFLAGS+=" $HDF5_INCLUDES"
+    fi
+    # compilation test
+    cat > conftest.$ac_ext <<_ACEOF
+
+            program main
+
+      use hdf5
+
+      end
+
+_ACEOF
+if ac_fn_fc_try_compile "$LINENO"
+then :
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else case e in #(
+  e)
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+      as_fn_error $? "HDF5 module not found; is HDF5 built with Fortran support for this compiler?" "$LINENO" 5
+     ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+
+fi
+
+##
 ## Git version info
 ##
 
@@ -12273,6 +12375,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${COND_PETSC_TRUE}" && test -z "${COND_PETSC_FALSE}"; then
   as_fn_error $? "conditional \"COND_PETSC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${COND_HDF5_TRUE}" && test -z "${COND_HDF5_FALSE}"; then
+  as_fn_error $? "conditional \"COND_HDF5\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 case $FC_MODINC in #(

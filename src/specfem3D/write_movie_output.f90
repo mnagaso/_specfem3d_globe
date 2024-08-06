@@ -75,6 +75,7 @@
         endif
       endif
 
+      ! TODO ADD HDF5 and IO_SERVER
       ! save velocity here to avoid static offset on displacement for movies
       call write_movie_surface()
 
@@ -134,6 +135,7 @@
                                               epsilondev_xy_crust_mantle,epsilondev_xz_crust_mantle, &
                                               epsilondev_yz_crust_mantle)
         endif
+       ! TODO ADD HDF5 and IO_SERVER
         call  write_movie_volume_strains(NSPEC_CRUST_MANTLE_STRAIN_ONLY, &
                                          eps_trace_over_3_crust_mantle, &
                                          NSPEC_CRUST_MANTLE_STR_OR_ATT, &
@@ -141,6 +143,7 @@
                                          epsilondev_xz_crust_mantle,epsilondev_yz_crust_mantle)
 
       case (2, 3)
+        ! TODO ADD HDF5 and IO_SERVER
         ! output the Time Integral of Strain, or \mu*TIS
         call  write_movie_volume_strains(NSPEC_CRUST_MANTLE_3DMOVIE, &
                                          Ieps_trace_over_3_crust_mantle, &
@@ -167,6 +170,7 @@
           call transfer_fields_oc_from_device(NGLOB_OUTER_CORE, &
                                               displ_outer_core,veloc_outer_core,accel_outer_core,Mesh_pointer)
         endif
+       ! TODO ADD HDF5 and IO_SERVER
         call write_movie_volume_divcurl(NSPEC_CRUST_MANTLE_STRAIN_ONLY,eps_trace_over_3_crust_mantle, &
                                         div_displ_outer_core, &
                                         accel_outer_core,kappavstore_outer_core,rhostore_outer_core,ibool_outer_core, &
@@ -184,6 +188,7 @@
           call transfer_displ_cm_from_device(NDIM*NGLOB_CRUST_MANTLE,displ_crust_mantle,Mesh_pointer)
         endif
         scalingval = scale_displ
+        ! TODO ADD HDF5 and IO_SERVER
         call write_movie_volume_vector(npoints_3dmovie, &
                                        ibool_crust_mantle, &
                                        displ_crust_mantle, &
@@ -195,6 +200,7 @@
           call transfer_veloc_cm_from_device(NDIM*NGLOB_CRUST_MANTLE,veloc_crust_mantle,Mesh_pointer)
         endif
         scalingval = scale_veloc
+        ! TODO ADD HDF5 and IO_SERVER
         call write_movie_volume_vector(npoints_3dmovie, &
                                        ibool_crust_mantle, &
                                        veloc_crust_mantle, &
@@ -209,6 +215,7 @@
           call transfer_displ_ic_from_device(NDIM*NGLOB_INNER_CORE,displ_inner_core,Mesh_pointer)
           call transfer_displ_oc_from_device(NGLOB_OUTER_CORE,displ_outer_core,Mesh_pointer)
         endif
+        ! TODO ADD HDF5 and IO_SERVER
         call write_movie_volume_displnorm(displ_crust_mantle,displ_inner_core,displ_outer_core, &
                                           ibool_crust_mantle,ibool_inner_core,ibool_outer_core)
 
@@ -221,6 +228,7 @@
           call transfer_veloc_ic_from_device(NDIM*NGLOB_INNER_CORE,veloc_inner_core,Mesh_pointer)
           call transfer_veloc_oc_from_device(NGLOB_OUTER_CORE,veloc_outer_core,Mesh_pointer)
         endif
+        ! TODO ADD HDF5 and IO_SERVER
         call write_movie_volume_velnorm(veloc_crust_mantle,veloc_inner_core,veloc_outer_core, &
                                         ibool_crust_mantle,ibool_inner_core,ibool_outer_core)
 
@@ -233,6 +241,7 @@
           call transfer_accel_ic_from_device(NDIM*NGLOB_INNER_CORE,accel_inner_core,Mesh_pointer)
           call transfer_accel_oc_from_device(NGLOB_OUTER_CORE,accel_outer_core,Mesh_pointer)
         endif
+        ! TODO ADD HDF5 and IO_SERVER
         call write_movie_volume_accelnorm(accel_crust_mantle,accel_inner_core,accel_outer_core, &
                                           ibool_crust_mantle,ibool_inner_core,ibool_outer_core)
 

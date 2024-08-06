@@ -36,7 +36,7 @@
 
   use constants_solver
 
-  use shared_parameters, only: ATT_F_C_SOURCE
+  use shared_parameters, only: ATT_F_C_SOURCE, HDF5_ENABLED
 
   use specfem_par, only: ATTENUATION_VAL,ADIOS_FOR_ARRAYS_SOLVER,LOCAL_PATH, &
     scale_t_inv
@@ -97,7 +97,9 @@
   ! use the filename to determine the actual contents of the read
   if (ADIOS_FOR_ARRAYS_SOLVER) then
     ! ADIOS format
-    call read_attenuation_adios(iregion_code,factor_common, factor_scale, tau_s, vnspec, f_c_source)
+    call read_attenuation_adios(iregion_code, factor_common, factor_scale, tau_s, vnspec, f_c_source)
+  else if (HDF5_ENABLED) then
+    call read_attenuation_hdf5(iregion_code, factor_common, factor_scale, tau_s, vnspec, f_c_source)
   else
     ! binary format
     ! opens corresponding databases file

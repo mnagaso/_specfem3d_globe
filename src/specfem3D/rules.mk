@@ -110,7 +110,9 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/print_stf_file.solverstatic.o \
 	$O/read_adjoint_sources.solverstatic.o \
 	$O/read_arrays_solver.solverstatic.o \
+	$O/read_arrays_solver_hdf5.solverstatic.o \
 	$O/read_forward_arrays.solverstatic.o \
+	$O/read_forward_arrays_hdf5.solverstatic.o \
 	$O/read_mesh_parameters.solverstatic.o \
 	$O/read_mesh_databases.solverstatic.o \
 	$O/read_topography_bathymetry.solverstatic.o \
@@ -125,7 +127,9 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/SIEM_solver_mpi.solverstatic.o \
 	$O/SIEM_solver_petsc.solverstatic.o \
 	$O/save_forward_arrays.solverstatic.o \
+	$O/save_forward_arrays_hdf5.solverstatic.o \
 	$O/save_kernels.solverstatic.o \
+	$O/save_kernels_hdf5.solverstatic.o \
 	$O/save_regular_kernels.solverstatic.o \
 	$O/setup_GLL_points.solverstatic.o \
 	$O/setup_sources_receivers.solverstatic.o \
@@ -181,6 +185,7 @@ specfem3D_SHARED_OBJECTS = \
 	$O/gll_library.shared.o \
 	$O/heap_sort.shared.o \
 	$O/hex_nodes.shared.o \
+	$O/hdf5_manager.shared_hdf5_module.o \
 	$O/init_openmp.shared.o \
 	$O/intgrl.shared.o \
 	$O/lagrange_poly.shared.o \
@@ -474,3 +479,12 @@ $O/%.visualc.o: $S/%.c ${SETUP}/config.h
 ###
 $O/%.checknetcdf.o: $S/%.f90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o
 	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(NETCDF_INCLUDE) -c -o $@ $<
+
+###
+### HDF5
+###
+$O/%.spec_hdf5_module.o: $S/%.F90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
+	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<
+
+$O/%.spec_hdf5_module.o: $S/%.f90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
+	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<

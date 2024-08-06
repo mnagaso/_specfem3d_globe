@@ -119,7 +119,9 @@ meshfem3D_MESHER_OBJECTS = \
 	$O/model_spiral.check.o \
 	$O/moho_stretching.check.o \
 	$O/save_arrays_solver.check.o \
+	$O/save_arrays_solver_hdf5.check.o \
 	$O/save_model_meshfiles.check.o \
+	$O/save_model_meshfiles_hdf5.check.o \
 	$O/setup_color_perm.check.o \
 	$O/setup_counters.check.o \
 	$O/setup_inner_outer.check.o \
@@ -209,6 +211,7 @@ meshfem3D_SHARED_OBJECTS = \
 	$O/get_model_parameters.shared.o \
 	$O/get_timestep_and_layers.shared.o \
 	$O/gll_library.shared.o \
+	$O/hdf5_manager.shared_hdf5_module.o \
 	$O/heap_sort.shared.o \
 	$O/hex_nodes.shared.o \
 	$O/init_openmp.shared.o \
@@ -398,3 +401,11 @@ $O/%.check_adios.o: $S/%.F90 $O/shared_par.shared_module.o $O/meshfem3D_par.chec
 
 $O/%.checknetcdf.o: $S/%.f90 $O/shared_par.shared_module.o $O/meshfem3D_par.check_module.o
 	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(NETCDF_INCLUDE) -c -o $@ $<
+
+## HDF5 file i/o
+
+#$O/%.mesh_hdf5.o: $S/%.F90 $O/shared_par.shared_module.o $O/meshfem3D_par.check_module.o $O/hdf5_manager.shared_hdf5_module.o
+#	${FCCOMPILE_CHECK} ${FCFLAGS_f90} -c -o $@ $<
+#
+#$O/%.mesh_hdf5.o: $S/%.f90 $O/shared_par.shared_module.o $O/meshfem3D_par.check_module.o $O/hdf5_manager.shared_hdf5_module.o
+#	${FCCOMPILE_CHECK} ${FCFLAGS_f90}  -c -o $@ $<

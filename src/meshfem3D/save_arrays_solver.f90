@@ -332,6 +332,8 @@
     IREGION_TRINFINITE,IREGION_INFINITE, &
     ADIOS_FOR_MPI_ARRAYS
 
+  use shared_parameters, only: HDF5_ENABLED
+
 !  use MPI_interfaces_par
 
   use MPI_crust_mantle_par
@@ -355,6 +357,15 @@
                                   num_phase_ispec_crust_mantle,phase_ispec_inner_crust_mantle, &
                                   num_colors_outer_crust_mantle,num_colors_inner_crust_mantle, &
                                   num_elem_colors_crust_mantle)
+    else if (HDF5_ENABLED) then
+      call save_MPI_arrays_hdf5(IREGION_CRUST_MANTLE,LOCAL_PATH, &
+                            num_interfaces_crust_mantle,max_nibool_interfaces_cm, &
+                            my_neighbors_crust_mantle,nibool_interfaces_crust_mantle, &
+                            ibool_interfaces_crust_mantle, &
+                            nspec_inner_crust_mantle,nspec_outer_crust_mantle, &
+                            num_phase_ispec_crust_mantle,phase_ispec_inner_crust_mantle, &
+                            num_colors_outer_crust_mantle,num_colors_inner_crust_mantle, &
+                            num_elem_colors_crust_mantle)
     else
       call save_MPI_arrays(IREGION_CRUST_MANTLE,LOCAL_PATH, &
                             num_interfaces_crust_mantle,max_nibool_interfaces_cm, &
@@ -377,6 +388,15 @@
                                   num_phase_ispec_outer_core,phase_ispec_inner_outer_core, &
                                   num_colors_outer_outer_core,num_colors_inner_outer_core, &
                                   num_elem_colors_outer_core)
+    else if (HDF5_ENABLED) then
+      call save_MPI_arrays_hdf5(IREGION_OUTER_CORE,LOCAL_PATH, &
+                            num_interfaces_outer_core,max_nibool_interfaces_oc, &
+                            my_neighbors_outer_core,nibool_interfaces_outer_core, &
+                            ibool_interfaces_outer_core, &
+                            nspec_inner_outer_core,nspec_outer_outer_core, &
+                            num_phase_ispec_outer_core,phase_ispec_inner_outer_core, &
+                            num_colors_outer_outer_core,num_colors_inner_outer_core, &
+                            num_elem_colors_outer_core)
     else
       call save_MPI_arrays(IREGION_OUTER_CORE,LOCAL_PATH, &
                             num_interfaces_outer_core,max_nibool_interfaces_oc, &
@@ -399,6 +419,16 @@
                                   num_phase_ispec_inner_core,phase_ispec_inner_inner_core, &
                                   num_colors_outer_inner_core,num_colors_inner_inner_core, &
                                   num_elem_colors_inner_core)
+    else if (HDF5_ENABLED) then
+      call save_MPI_arrays_hdf5(IREGION_INNER_CORE,LOCAL_PATH, &
+                            num_interfaces_inner_core,max_nibool_interfaces_ic, &
+                            my_neighbors_inner_core,nibool_interfaces_inner_core, &
+                            ibool_interfaces_inner_core, &
+                            nspec_inner_inner_core,nspec_outer_inner_core, &
+                            num_phase_ispec_inner_core,phase_ispec_inner_inner_core, &
+                            num_colors_outer_inner_core,num_colors_inner_inner_core, &
+                            num_elem_colors_inner_core)
+
     else
       call save_MPI_arrays(IREGION_INNER_CORE,LOCAL_PATH, &
                             num_interfaces_inner_core,max_nibool_interfaces_ic, &
@@ -421,6 +451,15 @@
                                   num_phase_ispec_trinfinite,phase_ispec_inner_trinfinite, &
                                   num_colors_outer_trinfinite,num_colors_inner_trinfinite, &
                                   num_elem_colors_trinfinite)
+    else if (HDF5_ENABLED) then
+      call save_MPI_arrays_hdf5(IREGION_TRINFINITE,LOCAL_PATH, &
+                            num_interfaces_trinfinite,max_nibool_interfaces_trinfinite, &
+                            my_neighbors_trinfinite,nibool_interfaces_trinfinite, &
+                            ibool_interfaces_trinfinite, &
+                            nspec_inner_trinfinite,nspec_outer_trinfinite, &
+                            num_phase_ispec_trinfinite,phase_ispec_inner_trinfinite, &
+                            num_colors_outer_trinfinite,num_colors_inner_trinfinite, &
+                            num_elem_colors_trinfinite)
     else
       call save_MPI_arrays(IREGION_TRINFINITE,LOCAL_PATH, &
                             num_interfaces_trinfinite,max_nibool_interfaces_trinfinite, &
@@ -443,6 +482,15 @@
                                   num_phase_ispec_infinite,phase_ispec_inner_infinite, &
                                   num_colors_outer_infinite,num_colors_inner_infinite, &
                                   num_elem_colors_infinite)
+    else if (HDF5_ENABLED) then
+      call save_MPI_arrays_hdf5(IREGION_INFINITE,LOCAL_PATH, &
+                            num_interfaces_infinite,max_nibool_interfaces_infinite, &
+                            my_neighbors_infinite,nibool_interfaces_infinite, &
+                            ibool_interfaces_infinite, &
+                            nspec_inner_infinite,nspec_outer_infinite, &
+                            num_phase_ispec_infinite,phase_ispec_inner_infinite, &
+                            num_colors_outer_infinite,num_colors_inner_infinite, &
+                            num_elem_colors_infinite)
     else
       call save_MPI_arrays(IREGION_INFINITE,LOCAL_PATH, &
                             num_interfaces_infinite,max_nibool_interfaces_infinite, &

@@ -208,6 +208,18 @@
   logical :: SHIFT_SIMULTANEOUS_RUNS = .false.
   double precision :: FILESYSTEM_IO_BANDWIDTH = 0.d0
 
+  ! HDF5 file i/o
+  logical :: HDF5_ENABLED = .false.              ! for all databases i/o in hdf5
+  logical :: HDF5_FOR_MOVIES = .false.           ! for movies (shakemap, surface movies, volume movies)
+
+  ! HDF5 IO server
+  ! number of io dedicated nodes
+  integer :: HDF5_IO_NODES = 0
+
+  ! flag for io-dedicated/compute node.
+  logical :: IO_storage_task = .false.
+  logical :: IO_compute_task = .true.
+
   end module shared_input_parameters
 
 !

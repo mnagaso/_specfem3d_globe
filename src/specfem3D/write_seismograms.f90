@@ -51,6 +51,9 @@
 
   implicit none
 
+  ! HDF5 is not implemented because ASDF is already available
+  ! TODO ADD IO_SERVER for seismograms (low priority because it's not I/O intensive)
+
   ! local parameters
   ! timing
   double precision, external :: wtime

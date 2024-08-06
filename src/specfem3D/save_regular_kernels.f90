@@ -390,6 +390,9 @@
   if (ADIOS_FOR_KERNELS) then
     ! check implementation
     call exit_mpi(myrank,'saving regular kernels in ADIOS file format is not supported yet')
+  else if (HDF5_ENABLED) then
+    ! TODO ADD HDF5
+    call exit_mpi(myrank,'saving regular kernels in HDF5 file format is not supported yet')
   else
     ! sets up database name
     call create_name_database(prname,myrank,IREGION_CRUST_MANTLE,LOCAL_PATH)
