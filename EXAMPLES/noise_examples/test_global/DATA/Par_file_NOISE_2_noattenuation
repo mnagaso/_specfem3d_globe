@@ -430,3 +430,7 @@ ADIOS_FOR_KERNELS               = .true.
 ADIOS_FOR_MODELS                = .true.
 ADIOS_FOR_UNDO_ATTENUATION      = .true.
 
+# HDF5 Database I/O
+# (note the flags for HDF5 and ADIOS are mutually exclusive, only one can be used)
+HDF5_ENABLED                    = .false.
+
