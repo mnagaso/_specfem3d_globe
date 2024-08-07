@@ -63,9 +63,9 @@ subroutine save_intermediate_forward_arrays_hdf5()
   character(len=MAX_STRING_LEN) :: file_name
 
   ! gather the offset arrays
-  call gather_all_all_singlei(size(displ_crust_mantle), offset_nglob_cm, NPROCTOT_VAL)
-  call gather_all_all_singlei(size(displ_inner_core),   offset_nglob_oc, NPROCTOT_VAL)
-  call gather_all_all_singlei(size(displ_outer_core),   offset_nglob_ic, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_crust_mantle,2), offset_nglob_cm, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_inner_core,2),   offset_nglob_ic, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_outer_core,1),   offset_nglob_oc, NPROCTOT_VAL)
   call gather_all_all_singlei(size(epsilondev_xx_crust_mantle,4), offset_nglob_mc_str_or_att, NPROCTOT_VAL)
   call gather_all_all_singlei(size(epsilondev_xx_inner_core,4),   offset_nglob_ic_str_or_att, NPROCTOT_VAL)
   if (ROTATION_VAL) then
@@ -98,9 +98,9 @@ subroutine save_intermediate_forward_arrays_hdf5()
     call h5_create_dataset_gen('displ_crust_mantle', (/NDIM, sum(offset_nglob_cm)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('veloc_crust_mantle', (/NDIM, sum(offset_nglob_cm)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('accel_crust_mantle', (/NDIM, sum(offset_nglob_cm)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('displ_outer_core', (/NDIM, sum(offset_nglob_oc)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('veloc_outer_core', (/NDIM, sum(offset_nglob_oc)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('accel_outer_core', (/NDIM, sum(offset_nglob_oc)/), 2, CUSTOM_REAL)
+    call h5_create_dataset_gen('displ_outer_core', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
+    call h5_create_dataset_gen('veloc_outer_core', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
+    call h5_create_dataset_gen('accel_outer_core', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
     call h5_create_dataset_gen('displ_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('veloc_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('accel_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
@@ -153,9 +153,9 @@ subroutine save_intermediate_forward_arrays_hdf5()
   call h5_write_dataset_collect_hyperslab('displ_crust_mantle', displ_crust_mantle, (/0, sum(offset_nglob_cm(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('veloc_crust_mantle', veloc_crust_mantle, (/0, sum(offset_nglob_cm(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('accel_crust_mantle', accel_crust_mantle, (/0, sum(offset_nglob_cm(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab('displ_outer_core', displ_outer_core, (/0, sum(offset_nglob_oc(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab('veloc_outer_core', veloc_outer_core, (/0, sum(offset_nglob_oc(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab('accel_outer_core', accel_outer_core, (/0, sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab('displ_outer_core', displ_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab('veloc_outer_core', veloc_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab('accel_outer_core', accel_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('displ_inner_core', displ_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('veloc_inner_core', veloc_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('accel_inner_core', accel_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), if_col)
@@ -244,6 +244,23 @@ subroutine save_forward_arrays_hdf5()
 
   character(len=MAX_STRING_LEN) :: file_name
 
+  ! gather the offset arrays
+  call gather_all_all_singlei(size(displ_crust_mantle,2), offset_nglob_cm, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_inner_core,2),   offset_nglob_ic, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_outer_core,1),   offset_nglob_oc, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(epsilondev_xx_crust_mantle,4), offset_nglob_mc_str_or_att, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(epsilondev_xx_inner_core,4),   offset_nglob_ic_str_or_att, NPROCTOT_VAL)
+  if (ROTATION_VAL) then
+    call gather_all_all_singlei(size(A_array_rotation,4), offset_nspec_oc_rot, NPROCTOT_VAL)
+  endif
+  if (ATTENUATION_VAL) then
+    call gather_all_all_singlei(size(R_xx_crust_mantle,5), offset_nspec_cm_att, NPROCTOT_VAL)
+    call gather_all_all_singlei(size(R_xx_inner_core,5),   offset_nspec_ic_att, NPROCTOT_VAL)
+  endif
+  if (FULL_GRAVITY_VAL) then
+    call gather_all_all_singlei(size(pgrav1), offset_pgrav1, NPROCTOT_VAL)
+  endif
+
   file_name = LOCAL_TMP_PATH(1:len_trim(LOCAL_TMP_PATH))//'/save_forward_arrays.h5'
 
   ! get MPI parameters
@@ -257,12 +274,14 @@ subroutine save_forward_arrays_hdf5()
 
   ! create file and datasets by myrank==0
   if (myrank == 0) then
+    call h5_create_file(file_name)
+
     call h5_create_dataset_gen('displ_crust_mantle', (/NDIM, sum(offset_nglob_cm)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('veloc_crust_mantle', (/NDIM, sum(offset_nglob_cm)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('accel_crust_mantle', (/NDIM, sum(offset_nglob_cm)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('displ_outer_core', (/NDIM, sum(offset_nglob_oc)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('veloc_outer_core', (/NDIM, sum(offset_nglob_oc)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('accel_outer_core', (/NDIM, sum(offset_nglob_oc)/), 2, CUSTOM_REAL)
+    call h5_create_dataset_gen('displ_outer_core', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
+    call h5_create_dataset_gen('veloc_outer_core', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
+    call h5_create_dataset_gen('accel_outer_core', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
     call h5_create_dataset_gen('displ_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('veloc_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('accel_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
@@ -316,9 +335,9 @@ subroutine save_forward_arrays_hdf5()
   call h5_write_dataset_collect_hyperslab('displ_crust_mantle', displ_crust_mantle, (/0, sum(offset_nglob_cm(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('veloc_crust_mantle', veloc_crust_mantle, (/0, sum(offset_nglob_cm(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('accel_crust_mantle', accel_crust_mantle, (/0, sum(offset_nglob_cm(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab('displ_outer_core', displ_outer_core, (/0, sum(offset_nglob_oc(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab('veloc_outer_core', veloc_outer_core, (/0, sum(offset_nglob_oc(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab('accel_outer_core', accel_outer_core, (/0, sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab('displ_outer_core', displ_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab('veloc_outer_core', veloc_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab('accel_outer_core', accel_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('displ_inner_core', displ_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('veloc_inner_core', veloc_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('accel_inner_core', accel_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), if_col)
@@ -407,9 +426,9 @@ subroutine save_forward_arrays_undoatt_hdf5()
   character(len=MAX_STRING_LEN) :: file_name
 
   ! gather the offset arrays
-  call gather_all_all_singlei(size(displ_crust_mantle), offset_nglob_cm, NPROCTOT_VAL)
-  call gather_all_all_singlei(size(displ_inner_core),   offset_nglob_oc, NPROCTOT_VAL)
-  call gather_all_all_singlei(size(displ_outer_core),   offset_nglob_ic, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_crust_mantle,2), offset_nglob_cm, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_inner_core,2),   offset_nglob_ic, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_outer_core,1),   offset_nglob_oc, NPROCTOT_VAL)
   call gather_all_all_singlei(size(epsilondev_xx_crust_mantle,4), offset_nglob_mc_str_or_att, NPROCTOT_VAL)
   call gather_all_all_singlei(size(epsilondev_xx_inner_core,4),   offset_nglob_ic_str_or_att, NPROCTOT_VAL)
   if (ROTATION_VAL) then
@@ -443,9 +462,9 @@ subroutine save_forward_arrays_undoatt_hdf5()
     call h5_create_dataset_gen('displ_crust_mantle', (/NDIM, sum(offset_nglob_cm)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('veloc_crust_mantle', (/NDIM, sum(offset_nglob_cm)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('accel_crust_mantle', (/NDIM, sum(offset_nglob_cm)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('displ_outer_core', (/NDIM, sum(offset_nglob_oc)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('veloc_outer_core', (/NDIM, sum(offset_nglob_oc)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('accel_outer_core', (/NDIM, sum(offset_nglob_oc)/), 2, CUSTOM_REAL)
+    call h5_create_dataset_gen('displ_outer_core', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
+    call h5_create_dataset_gen('veloc_outer_core', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
+    call h5_create_dataset_gen('accel_outer_core', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
     call h5_create_dataset_gen('displ_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('veloc_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('accel_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
@@ -498,9 +517,9 @@ subroutine save_forward_arrays_undoatt_hdf5()
   call h5_write_dataset_collect_hyperslab('displ_crust_mantle', displ_crust_mantle, (/0, sum(offset_nglob_cm(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('veloc_crust_mantle', veloc_crust_mantle, (/0, sum(offset_nglob_cm(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('accel_crust_mantle', accel_crust_mantle, (/0, sum(offset_nglob_cm(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab('displ_outer_core', displ_outer_core, (/0, sum(offset_nglob_oc(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab('veloc_outer_core', veloc_outer_core, (/0, sum(offset_nglob_oc(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab('accel_outer_core', accel_outer_core, (/0, sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab('displ_outer_core', displ_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab('veloc_outer_core', veloc_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab('accel_outer_core', accel_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('displ_inner_core', displ_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('veloc_inner_core', veloc_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_write_dataset_collect_hyperslab('accel_inner_core', accel_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), if_col)
