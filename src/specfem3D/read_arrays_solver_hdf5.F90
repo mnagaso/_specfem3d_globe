@@ -882,6 +882,10 @@ subroutine read_mesh_databases_coupling_hdf5()
     call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_inner_core, (/sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
     ! ibelm_ymax
     call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_inner_core, (/sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+    ! ibelm_top
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_inner_core, (/sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+    ! ibelm_bottom
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_inner_core, (/sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
 
     ! close group
     call h5_close_group()

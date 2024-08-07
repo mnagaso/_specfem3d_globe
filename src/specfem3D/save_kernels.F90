@@ -1753,7 +1753,7 @@
   if (ADIOS_FOR_KERNELS) then
     call write_kernels_oc_adios()
   else if (HDF5_ENABLED) then
-    call write_kernel_oc_hdf5()
+    call write_kernels_oc_hdf5()
   else
     call create_name_database(prname,myrank,IREGION_OUTER_CORE,LOCAL_TMP_PATH)
 
