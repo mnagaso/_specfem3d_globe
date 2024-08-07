@@ -190,9 +190,9 @@
   character(len=MAX_STRING_LEN) :: file_name
 
   ! gather the offset arrays
-  call gather_all_all_singlei(size(displ_crust_mantle), offset_nglob_cm, NPROCTOT_VAL)
-  call gather_all_all_singlei(size(displ_inner_core),   offset_nglob_oc, NPROCTOT_VAL)
-  call gather_all_all_singlei(size(displ_outer_core),   offset_nglob_ic, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_crust_mantle,2), offset_nglob_cm, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_inner_core,2),   offset_nglob_ic, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_outer_core,1),   offset_nglob_oc, NPROCTOT_VAL)
   call gather_all_all_singlei(size(epsilondev_xx_crust_mantle,4), offset_nglob_mc_str_or_att, NPROCTOT_VAL)
   call gather_all_all_singlei(size(epsilondev_xx_inner_core,4),   offset_nglob_ic_str_or_att, NPROCTOT_VAL)
   if (ROTATION_VAL) then
@@ -222,13 +222,13 @@
 
   ! read the arrays
   call h5_read_dataset_collect_hyperslab('displ_crust_mantle', b_displ_crust_mantle, (/0,sum(offset_nglob_cm(0:myrank-1))/), if_col)
-  call h5_read_dataset_collect_hyperslab('displ_outer_core',   b_displ_outer_core,   (/0,sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab('displ_outer_core',   b_displ_outer_core,   (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('displ_inner_core',   b_displ_inner_core,   (/0,sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('veloc_crust_mantle', b_veloc_crust_mantle, (/0,sum(offset_nglob_cm(0:myrank-1))/), if_col)
-  call h5_read_dataset_collect_hyperslab('veloc_outer_core',   b_veloc_outer_core,   (/0,sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab('veloc_outer_core',   b_veloc_outer_core,   (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('veloc_inner_core',   b_veloc_inner_core,   (/0,sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('accel_crust_mantle', b_accel_crust_mantle, (/0,sum(offset_nglob_cm(0:myrank-1))/), if_col)
-  call h5_read_dataset_collect_hyperslab('accel_outer_core',   b_accel_outer_core,   (/0,sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab('accel_outer_core',   b_accel_outer_core,   (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('accel_inner_core',   b_accel_inner_core,   (/0,sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('epsilondev_xx_crust_mantle', b_epsilondev_xx_crust_mantle, (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('epsilondev_yy_crust_mantle', b_epsilondev_yy_crust_mantle, (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), if_col)
@@ -330,9 +330,9 @@
   character(len=MAX_STRING_LEN) :: file_name
 
   ! gather the offset arrays
-  call gather_all_all_singlei(size(displ_crust_mantle), offset_nglob_cm, NPROCTOT_VAL)
-  call gather_all_all_singlei(size(displ_inner_core),   offset_nglob_oc, NPROCTOT_VAL)
-  call gather_all_all_singlei(size(displ_outer_core),   offset_nglob_ic, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_crust_mantle,2), offset_nglob_cm, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_inner_core,2),   offset_nglob_ic, NPROCTOT_VAL)
+  call gather_all_all_singlei(size(displ_outer_core,1),   offset_nglob_oc, NPROCTOT_VAL)
   call gather_all_all_singlei(size(epsilondev_xx_crust_mantle,4), offset_nglob_mc_str_or_att, NPROCTOT_VAL)
   call gather_all_all_singlei(size(epsilondev_xx_inner_core,4),   offset_nglob_ic_str_or_att, NPROCTOT_VAL)
   if (ROTATION_VAL) then
@@ -363,13 +363,13 @@
 
   ! read the arrays
   call h5_read_dataset_collect_hyperslab('displ_crust_mantle', b_displ_crust_mantle, (/0,sum(offset_nglob_cm(0:myrank-1))/), if_col)
-  call h5_read_dataset_collect_hyperslab('displ_outer_core',   b_displ_outer_core,   (/0,sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab('displ_outer_core',   b_displ_outer_core,   (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('displ_inner_core',   b_displ_inner_core,   (/0,sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('veloc_crust_mantle', b_veloc_crust_mantle, (/0,sum(offset_nglob_cm(0:myrank-1))/), if_col)
-  call h5_read_dataset_collect_hyperslab('veloc_outer_core',   b_veloc_outer_core,   (/0,sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab('veloc_outer_core',   b_veloc_outer_core,   (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('veloc_inner_core',   b_veloc_inner_core,   (/0,sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('accel_crust_mantle', b_accel_crust_mantle, (/0,sum(offset_nglob_cm(0:myrank-1))/), if_col)
-  call h5_read_dataset_collect_hyperslab('accel_outer_core',   b_accel_outer_core,   (/0,sum(offset_nglob_oc(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab('accel_outer_core',   b_accel_outer_core,   (/sum(offset_nglob_oc(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('accel_inner_core',   b_accel_inner_core,   (/0,sum(offset_nglob_ic(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('epsilondev_xx_crust_mantle', b_epsilondev_xx_crust_mantle, (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), if_col)
   call h5_read_dataset_collect_hyperslab('epsilondev_yy_crust_mantle', b_epsilondev_yy_crust_mantle, (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), if_col)
