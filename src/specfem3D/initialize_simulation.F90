@@ -569,6 +569,8 @@
       call exit_mpi(myrank,'SAVE_AZIMUTHAL_ANISO_KL_ONLY needs anisotropic kernel flag ANISOTROPIC_KL set to .true.')
     if (SAVE_REGULAR_KL .and. SAVE_AZIMUTHAL_ANISO_KL_ONLY) &
       call exit_mpi(myrank,'SAVE_AZIMUTHAL_ANISO_KL_ONLY not implemented yet for SAVE_REGULAR_KL kernels')
+    if (SAVE_REGULAR_KL .and. (HDF5_ENABLED .or. ADIOS_FOR_KERNELS)) &
+      call exit_mpi(myrank,'SAVE_REGULAR_KL not implemented yet for HDF5 or ADIOS output')
   endif
 
   ! check for GPU runs
