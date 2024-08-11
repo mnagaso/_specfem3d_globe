@@ -138,7 +138,9 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/update_displacement_Newmark.solverstatic.o \
 	$O/write_movie_output.solverstatic.o \
 	$O/write_movie_volume.solverstatic.o \
+	$O/write_movie_volume_hdf5.solverstatic.o \
 	$O/write_movie_surface.solverstatic.o \
+	$O/write_movie_surface_hdf5.solverstatic.o \
 	$O/write_output_ASCII.solverstatic.o \
 	$O/write_output_SAC.solverstatic.o \
 	$O/write_seismograms.solverstatic.o \
@@ -353,6 +355,17 @@ ifeq ($(PETSC),yes)
 	specfem3D_MODULES += $(FC_MODDIR)/siem_solver_petsc.$(FC_MODEXT)
 endif
 
+
+##
+## HDF5
+##
+
+ifeq ($(HDF5),yes)
+specfem3D_MODULES += \
+	$(FC_MODDIR)/specfem_par_movie_hdf5.$(FC_MODEXT) \
+	$(EMPTY_MACRO)
+endif
+
 #######################################
 
 ####
@@ -423,6 +436,7 @@ $O/SIEM_solver_mpi.solverstatic.o: $O/SIEM_math_library.shared.o
 $O/SIEM_solver_petsc.solverstatic.o: $O/SIEM_math_library.shared.o
 $O/SIEM_compute_seismograms.solverstatic.o: $O/SIEM_math_library.shared.o
 
+
 ###
 ### specfem3D - optimized flags and dependence on values from mesher here
 ###
@@ -483,8 +497,8 @@ $O/%.checknetcdf.o: $S/%.f90 $O/shared_par.shared_module.o $O/specfem3D_par.solv
 ###
 ### HDF5
 ###
-$O/%.spec_hdf5_module.o: $S/%.F90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
-	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<
-
-$O/%.spec_hdf5_module.o: $S/%.f90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
-	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<
+#$O/%.spec_hdf5_module.o: $S/%.F90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
+#	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<
+#
+#$O/%.spec_hdf5_module.o: $S/%.f90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
+#	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<

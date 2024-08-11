@@ -1521,4 +1521,59 @@ end module my_libxsmm
 
 #endif
 
+!=====================================================================
 
+#ifdef USE_HDF5
+
+  module specfem_par_movie_hdf5
+
+  use constants_solver, only: NPROCTOT_VAL,MAX_STRING_LEN,CUSTOM_REAL
+  use manager_hdf5
+
+
+  logical :: if_col = .true.
+  integer :: info, comm
+  character(len=MAX_STRING_LEN) :: file_name, group_name
+
+  ! surface movie
+  integer :: npoints_surf_mov_all_proc
+  integer, dimension(:), allocatable :: offset_poin
+
+  ! volume movie
+
+
+  ! xdmf
+  integer :: xdmf_surf = 30000
+  integer :: xdmf_vol  = 30001
+  integer :: surf_xdmf_pos = 0
+  integer :: vol_xdmf_pos = 0
+
+contains
+
+  !-------------------------------------------
+
+  function r2c(k) result(str)
+
+  ! "Convert an real to string."
+
+  implicit none
+  real(kind=CUSTOM_REAL), intent(in) :: k
+  character(len=20) str
+  write (str, *) k
+  str = adjustl(str)
+  end function r2c
+
+  !function i2c(k) result(str)
+  !! "Convert an integer to string."
+  !  implicit none
+  !  integer, intent(in) :: k
+  !  character(len=20) str
+  !  write (str, "(i20)") k
+  !  str = adjustl(str)
+  !end function i2c
+
+!
+
+  end module specfem_par_movie_hdf5
+
+#endif
