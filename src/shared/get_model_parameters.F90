@@ -350,6 +350,11 @@
     HONOR_1D_SPHERICAL_MOHO = .true.
     REFERENCE_1D_MODEL = REFERENCE_MODEL_CCREM
 
+  case ('1d_berkeley')
+    REFERENCE_1D_MODEL = REFERENCE_MODEL_SEMUCB
+    TRANSVERSE_ISOTROPY = .true.
+    HONOR_1D_SPHERICAL_MOHO = .true.
+
   ! Mars 1D models
   case ('1d_sohl')
     ! Mars model A
