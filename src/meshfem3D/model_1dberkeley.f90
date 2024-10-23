@@ -388,7 +388,7 @@ end module model_1dberkeley_par
     read(FID,*)   !! skip the header
   enddo
   do i = 1, num_lines
-    read(FID,*) radius(i), density(i), vpv(i), vsv(i), qkappa(i),qmu(i), vph(i),vsh(i),eta(i)  !Read the data
+    read(FID,*) radius(i), density(i), vpv(i), vsv(i), qkappa(i), qmu(i), vph(i), vsh(i), eta(i)  !Read the data
   enddo
   close(FID)
 
@@ -501,7 +501,7 @@ end module model_1dberkeley_par
     read(FID,*)   !! skip the header
   enddo
   do i = 1, num_lines
-    read(FID,*) radius(i), density(i), vpv(i), vsv(i), qkappa(i),qmu(i), vph(i),vsh(i),eta(i)  !Read the data
+    read(FID,*) radius(i), density(i), vpv(i), vsv(i), qkappa(i), qmu(i), vph(i), vsh(i), eta(i)  !Read the data
   enddo
   close(FID)
 

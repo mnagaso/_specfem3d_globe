@@ -120,6 +120,8 @@ contains
 
   double precision function get_etopo5_filtre(xlat,xlon,ibathy_topo)
 
+  use constants, only: USE_OLD_VERSION_FORMAT
+
   implicit none
   double precision,intent(in):: xlat,xlon  ! location latitude/longitude (in degree)
   integer, dimension(NX_BATHY_BERKELEY,NY_BATHY_BERKELEY),intent(in) :: ibathy_topo
@@ -147,6 +149,12 @@ contains
   ! or
   ! in degrees
   value = gauss_filtre(ibathy_topo,theta,phi,drfiltre)
+
+  ! old version uses integer for elevation values from gauss_filtre() routine
+  if (USE_OLD_VERSION_FORMAT) then
+    ! convert elevation to integer value before returning as a real/double number
+    value = real(int(value))
+  endif
 
   ! return value
   get_etopo5_filtre = dble(value)

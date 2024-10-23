@@ -949,7 +949,7 @@
 
   subroutine get_minimum_period_estimate()
 
-  use constants, only: NGLLX,PI,NPTS_PER_WAVELENGTH,REFERENCE_MODEL_CASE65TAY
+  use constants, only: NGLLX,PI,NPTS_PER_WAVELENGTH,REFERENCE_MODEL_CASE65TAY,USE_OLD_VERSION_FORMAT
 
   use shared_parameters, only: T_min_period,estimated_min_wavelength, &
     ANGULAR_WIDTH_XI_IN_DEGREES,ANGULAR_WIDTH_ETA_IN_DEGREES, &
@@ -1062,6 +1062,10 @@
   ! example Earth: radius 6371 km -> 2 * PI * R / 360 ~ 111.19 km
   deg2km = R_PLANET / 1000.d0 * 2.d0 * PI / 360.d0
 
+  ! for compatibility w/ older versions (7.0, 8.0,..)
+  ! (fixed value taken from old version auto_attenuation_periods())
+  if (USE_OLD_VERSION_FORMAT) deg2km = 111.00d0
+
   ! computes Min Period
   !
   ! width of element in km = (Angular width in degrees / NEX_MAX) * degrees to km
@@ -1074,7 +1078,7 @@
   tmp = tmp * dble(NPTS_PER_WAVELENGTH-1)
 
   ! minimum period resolved = (minimum wavelength) / V_min
-  tmp = tmp/S_VELOCITY_MIN
+  tmp = tmp / S_VELOCITY_MIN
 
   ! estimated minimum period resolved
   T_min_period = tmp
