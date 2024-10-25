@@ -30,7 +30,7 @@
 ! creates a spline for the gravity profile in PREM
 ! radius and density are non-dimensional
 
-  use constants, only: NR_DENSITY,myrank
+  use constants, only: NR_DENSITY,myrank,USE_OLD_VERSION_FORMAT
   use shared_parameters, only: PLANET_TYPE,IPLANET_EARTH,IPLANET_MARS,IPLANET_MOON,R_PLANET,R_PLANET_KM
 
   ! reference models
@@ -99,7 +99,12 @@
     R771 = PREM_R771
     RTOPDDOUBLEPRIME = PREM_RTOPDDOUBLEPRIME
     RCMB = PREM_RCMB
-    RICB = PREM_RICB
+    ! version compatibility
+    if (USE_OLD_VERSION_FORMAT) then
+      RICB = PREM_RICB_OLD
+    else
+      RICB = PREM_RICB
+    endif
 
   case (IPLANET_MARS)
     ! Mars

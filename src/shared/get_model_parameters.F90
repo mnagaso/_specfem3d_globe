@@ -1234,7 +1234,11 @@
     R771 = PREM_R771
     RTOPDDOUBLEPRIME = PREM_RTOPDDOUBLEPRIME
     RCMB = PREM_RCMB
-    RICB = PREM_RICB
+    if (USE_OLD_VERSION_FORMAT) then
+      RICB = PREM_RICB_OLD
+    else
+      RICB = PREM_RICB
+    endif
 
     ! non-dimensionalizes densities
     ! density ocean

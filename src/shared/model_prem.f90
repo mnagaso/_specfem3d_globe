@@ -74,7 +74,7 @@
   double precision, parameter :: PREM_RCMB = 3480000.d0             !   2891 km depth
   ! note: SPECFEM versions up to 8.0 (Aug, 2021) used an inner core radius of 1221 km;
   !       based on Table 1 in Dziewonski&Anderson's PREM paper, the inner core radius is at 1221.5 km
-  !double precision, parameter :: PREM_RICB = 1221000.d0            ! old versions
+  double precision, parameter :: PREM_RICB_OLD = 1221000.d0            ! old versions
   double precision, parameter :: PREM_RICB = 1221500.d0
 
   ! PREM2 additional radii for modifications
@@ -114,6 +114,7 @@
 
   ! local parameters
   double precision :: r,scaleval
+  double precision :: RICB
 
 ! compute real physical radius in meters
   r = x * R_PLANET
@@ -123,11 +124,18 @@
 
 ! note: using stop statements, not exit_mpi() calls to avoid the need for MPI libraries when linking xcreate_header_file
 
- if (check_doubling_flag) then
+  ! version compatibility
+  if (USE_OLD_VERSION_FORMAT) then
+    RICB = PREM_RICB_OLD
+  else
+    RICB = PREM_RICB
+  endif
+
+  if (check_doubling_flag) then
     !
     !--- inner core
     !
-    if (r >= 0.d0 .and. r < PREM_RICB) then
+    if (r >= 0.d0 .and. r < RICB) then
       if (idoubling /= IFLAG_INNER_CORE_NORMAL .and. &
          idoubling /= IFLAG_MIDDLE_CENTRAL_CUBE .and. &
          idoubling /= IFLAG_BOTTOM_CENTRAL_CUBE .and. &
@@ -137,7 +145,7 @@
     !
     !--- outer core
     !
-    else if (r > PREM_RICB .and. r < PREM_RCMB) then
+    else if (r > RICB .and. r < PREM_RCMB) then
       if (idoubling /= IFLAG_OUTER_CORE_NORMAL) &
         stop 'wrong doubling flag for outer core point in model_prem_iso()'
     !
@@ -171,7 +179,7 @@
 !
 !--- inner core
 !
-  if (r >= 0.d0 .and. r <= PREM_RICB) then
+  if (r >= 0.d0 .and. r <= RICB) then
     drhodr = -2.0d0*8.8381d0*x
     rho = 13.0885d0 - 8.8381d0*x*x
     if (REFERENCE_1D_MODEL == REFERENCE_MODEL_PREM2) then
@@ -193,7 +201,7 @@
 !
 !--- outer core
 !
-  else if (r > PREM_RICB .and. r <= PREM_RCMB) then
+  else if (r > RICB .and. r <= PREM_RCMB) then
     drhodr = -1.2638d0 - 2.0d0*3.6426d0*x - 3.0d0*5.5281d0*x*x
     rho = 12.5815d0 - 1.2638d0*x - 3.6426d0*x*x - 5.5281d0*x*x*x
     if (REFERENCE_1D_MODEL == REFERENCE_MODEL_PREM2) then
@@ -394,6 +402,7 @@
   ! local parameters
   double precision :: r
   double precision :: scaleval
+  double precision :: RICB
 
 ! compute real physical radius in meters
   r = x * R_PLANET
@@ -401,11 +410,18 @@
 ! check flags to make sure we correctly honor the discontinuities
 ! we use strict inequalities since r has been slightly changed in mesher
 
+  ! version compatibility
+  if (USE_OLD_VERSION_FORMAT) then
+    RICB = PREM_RICB_OLD
+  else
+    RICB = PREM_RICB
+  endif
+
   if (check_doubling_flag) then
     !
     !--- inner core
     !
-    if (r >= 0.d0 .and. r < PREM_RICB) then
+    if (r >= 0.d0 .and. r < RICB) then
       if (idoubling /= IFLAG_INNER_CORE_NORMAL .and. &
          idoubling /= IFLAG_MIDDLE_CENTRAL_CUBE .and. &
          idoubling /= IFLAG_BOTTOM_CENTRAL_CUBE .and. &
@@ -415,7 +431,7 @@
     !
     !--- outer core
     !
-    else if (r > PREM_RICB .and. r < PREM_RCMB) then
+    else if (r > RICB .and. r < PREM_RCMB) then
       if (idoubling /= IFLAG_OUTER_CORE_NORMAL) &
         stop 'wrong doubling flag for outer core point in model_prem_aniso()'
     !
@@ -453,7 +469,7 @@
 !
 !--- inner core
 !
-  if (r >= 0.d0 .and. r <= PREM_RICB) then
+  if (r >= 0.d0 .and. r <= RICB) then
     rho = 13.0885d0 - 8.8381d0*x*x
     if (REFERENCE_1D_MODEL == REFERENCE_MODEL_PREM2) then
       ! PREM2
@@ -476,7 +492,7 @@
 !
 !--- outer core
 !
-  else if (r > PREM_RICB .and. r <= PREM_RCMB) then
+  else if (r > RICB .and. r <= PREM_RCMB) then
     rho = 12.5815d0 - 1.2638d0*x - 3.6426d0*x*x - 5.5281d0*x*x*x
     if (REFERENCE_1D_MODEL == REFERENCE_MODEL_PREM2) then
       ! PREM2
@@ -853,14 +869,22 @@
 
   ! local parameters
   double precision :: r
+  double precision :: RICB
 
   ! compute real physical radius in meters
   r = x * R_PLANET
 
+  ! version compatibility
+  if (USE_OLD_VERSION_FORMAT) then
+    RICB = PREM_RICB_OLD
+  else
+    RICB = PREM_RICB
+  endif
+
   ! calculates density according to radius
-  if (r <= PREM_RICB) then
+  if (r <= RICB) then
     rho = 13.0885d0 - 8.8381d0*x*x
-  else if (r > PREM_RICB .and. r <= PREM_RCMB) then
+  else if (r > RICB .and. r <= PREM_RCMB) then
     rho = 12.5815d0 - 1.2638d0*x - 3.6426d0*x*x - 5.5281d0*x*x*x
   else if (r > PREM_RCMB .and. r <= PREM_RTOPDDOUBLEPRIME) then
     rho = 7.9565d0 - 6.4761d0*x + 5.5283d0*x*x - 3.0807d0*x*x*x

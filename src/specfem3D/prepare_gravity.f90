@@ -130,11 +130,15 @@
 
   ! non-dimensionalizes sampling point locations
   do int_radius = 1,NRAD_GRAVITY
-    ! old: assuming R_PLANET_KM = R_EARTH_KM = 6371.d0, ranges from 1/10 * 1/R_PLANET_KM ~ 1.e-5 to 70000/10 * 1/R_PLANET ~ 1.09
-    !      r(int_radius) = dble(int_radius) / (R_PLANET_KM * 10.d0)
-    !
-    ! setting sampling points up to range_max
-    r(int_radius) = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
+    ! sets radius value
+    if (USE_OLD_VERSION_FORMAT) then
+      ! old version increments in 1/10 equals steps of 100 m (see constants.h: NRAD_GRAVITY = 70000)
+      ! old: assuming R_PLANET_KM = R_EARTH_KM = 6371.d0, ranges from 1/10 * 1/R_PLANET_KM ~ 1.e-5 to 70000/10 * 1/R_PLANET ~ 1.09
+      r(int_radius) = dble(int_radius) / (R_PLANET_KM * 10.d0)
+    else
+      ! setting sampling points up to range_max
+      r(int_radius) = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
+    endif
 
     ! r in range [1.4e-5,1.001]
     !
@@ -229,30 +233,39 @@
     ! make sure fluid array is only assigned in outer core between 1222 and 3478 km
     ! lookup table is defined every 100 m
     do int_radius = 1,NRAD_GRAVITY
-      radius_km = r(int_radius) * R_PLANET_KM
+      ! radius in km
+      if (USE_OLD_VERSION_FORMAT) then
+        radius_km = dble(int_radius) / 10.d0
+      else
+        radius_km = r(int_radius) * R_PLANET_KM
+      endif
+
       ! upper limit for fluid core
       if (radius_km > RCMB/1000.d0 - 3.d0) then
         ! gets index for fluid
-        !
-        ! old: based on int_radius = r * R_PLANET/1000 * 10.d0 = (RCMB/1000 - 3)/R_PLANET_KM * R_PLANET/1000 * 10.d0
-        !                                                      = (RCMB/1000 - 3) * 10.d0
-        !index_fluid = nint((RCMB/1000.d0 - 3.d0)*10.d0)
-        !
-        ! new: based on int_radius = r * NRAD_GRAVITY / range_max   (with r being non-dimensionalized between [0,1.001])
-        index_fluid = nint( (RCMB/1000.d0 - 3.d0)/R_PLANET_KM * NRAD_GRAVITY / range_max)
+        if (USE_OLD_VERSION_FORMAT) then
+          ! old: based on int_radius = r * R_PLANET/1000 * 10.d0 = (RCMB/1000 - 3)/R_PLANET_KM * R_PLANET/1000 * 10.d0
+          !                                                      = (RCMB/1000 - 3) * 10.d0
+          index_fluid = nint((RCMB/1000.d0 - 3.d0)*10.d0)
+        else
+          ! new: based on int_radius = r * NRAD_GRAVITY / range_max   (with r being non-dimensionalized between [0,1.001])
+          index_fluid = nint( (RCMB/1000.d0 - 3.d0)/R_PLANET_KM * NRAD_GRAVITY / range_max)
+        endif
         ! stays with fluid properties
         minus_rho_g_over_kappa_fluid(int_radius) = minus_rho_g_over_kappa_fluid(index_fluid)
       endif
+
       ! lower limit for fluid core
       if (radius_km < RICB/1000.d0 + 3.d0) then
         ! gets index for fluid
-        !
-        ! old: based on int_radius = r * R_PLANET/1000 * 10.d0 = (RICB/1000 + 3)/R_PLANET_KM * R_PLANET/1000 * 10.d0
-        !                                                      = (RICB/1000 + 3) * 10.d0
-        !index_fluid = nint((RICB/1000.d0 + 3.d0)*10.d0)
-        !
-        ! new: based on int_radius = r * NRAD_GRAVITY / range_max   (with r being non-dimensionalized between [0,1.001])
-        index_fluid = nint( (RICB/1000.d0 + 3.d0)/R_PLANET_KM * NRAD_GRAVITY / range_max)
+        if (USE_OLD_VERSION_FORMAT) then
+          ! old: based on int_radius = r * R_PLANET/1000 * 10.d0 = (RICB/1000 + 3)/R_PLANET_KM * R_PLANET/1000 * 10.d0
+          !                                                      = (RICB/1000 + 3) * 10.d0
+          index_fluid = nint((RICB/1000.d0 + 3.d0)*10.d0)
+        else
+          ! new: based on int_radius = r * NRAD_GRAVITY / range_max   (with r being non-dimensionalized between [0,1.001])
+          index_fluid = nint( (RICB/1000.d0 + 3.d0)/R_PLANET_KM * NRAD_GRAVITY / range_max)
+        endif
         ! stays with fluid properties
         minus_rho_g_over_kappa_fluid(int_radius) = minus_rho_g_over_kappa_fluid(index_fluid)
       endif
@@ -286,13 +299,19 @@
         call revert_ellipticity_rtheta(r_table,theta,nspl_ellip,rspl_ellip,ellipicity_spline,ellipicity_spline2)
 
       ! integrated and multiply by rho / Kappa
-      ! old: int_radius = nint(10.d0 * radius * R_PLANET_KM)
-      !      based on radius = dble(int_radius) / (R_PLANET_KM * 10.d0)
-      ! new: radius = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
-      int_radius = nint( r_table / range_max * dble(NRAD_GRAVITY) )
+      if (USE_OLD_VERSION_FORMAT) then
+        ! old: int_radius = nint(10.d0 * radius * R_PLANET_KM)
+        !      based on radius = dble(int_radius) / (R_PLANET_KM * 10.d0)
+        int_radius = nint(radius * R_PLANET_KM * 10.d0)
+      else
+        ! new: radius = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
+        int_radius = nint( r_table / range_max * dble(NRAD_GRAVITY) )
+      endif
+
       ! limits range
       if (int_radius < 1) int_radius = 1
       if (int_radius > NRAD_GRAVITY) int_radius = NRAD_GRAVITY
+
       ! debug
       if (DEBUG) then
         if (myrank == 0) print *,'debug: prepare gravity radius = ',radius,r_table,'r = ',r(int_radius),int_radius
@@ -396,13 +415,19 @@
         call revert_ellipticity_rtheta(r_table,theta,nspl_ellip,rspl_ellip,ellipicity_spline,ellipicity_spline2)
 
       ! radius index
-      ! old: int_radius = nint(10.d0 * radius * R_PLANET_KM)
-      !      based on radius = dble(int_radius) / (R_PLANET_KM * 10.d0)
-      ! new: radius = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
-      int_radius = nint( r_table / range_max * dble(NRAD_GRAVITY) )
+      if (USE_OLD_VERSION_FORMAT) then
+        ! old: int_radius = nint(10.d0 * radius * R_PLANET_KM)
+        !      based on radius = dble(int_radius) / (R_PLANET_KM * 10.d0)
+        int_radius = nint(radius * R_PLANET_KM * 10.d0)
+      else
+        ! new: radius = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
+        int_radius = nint( r_table / range_max * dble(NRAD_GRAVITY) )
+      endif
+
       ! limits range
       if (int_radius < 1) int_radius = 1
       if (int_radius > NRAD_GRAVITY) int_radius = NRAD_GRAVITY
+
       ! debug
       if (DEBUG) then
         if (myrank == 0) print *,'debug: prepare no gravity radius = ',radius,r_table,'r = ',r(int_radius),int_radius
@@ -502,10 +527,15 @@
         call revert_ellipticity_rtheta(r_table,theta,nspl_ellip,rspl_ellip,ellipicity_spline,ellipicity_spline2)
 
       ! for efficiency replace with lookup table every 100 m in radial direction
-      ! old: int_radius = nint(10.d0 * radius * R_PLANET_KM)
-      !      based on radius = dble(int_radius) / (R_PLANET_KM * 10.d0)
-      ! new: radius = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
-      int_radius = nint( r_table / range_max * dble(NRAD_GRAVITY) )
+      if (USE_OLD_VERSION_FORMAT) then
+        ! old: int_radius = nint(10.d0 * radius * R_PLANET_KM)
+        !      based on radius = dble(int_radius) / (R_PLANET_KM * 10.d0)
+        int_radius = nint(radius * R_PLANET_KM * 10.d0)
+      else
+        ! new: radius = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
+        int_radius = nint( r_table / range_max * dble(NRAD_GRAVITY) )
+      endif
+
       ! limits range
       if (int_radius < 1) int_radius = 1
       if (int_radius > NRAD_GRAVITY) int_radius = NRAD_GRAVITY
@@ -644,10 +674,15 @@
 
       ! for efficiency replace with lookup table every 100 m in radial direction
       ! make sure we never use zero for point exactly at the center of the Earth
-      ! old: int_radius = max(1,nint(10.d0 * radius * R_EARTH_KM))
-      !      based on radius = dble(int_radius) / (R_PLANET_KM * 10.d0)
-      ! new: radius = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
-      int_radius = nint( r_table / range_max * dble(NRAD_GRAVITY) )
+      if (USE_OLD_VERSION_FORMAT) then
+        ! old: int_radius = max(1,nint(10.d0 * radius * R_EARTH_KM))
+        !      based on radius = dble(int_radius) / (R_PLANET_KM * 10.d0)
+        int_radius = nint(radius * R_EARTH_KM * 10.d0)
+      else
+        ! new: radius = dble(int_radius) / dble(NRAD_GRAVITY) * range_max
+        int_radius = nint( r_table / range_max * dble(NRAD_GRAVITY) )
+      endif
+
       ! limits range
       if (int_radius < 1) int_radius = 1
       if (int_radius > NRAD_GRAVITY) int_radius = NRAD_GRAVITY
