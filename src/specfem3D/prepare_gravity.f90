@@ -230,6 +230,20 @@
       endif
     enddo
 
+    ! debug - file output
+    if (.false.) then
+      open(21,file='tmp_grav.dat',status='unknown')
+      write(21,*) "# int_radius  # radius  # rho  # minus_g  # minus_dg"
+      do int_radius = 1,NRAD_GRAVITY
+        radius = r(int_radius)
+        rho = density_table(int_radius)
+        minus_g = minus_gravity_table(int_radius)
+        minus_dg = minus_deriv_gravity_table(int_radius)
+        write(21,*) int_radius,radius,rho,minus_g,minus_dg
+      enddo
+      close(21)
+    endif
+
     ! make sure fluid array is only assigned in outer core between 1222 and 3478 km
     ! lookup table is defined every 100 m
     do int_radius = 1,NRAD_GRAVITY
@@ -320,9 +334,9 @@
       fac = minus_rho_g_over_kappa_fluid(int_radius)
 
       ! gravitational acceleration (integrated and multiply by rho / Kappa) in Cartesian coordinates
-      gxl = dsin(theta) * dcos(phi) * fac
-      gyl = dsin(theta) * dsin(phi) * fac
-      gzl = dcos(theta) * fac
+      gxl = (dsin(theta) * dcos(phi)) * fac
+      gyl = (dsin(theta) * dsin(phi)) * fac
+      gzl = (dcos(theta)) * fac
       gravity_pre_store_outer_core(1,iglob) = real(gxl,kind=CUSTOM_REAL)
       gravity_pre_store_outer_core(2,iglob) = real(gyl,kind=CUSTOM_REAL)
       gravity_pre_store_outer_core(3,iglob) = real(gzl,kind=CUSTOM_REAL)
@@ -437,9 +451,9 @@
       fac = d_ln_density_dr_table(int_radius)
 
       ! gradient of d ln(rho)/dr in Cartesian coordinates
-      gxl = dsin(theta) * dcos(phi) * fac
-      gyl = dsin(theta) * dsin(phi) * fac
-      gzl = dcos(theta) * fac
+      gxl = (dsin(theta) * dcos(phi)) * fac
+      gyl = (dsin(theta) * dsin(phi)) * fac
+      gzl = (dcos(theta)) * fac
       gravity_pre_store_outer_core(1,iglob) = real(gxl,kind=CUSTOM_REAL)
       gravity_pre_store_outer_core(2,iglob) = real(gyl,kind=CUSTOM_REAL)
       gravity_pre_store_outer_core(3,iglob) = real(gzl,kind=CUSTOM_REAL)
@@ -546,9 +560,9 @@
 
       ! Cartesian components of the gravitational acceleration
       ! multiplied by common factor rho
-      gxl = minus_g * sin_theta * cos_phi * rho
-      gyl = minus_g * sin_theta * sin_phi * rho
-      gzl = minus_g * cos_theta * rho
+      gxl = (minus_g * sin_theta * cos_phi) * rho
+      gyl = (minus_g * sin_theta * sin_phi) * rho
+      gzl = (minus_g * cos_theta) * rho
       gravity_pre_store_crust_mantle(1,iglob) = real(gxl,kind=CUSTOM_REAL)
       gravity_pre_store_crust_mantle(2,iglob) = real(gyl,kind=CUSTOM_REAL)
       gravity_pre_store_crust_mantle(3,iglob) = real(gzl,kind=CUSTOM_REAL)
@@ -693,9 +707,9 @@
 
       ! Cartesian components of the gravitational acceleration
       ! multiplied by common factor rho
-      gxl = minus_g * sin_theta * cos_phi * rho
-      gyl = minus_g * sin_theta * sin_phi * rho
-      gzl = minus_g * cos_theta * rho
+      gxl = (minus_g * sin_theta * cos_phi) * rho
+      gyl = (minus_g * sin_theta * sin_phi) * rho
+      gzl = (minus_g * cos_theta) * rho
 
       gravity_pre_store_inner_core(1,iglob) = real(gxl,kind=CUSTOM_REAL)
       gravity_pre_store_inner_core(2,iglob) = real(gyl,kind=CUSTOM_REAL)
