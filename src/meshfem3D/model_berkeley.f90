@@ -52,7 +52,7 @@ module model_berkeley_par
   integer, dimension(:), allocatable :: level,level2
 
   integer, parameter :: MAXPAR = 4
-  integer, dimension(MAXPAR) :: nknotA1,nknotA2
+  integer, dimension(MAXPAR) :: nknotA1 = 0,nknotA2 = 0
 
   character(1), dimension(:), allocatable :: parblock
   integer :: npar,ndisc,surface,NBPARAM
@@ -61,6 +61,10 @@ module model_berkeley_par
 
   ! radius of moho discontinuity from reference 1D model (in km)
   double precision :: moho1D_radius = -1.0
+
+  ! work arrays
+  double precision, dimension(:), allocatable :: work_dh
+  integer, dimension(:), allocatable :: work_kindex
 
 end module model_berkeley_par
 
@@ -73,16 +77,23 @@ end module model_berkeley_par
 ! standard routine to setup model
 
   use model_berkeley_par
-  use constants, only: A3d_folder,myrank,EARTH_R_KM
+  use constants, only: A3d_folder,myrank,IMAIN,EARTH_R_KM
 
   implicit none
 
   integer,parameter :: unit1 = 51,unit2 = 52
   integer :: dum2,i,j,k,n,mdim,ier
+  integer :: size_work
   character :: trash
   character(len=100), parameter :: A3d_dat            = trim(A3d_folder) // 'A3d.dat'
   character(len=100), parameter :: hknots_dat         = trim(A3d_folder) // 'hknots.dat'
   character(len=100), parameter :: hknots2_dat        = trim(A3d_folder) // 'hknots2.dat'
+
+  ! user info
+  if (myrank == 0) then
+    write(IMAIN,*) 'broadcast model: SEMUCB Berkeley'
+    call flush_IMAIN()
+  endif
 
   ! determine moho radius from 1D reference model
   if (myrank == 0) then
@@ -113,12 +124,18 @@ end module model_berkeley_par
     endif
 
     read(unit1,*) nknotA2(1)
-    if (allocated(oknot).or.allocated(aknot).or.allocated(level)) then
-      print *,'A3d already initiated'
+
+    if (allocated(oknot) .or. allocated(aknot) .or. allocated(level)) then
+      print *,'[model_berkeley_broadcast] A3d already initiated'
       return
     endif
 
-    allocate(oknot(nknotA2(1)),aknot(nknotA2(1)),level(nknotA2(1)))
+    allocate(oknot(nknotA2(1)),aknot(nknotA2(1)),level(nknotA2(1)),stat=ier)
+    if (ier /= 0) stop 'Error allocating oknot,.. arrays'
+    oknot(:) = 0.d0
+    aknot(:) = 0.d0
+    level(:) = 0
+
     do i = 1,nknotA2(1)
       read(unit1,*) oknot(i),aknot(i),level(i)
     enddo
@@ -134,12 +151,18 @@ end module model_berkeley_par
       endif
 
       read(unit1,*) nknotA2(2)
-      if (allocated(oknot2).or.allocated(aknot2).or.allocated(level2)) then
-        print *,'A3d already initiated'
+
+      if (allocated(oknot2) .or. allocated(aknot2) .or. allocated(level2)) then
+        print *,'[model_berkeley_broadcast] A3d hnots2 already initiated'
         return
       endif
 
-      allocate(oknot2(nknotA2(2)),aknot2(nknotA2(2)),level2(nknotA2(2)))
+      allocate(oknot2(nknotA2(2)),aknot2(nknotA2(2)),level2(nknotA2(2)),stat=ier)
+      if (ier /= 0) stop 'Error allocating oknot2,.. arrays'
+      oknot2(:) = 0.d0
+      aknot2(:) = 0.d0
+      level2(:) = 0
+
       do i = 1,nknotA2(2)
         read(unit1,*) oknot2(i),aknot2(i),level2(i)
       enddo
@@ -160,58 +183,78 @@ end module model_berkeley_par
     NBPARAM = npar
     if (npar > MAXPAR)   stop 'npar greater than MAXPAR'
 
-    allocate(parblock(npar))
+    allocate(parblock(npar),stat=ier)
+    if (ier /= 0) stop 'Error allocating parblock array'
+    parblock(:) = ''
+
     do i = 1,npar
       read(unit2,*) dum2,nknotA1(i),parblock(i)
-      if (i > 1.and.nknotA1(i) /= nknotA1(1)) then
+
+      ! same number of splines for all parameters
+      if (i > 1 .and. nknotA1(i) /= nknotA1(1)) then
         stop 'Inconsistent A1 splines between parameters'
       endif
+
       if (i > 2) then
         nknotA2(i) = dum2
-        if (nknotA2(i) /= nknotA2(2))   stop 'Param 3 and 4 need the same A2 splines than param 2'
+        if (nknotA2(i) /= nknotA2(2)) stop 'Param 3 and 4 need the same A2 splines than param 2'
       else if (dum2 /= nknotA2(i)) then
         stop 'Inconsistent hknots.dat and A3d.dat'
       endif
-      if (i == 2.and.nknotA2(i) /= nknotA2(1)) then
+      if (i == 2 .and. nknotA2(i) /= nknotA2(1)) then
         unconformal = .true.
-        if (.not.hknots2_exist)   stop 'unconformal grid requires hknots2.dat'
+        if (.not. hknots2_exist) stop 'unconformal grid requires hknots2.dat'
       endif
     enddo
 
     read(unit2,*) ndisc
+
     surface = 0
     if (ndisc > 0) then
       surface = ndisc
-      if (unconformal)   print *,'discontinuities assumed same grid as first par'
+      if (unconformal) print *,'discontinuities assumed same grid as first par'
       do i = 1,surface
         read(unit2,*) dum2, trash
       enddo
     endif
 
-    allocate(kntrad(nknotA1(1)))
+    allocate(kntrad(nknotA1(1)),stat=ier)
+    if (ier /= 0) stop 'Error allocating kntrad array'
+    kntrad(:) = 0.d0
+
     read(unit2,*) (kntrad(i),i=1,nknotA1(1))
+
     mdim = 0
     do i = 1,npar
-      mdim = mdim+nknotA1(i)*nknotA2(i)
+      mdim = mdim + nknotA1(i) * nknotA2(i)
     enddo
-    mdim = mdim+ndisc*nknotA2(1)
+    mdim = mdim + ndisc * nknotA2(1)
 
-    allocate(mdl(mdim))
+    allocate(mdl(mdim),stat=ier)
+    if (ier /= 0) stop 'Error allocating mdl array'
+    mdl(:) = 0.d0
+
     n = 0
     do i = 1,npar
       do j = 1,nknotA1(i)
         read(unit2,*) (mdl(k+n),k=1,nknotA2(i))
-        n = n+nknotA2(i)
+        n = n + nknotA2(i)
       enddo
     enddo
     do i = 1,ndisc
       read(unit2,*) (mdl(k+n),k=1,nknotA2(1))
-      n = n+nknotA2(1)
+      n = n + nknotA2(1)
     enddo
 
     if (n /= mdim) stop 'init_A3d dimension error'
     close(unit2)
 
+  endif
+
+  ! user info
+  if (myrank == 0) then
+    write(IMAIN,*) '  number of parameters: NBPARAM = ',NBPARAM
+    call flush_IMAIN()
   endif
 
   !
@@ -265,6 +308,13 @@ end module model_berkeley_par
 
   call BCAST_ALL_DP(mdl,mdim)
 
+  ! allocates temporary work arrays
+  size_work = maxval(nknotA2(:))
+  allocate(work_dh(size_work),work_kindex(size_work),stat=ier)
+  if (ier /= 0) stop 'Error allocating work arrays for Berkeley model'
+  work_dh(:) = 0.d0
+  work_kindex(:) = 0
+
   end subroutine model_berkeley_broadcast
 
 
@@ -295,7 +345,7 @@ end module model_berkeley_par
   double precision :: xi,fi,eta,Gc,Gs
 
   integer :: jump,effnknot,i,j,k
-  integer, dimension(:), allocatable :: kindex
+  !integer, dimension(:), allocatable :: kindex
 
   double precision :: lat,lon
   double precision :: del,dr,dv
@@ -306,7 +356,7 @@ end module model_berkeley_par
   double precision, dimension(8), parameter :: adel = (/63.4, 31.7, 15.8, 7.9, 3.95, 1.98, 0.99, 0.495/)
   !adel=(/63.4, 31.7, 15.8, 7.9, 3.95, 1.98, 0.99/)
 
-  double precision, dimension(:), allocatable :: dh
+  !double precision, dimension(:), allocatable :: dh
 
   double precision,external :: getdel
   double precision,external :: spbsp
@@ -357,7 +407,7 @@ end module model_berkeley_par
   ! below use r_ as radius in km
   r_ = r_ * EARTH_R_KM
 
-  ! non-dimensionalizes 1d model values
+  ! re-dimensionalizes 1d model values
   scaleval = EARTH_R * dsqrt(PI*GRAV*EARTH_RHOAV)
 
   rho1d = rho1d * EARTH_RHOAV
@@ -384,36 +434,43 @@ end module model_berkeley_par
   vs = sqrt((CC + (1.d0 - 2.d0 * eta1) * AA + (6.d0 + 4.d0 * eta1) * LL + 5.d0 * NN) / (15.d0 * rho))
 
   eta = eta1
-  xi = NN/LL
-  fi = CC/AA
+  xi = NN / LL
+  fi = CC / AA
+
+  ! point lat/lon in degrees
+  lat = 90.d0 - rad2deg * theta
+  lon = rad2deg * phi
 
   ! Vs perturbation
   if (r_ > kntrad(nknotA1(1)) .or. r_ < kntrad(1)) then
     dv = 0.d0
   else
     jump = 0
-    allocate(dh(nknotA2(1)),kindex(nknotA2(1)))
-    lat = 90.d0 - rad2deg * theta
-    lon = rad2deg * phi
+    !allocate(dh(nknotA2(1)),kindex(nknotA2(1)))
+    work_dh(:) = 0.d0
+    work_kindex(:) = 0
+
     effnknot = 0
     do i = 1,nknotA2(1)
       del = getdel(lat,lon,aknot(i),oknot(i))
 
       if (del <= adel(level(i)) * 2.d0) then
         effnknot = effnknot+1
-        kindex(effnknot) = i
-        dh(effnknot) = spbsp(del,adel(level(i)))
+        work_kindex(effnknot) = i
+        work_dh(effnknot) = spbsp(del,adel(level(i)))
       endif
     enddo
 
     dv = 0.d0
     do i = 1,nknotA1(1)
+      ! spline value
       call fspl(i,nknotA1(1),kntrad,r_,dr)
+
       do j = 1,effnknot
-        dv = dv + dr * dh(j) * mdl(jump+kindex(j) + nknotA2(1) * (i-1))
+        dv = dv + dr * work_dh(j) * mdl(jump + work_kindex(j) + nknotA2(1) * (i-1))
       enddo
     enddo
-    deallocate(dh,kindex)
+    !deallocate(dh,kindex)
   endif
 
   ! Scaling
@@ -422,17 +479,18 @@ end module model_berkeley_par
   rho = rho + 0.33333d0 * dv * rho
 
   ! Perturbation of other parameters
-  if (npar < 2) then   ! no other parameters
-    dv = 0.d0
-  else
+  ! note: default in A3d.dat is npar == 2
+  if (npar > 1) then
     do k = 2,npar
       if (r_ > kntrad(nknotA1(k)) .or. r_ < kntrad(1)) then
         dv = 0.d0
       else
         jump = jump + nknotA1(k-1)*nknotA2(k-1)
-        allocate(dh(nknotA2(k)),kindex(nknotA2(k)))
-        lat = 90.d0 - rad2deg * theta
-        lon = rad2deg * phi
+
+        !allocate(dh(nknotA2(k)),kindex(nknotA2(k)))
+        work_dh(:) = 0.d0
+        work_kindex(:) = 0
+
         effnknot = 0
         do i = 1,nknotA2(k)
           if (unconformal) then
@@ -444,19 +502,21 @@ end module model_berkeley_par
           endif
           if (del <= adel1 * 2.d0) then
             effnknot = effnknot+1
-            kindex(effnknot) = i
-            dh(effnknot) = spbsp(del,adel1)
+            work_kindex(effnknot) = i
+            work_dh(effnknot) = spbsp(del,adel1)
           endif
         enddo
 
         dv = 0.d0
         do i = 1,nknotA1(k)
+          ! spline value
           call fspl(i,nknotA1(k),kntrad,r_,dr)
+
           do j = 1,effnknot
-            dv = dv + dr * dh(j) * mdl(jump + kindex(j) + nknotA2(k) * (i-1))
+            dv = dv + dr * work_dh(j) * mdl(jump + work_kindex(j) + nknotA2(k) * (i-1))
           enddo
         enddo
-        deallocate(dh,kindex)
+        !deallocate(dh,kindex)
       endif
 
       if (k == 2) then
@@ -470,6 +530,9 @@ end module model_berkeley_par
       endif
       ! Here we can add a scaling to get Hc, Hs, Bc and Bs
     enddo
+  else
+    ! no other parameters
+    dv = 0.d0
   endif
 
   ! ============= commented by < FM> on Feb 3, 2020 =====
@@ -494,10 +557,16 @@ end module model_berkeley_par
   ! ===================================================
 
   ! perturbations
-  dvsv = vsv / vsv1d - 1.d0
-  if (vsv1d == 0) dvsv = 0.d0
-  dvsh = vsh / vsh1d - 1.d0
-  if (vsh1d == 0) dvsh = 0.d0
+  if (vsv1d == 0.d0) then
+    dvsv = 0.d0
+  else
+    dvsv = vsv / vsv1d - 1.d0
+  endif
+  if (vsh1d == 0.d0) then
+    dvsh = 0.d0
+  else
+    dvsh = vsh / vsh1d - 1.d0
+  endif
 
   dvpv = vpv / vpv1d - 1.d0
   dvph = vph / vph1d - 1.d0
@@ -516,24 +585,25 @@ end module model_berkeley_par
   implicit none
   double precision,intent(in) :: a0,o0,a,o
   ! local parameters
-  double precision :: q0,sq0,cq0,q,sq,cq,ff,sff,cff,arg
+  double precision :: q0,sq0,cq0,q,sq,cq,ff,cff,arg  ! sff
 
   double precision, parameter :: deg2rad = (4.d0 * datan(1.d0)) / 180.d0
   double precision, parameter :: rad2deg = 180.d0 / (4.d0 * datan(1.d0))
 
-  q0 = (90.d0-a0) * deg2rad
+  q0 = (90.d0 - a0) * deg2rad
   sq0 = sin(q0)
   cq0 = cos(q0)
 
-  q = (90.d0-a) * deg2rad
+  q = (90.d0 - a) * deg2rad
   sq = sin(q)
   cq = cos(q)
 
-  ff = (o-o0) * deg2rad
-  sff = sin(ff)
+  ff = (o - o0) * deg2rad
+  !sff = sin(ff)  ! not used
   cff = cos(ff)
 
   arg = cq * cq0 + sq * sq0 * cff
+
   if (arg > 1.d0) arg = 1.d0
   if (arg < -1.d0) arg = -1.d0
 
@@ -549,12 +619,22 @@ end module model_berkeley_par
 
   implicit none
   double precision,intent(in) :: hdel,ahdel
+  ! local parameters
+  double precision :: ratio,two_minus_ratio
+
+  ! factor
+  ratio = hdel / ahdel
 
   if (hdel < ahdel) then
-    spbsp = 0.75d0 * (hdel/ahdel) * (hdel/ahdel) * (hdel/ahdel) - 1.5d0 * (hdel/ahdel) * (hdel/ahdel) + 1.d0
+    spbsp = (0.75d0 * ratio - 1.5d0) * ratio * ratio + 1.d0
   else if (hdel <= ahdel * 2.d0) then
-    spbsp = 0.25d0 * (2.d0 - hdel/ahdel) * (2.d0 - hdel/ahdel) * (2.d0 - hdel/ahdel)
-    if (spbsp < 0.d0) spbsp = 0.d0
+    two_minus_ratio = 2.d0 - ratio
+    if (two_minus_ratio < 0.d0) then
+      spbsp = 0.d0
+    else
+      spbsp = 0.25d0 * two_minus_ratio * two_minus_ratio * two_minus_ratio
+    endif
+    !if (spbsp < 0.d0) spbsp = 0.d0    ! spbsp is negative if two_minus_ratio is negative
   else
     spbsp = 0.d0
   endif

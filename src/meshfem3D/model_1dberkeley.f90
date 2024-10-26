@@ -243,17 +243,26 @@ end module model_1dberkeley_par
   enddo
 
   ! make sure we stay in the right region
-  if (mimic_native_specfem .and. iregion_code == IREGION_INNER_CORE .and. i > NR_inner_core_berk) i = NR_inner_core_berk
+  if (mimic_native_specfem) then
+    ! inner core bounds
+    if (iregion_code == IREGION_INNER_CORE) then
+      if (i > NR_inner_core_berk) i = NR_inner_core_berk
+    endif
+    ! outer core bounds
+    if (iregion_code == IREGION_OUTER_CORE) then
+      if (i < NR_inner_core_berk+2) i = NR_inner_core_berk+2
+      if (i > NR_outer_core_berk) i = NR_outer_core_berk
+    endif
+    ! crust/mantle bounds
+    if (iregion_code == IREGION_CRUST_MANTLE) then
+      if (i < NR_outer_core_berk+2) i = NR_outer_core_berk+2
+    endif
 
-  if (mimic_native_specfem .and. iregion_code == IREGION_OUTER_CORE .and. i < NR_inner_core_berk+2) i = NR_inner_core_berk+2
-  if (mimic_native_specfem .and. iregion_code == IREGION_OUTER_CORE .and. i > NR_outer_core_berk) i = NR_outer_core_berk
-
-  if (mimic_native_specfem .and. iregion_code == IREGION_CRUST_MANTLE .and. i < NR_outer_core_berk+2) i = NR_outer_core_berk+2
-
-  ! if crustal model is used, mantle gets expanded up to surface
-  ! for any depth less than 24.4 km, values from mantle below moho are taken
-  if (mimic_native_specfem .and. CRUSTAL .and. i > modemohoberk) then
-    i = modemohoberk ! Warning : may need to be changed if file is modified !
+    ! if crustal model is used, mantle gets expanded up to surface
+    ! for any depth less than 24.4 km, values from mantle below moho are taken
+    if (CRUSTAL) then
+      if (i > modemohoberk) i = modemohoberk ! Warning : may need to be changed if file is modified !
+    endif
   endif
 
   if (i == 1) then
@@ -270,6 +279,7 @@ end module model_1dberkeley_par
     ! interpolates between one layer below to actual radius layer,
     ! that is from radius_ref(i-1) to r using the values at i-1 and i
     frac = (r-Mref_V_radius_berkeley(i-1))/(Mref_V_radius_berkeley(i)-Mref_V_radius_berkeley(i-1))
+
     ! interpolated model parameters
     rho = Mref_V_density_berkeley(i-1)  + frac * (Mref_V_density_berkeley(i)- Mref_V_density_berkeley(i-1))
     vpv = Mref_V_vpv_berkeley(i-1)      + frac * (Mref_V_vpv_berkeley(i)    - Mref_V_vpv_berkeley(i-1)    )
@@ -283,11 +293,13 @@ end module model_1dberkeley_par
 
   ! make sure Vs is zero in the outer core even if roundoff errors on depth
   ! also set fictitious attenuation to a very high value (attenuation is not used in the fluid)
-  if (mimic_native_specfem .and. iregion_code == IREGION_OUTER_CORE) then
-    vsv = 0.d0
-    vsh = 0.d0
-    Qkappa = 3000.d0
-    Qmu = 3000.d0
+  if (mimic_native_specfem) then
+    if (iregion_code == IREGION_OUTER_CORE) then
+      vsv = 0.d0
+      vsh = 0.d0
+      Qkappa = 3000.d0
+      Qmu = 3000.d0
+    endif
   endif
 
   ! non-dimensionalize
@@ -309,21 +321,23 @@ end module model_1dberkeley_par
 !! Utpal Kumar, Feb, 2022
 !! subroutine to decide whether the moho node has already been computed
 
-  subroutine est_moho_node(estmohonode)
-
-  use model_1dberkeley_par, only: modemohoberk
-
-  implicit none
-  integer :: estmohonode
-
-  if (modemohoberk < 0) then
-    call determine_1dberkeley_moho_node(estmohonode)
-    ! print *,"Determining Moho node ",estmohonode
-  else
-    estmohonode = modemohoberk
-  endif
-
-  end subroutine est_moho_node
+! not used yet...
+!
+!  subroutine est_moho_node(estmohonode)
+!
+!  use model_1dberkeley_par, only: modemohoberk
+!
+!  implicit none
+!  integer :: estmohonode
+!
+!  if (modemohoberk < 0) then
+!    call determine_1dberkeley_moho_node(estmohonode)
+!    ! print *,"Determining Moho node ",estmohonode
+!  else
+!    estmohonode = modemohoberk
+!  endif
+!
+!  end subroutine est_moho_node
 
 !
 !--------------------------------------------------------------------------------------------------
