@@ -704,8 +704,8 @@ end module model_crust_berkeley_par
     read(unit,*) t,p,gll_ind,rho,vp,vsv,vsh
 
     ! store values
-    ! gll point index
-    crust_array_ind(j) = gll_ind + 1  ! gll point index in range [1,5]
+    ! GLL point index
+    crust_array_ind(j) = gll_ind + 1  ! GLL point index in range [1,5]
 
     ! point values
     crust_array(1,j) = t              ! latitude in degree [-90,90]

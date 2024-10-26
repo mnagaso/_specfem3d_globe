@@ -48,9 +48,15 @@ module model_berkeley_par
 
   implicit none
 
-  double precision, dimension(:), allocatable :: mdl,kntrad,aknot,oknot,aknot2,oknot2
+  ! spline arrays
+  double precision, dimension(:), allocatable :: aknot,oknot,aknot2,oknot2
+  double precision, dimension(:), allocatable :: mdl
   integer, dimension(:), allocatable :: level,level2
 
+  ! spline node radii
+  real, dimension(:), allocatable :: kntrad,kntrad_hh     ! real arrays - to avoid conversion in fspl() to float
+
+  ! parameterization
   integer, parameter :: MAXPAR = 4
   integer, dimension(MAXPAR) :: nknotA1 = 0,nknotA2 = 0
 
@@ -218,11 +224,19 @@ end module model_berkeley_par
       enddo
     endif
 
-    allocate(kntrad(nknotA1(1)),stat=ier)
-    if (ier /= 0) stop 'Error allocating kntrad array'
-    kntrad(:) = 0.d0
+    allocate(kntrad(nknotA1(1)), &
+             kntrad_hh(nknotA1(1)-1),stat=ier)
+    if (ier /= 0) stop 'Error allocating kntrad,.. arrays'
+    kntrad(:) = 0.e0
+    kntrad_hh(:) = 0.e0
 
     read(unit2,*) (kntrad(i),i=1,nknotA1(1))
+
+    ! takes spacings between spline radii
+    ! (used for spline evaluations fspl(..) in spl_A3d.c, see routine fill_hh_A3d())
+    do i = 1,nknotA1(1)-1
+      kntrad_hh(i) = kntrad(i+1) - kntrad(i)
+    enddo
 
     mdim = 0
     do i = 1,npar
@@ -261,54 +275,58 @@ end module model_berkeley_par
   ! broadcast
   !
   !
-  call BCAST_ALL_SINGLEI(nknotA2(1))
+  call bcast_all_singlei(nknotA2(1))
 
-  if (.not.allocated(oknot)) allocate(oknot(nknotA2(1)))
-  if (.not.allocated(aknot)) allocate(aknot(nknotA2(1)))
-  if (.not.allocated(level)) allocate(level(nknotA2(1)))
+  if (.not. allocated(oknot)) allocate(oknot(nknotA2(1)))
+  if (.not. allocated(aknot)) allocate(aknot(nknotA2(1)))
+  if (.not. allocated(level)) allocate(level(nknotA2(1)))
 
-  call BCAST_ALL_I(level,nknotA2(1))
-  call BCAST_ALL_DP(oknot,nknotA2(1))
-  call BCAST_ALL_DP(aknot,nknotA2(1))
+  call bcast_all_i(level,nknotA2(1))
+  call bcast_all_dp(oknot,nknotA2(1))
+  call bcast_all_dp(aknot,nknotA2(1))
 
-  call BCAST_ALL_SINGLEL(hknots2_exist)
+  call bcast_all_singlel(hknots2_exist)
 
   if (hknots2_exist) then
-    call BCAST_ALL_SINGLEI(nknotA2(2))
+    call bcast_all_singlei(nknotA2(2))
 
-    if (.not.allocated(oknot2)) allocate(oknot2(nknotA2(2)))
-    if (.not.allocated(aknot2)) allocate(aknot2(nknotA2(2)))
-    if (.not.allocated(level2)) allocate(level2(nknotA2(2)))
+    if (.not. allocated(oknot2)) allocate(oknot2(nknotA2(2)))
+    if (.not. allocated(aknot2)) allocate(aknot2(nknotA2(2)))
+    if (.not. allocated(level2)) allocate(level2(nknotA2(2)))
 
-    call BCAST_ALL_I(level2,nknotA2(2))
-    call BCAST_ALL_DP(oknot2,nknotA2(2))
-    call BCAST_ALL_DP(aknot2,nknotA2(2))
+    call bcast_all_i(level2,nknotA2(2))
+    call bcast_all_dp(oknot2,nknotA2(2))
+    call bcast_all_dp(aknot2,nknotA2(2))
   else
     nknotA2(2) = nknotA2(1)
   endif
 
-  call BCAST_ALL_SINGLEI(npar)
+  call bcast_all_singlei(npar)
   NBPARAM = npar
 
-  if (.not.allocated(parblock)) allocate(parblock(npar))
+  if (.not. allocated(parblock)) allocate(parblock(npar))
 
-  call BCAST_ALL_CH_ARRAY(parblock,npar,1)
-  call BCAST_ALL_I(nknotA1,MAXPAR)
-  call BCAST_ALL_I(nknotA2,MAXPAR)
-  call BCAST_ALL_SINGLEL(unconformal)
-  call BCAST_ALL_SINGLEI(ndisc)
+  call bcast_all_ch_array(parblock,npar,1)
+  call bcast_all_i(nknotA1,MAXPAR)
+  call bcast_all_i(nknotA2,MAXPAR)
+  call bcast_all_singlel(unconformal)
+  call bcast_all_singlei(ndisc)
 
-  if (.not.allocated(kntrad)) allocate(kntrad(nknotA1(1)))
+  ! spline radii
+  if (.not. allocated(kntrad)) allocate(kntrad(nknotA1(1)))
+  if (.not. allocated(kntrad_hh)) allocate(kntrad_hh(nknotA1(1)-1))
 
-  call BCAST_ALL_DP(kntrad,nknotA1(1))
+  call bcast_all_r(kntrad,nknotA1(1))
+  call bcast_all_r(kntrad_hh,nknotA1(1)-1)
 
-  call BCAST_ALL_SINGLEI(mdim)
+  call bcast_all_singlei(mdim)
 
-  if (.not.allocated(mdl)) allocate(mdl(mdim))
+  if (.not. allocated(mdl)) allocate(mdl(mdim))
 
-  call BCAST_ALL_DP(mdl,mdim)
+  call bcast_all_dp(mdl,mdim)
 
-  ! allocates temporary work arrays
+  ! allocates temporary work arrays for model_berkeley_shsv() routine
+  ! to avoid re-allocations of the same arrays for each call
   size_work = maxval(nknotA2(:))
   allocate(work_dh(size_work),work_kindex(size_work),stat=ier)
   if (ier /= 0) stop 'Error allocating work arrays for Berkeley model'
@@ -343,6 +361,7 @@ end module model_berkeley_par
 
   double precision :: vs,vp,rho,Qs
   double precision :: xi,fi,eta,Gc,Gs
+  double precision :: fi_inv
 
   integer :: jump,effnknot,i,j,k
   !integer, dimension(:), allocatable :: kindex
@@ -464,7 +483,7 @@ end module model_berkeley_par
     dv = 0.d0
     do i = 1,nknotA1(1)
       ! spline value
-      call fspl(i,nknotA1(1),kntrad,r_,dr)
+      call fspl(i,nknotA1(1),kntrad,kntrad_hh,r_,dr)
 
       do j = 1,effnknot
         dv = dv + dr * work_dh(j) * mdl(jump + work_kindex(j) + nknotA2(1) * (i-1))
@@ -510,7 +529,7 @@ end module model_berkeley_par
         dv = 0.d0
         do i = 1,nknotA1(k)
           ! spline value
-          call fspl(i,nknotA1(k),kntrad,r_,dr)
+          call fspl(i,nknotA1(k),kntrad,kntrad_hh,r_,dr)
 
           do j = 1,effnknot
             dv = dv + dr * work_dh(j) * mdl(jump + work_kindex(j) + nknotA2(k) * (i-1))
@@ -545,14 +564,16 @@ end module model_berkeley_par
   ! ====================================================
   ! New conversion relationships < FM> - Feb 3, 2020
   ! Auxiliar values
-  aa1 = 3.d0 + ( 8.d0 + 4.d0 * eta ) / fi
-  bb1 = 1.d0 + ( 1.d0 - 2.d0 * eta ) / fi
+  fi_inv = 1.d0 / fi
+
+  aa1 = 3.d0 + ( 8.d0 + 4.d0 * eta ) * fi_inv
+  bb1 = 1.d0 + ( 1.d0 - 2.d0 * eta ) * fi_inv
   vsv = sqrt( 15.d0 * (vp*vp * bb1 - vs*vs * aa1) / &
               (8.d0 * (1.d0-eta) * bb1 - (6.d0 + 4.d0 * eta + 5.d0 * xi) * aa1 ) )
   vsh = sqrt( xi ) * vsv
   vpv = sqrt( (15.d0 * vp*vp - 8.d0 * (1.d0-eta) * vsv*vsv ) / &
-              (3.d0 + ( 8.d0 + 4.d0 * eta ) / fi ) )
-  vph = vpv * sqrt(1.d0/fi)
+              (3.d0 + ( 8.d0 + 4.d0 * eta ) * fi_inv ) )
+  vph = vpv * sqrt( fi_inv )
   rho = rho
   ! ===================================================
 
