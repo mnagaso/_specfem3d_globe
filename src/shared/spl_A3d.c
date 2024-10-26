@@ -64,7 +64,7 @@ void
 FC_FUNC(fspl,FSPL)(int *ord, int *nknots, float *knot_s, float *knot_hh, double *xi, double *rho)
 {
   float xi_s,val;
-  int ord_s,i;
+  int ord_s;
 
   ord_s = *ord - 1; /* change from fortran to c array convention */
   xi_s = (float) (*xi);
@@ -72,7 +72,7 @@ FC_FUNC(fspl,FSPL)(int *ord, int *nknots, float *knot_s, float *knot_hh, double 
   // allocate temporary float array
   //float *knot_s;
   //knot_s = farray1(0,*nknots - 1);
-  //for(i=0; i < *nknots; i++)
+  //for(int i=0; i < *nknots; i++)
   //  knot_s[i] = (float) knot[i];
 
   // spline value
@@ -97,7 +97,7 @@ float spl_A3d(int ord, int nknots, float *knot, float *hh, float xi)
    splines defined as :
    f_i(x) = a_i(x-x_i)^3 + b_i(x-x_i)^2 + c_i(x-x_i) + d_i
 */
-  int ii,Nx;
+  int Nx;
   float rho_x;
   float coefa,coefb,coefc,coefd;
   float dxi;
