@@ -313,6 +313,8 @@
       write(filename,'(a,i6.6)') trim(OUTPUT_FILES)//'/ispec_is_tiso',myrank
       call write_VTK_data_elem_l(nspec,nglob,xstore_glob,ystore_glob,zstore_glob,ibool, &
                                  ispec_is_tiso,filename)
+      ! debug
+      print *,'debug: rank',myrank,' tiso count = ',count(ispec_is_tiso)
     endif
   endif
 

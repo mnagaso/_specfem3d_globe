@@ -64,7 +64,7 @@
   call prepare_gravity()
 
   ! full gravity preparation
-  if (FULL_GRAVITY) call SIEM_prepare_solver()
+  call SIEM_prepare_solver()
 
   ! precomputes attenuation factors
   call prepare_attenuation()

@@ -41,14 +41,14 @@
 #include <stdlib.h>     // for malloc/free
 
 #define U (unsigned)
-#define TOL 1.5
+#define TOL 1.5f
 
 float *farray1(int, int);
 void free_farray1(float *, int);
 void stop(char *);
 
 void fill_hh_A3d(float *, float *, int);
-float spl_A3d(int, int, float *, float);
+float spl_A3d(int, int, float *, float *, float);
 
 /* ----------------------------------------------------------------------------- */
 
@@ -61,27 +61,35 @@ float spl_A3d(int, int, float *, float);
 //#endif
 
 void
-FC_FUNC(fspl,FSPL)(int *ord, int *nknots, double *knot, double *xi, double *rho)
+FC_FUNC(fspl,FSPL)(int *ord, int *nknots, float *knot_s, float *knot_hh, double *xi, double *rho)
 {
-  float *knot_s,xi_s,val;
-  int ord_s,i;
+  float xi_s,val;
+  int ord_s;
 
-  ord_s = *ord-1; /* change from fortran to c array convention */
+  ord_s = *ord - 1; /* change from fortran to c array convention */
   xi_s = (float) (*xi);
-  knot_s = farray1(0,*nknots-1);
 
-  for(i=0; i < *nknots; i++)
-    knot_s[i] = (float) knot[i];
+  // allocate temporary float array
+  //float *knot_s;
+  //knot_s = farray1(0,*nknots - 1);
+  //for(int i=0; i < *nknots; i++)
+  //  knot_s[i] = (float) knot[i];
 
-  val = spl_A3d(ord_s,*nknots,knot_s,xi_s);
+  // spline value
+  val = spl_A3d(ord_s, *nknots, knot_s, knot_hh, xi_s);
+
+  // return value
   *rho = (double) val;
-  free_farray1(knot_s,0);
+
+  // free temporary array
+  //free_farray1(knot_s,0);
+
   return;
 }
 
 /* ----------------------------------------------------------------------------- */
 
-float spl_A3d(int ord, int nknots, float *knot, float xi)
+float spl_A3d(int ord, int nknots, float *knot, float *hh, float xi)
 {
 /* ord: number of rho(x)
    nknots : # of knkots = Nx+1 (Nx=index of highest spline)
@@ -89,248 +97,250 @@ float spl_A3d(int ord, int nknots, float *knot, float xi)
    splines defined as :
    f_i(x) = a_i(x-x_i)^3 + b_i(x-x_i)^2 + c_i(x-x_i) + d_i
 */
-  int ii,Nx;
-  float *hh,rho_x;
+  int Nx;
+  float rho_x;
   float coefa,coefb,coefc,coefd;
+  float dxi;
 
-  Nx = nknots-1;
-  /* Compute vector hh of spacings */
-  hh=  farray1(0,Nx-1);
-  fill_hh_A3d(hh,knot,Nx);
+  Nx = nknots - 1;
+
+  /* Compute vector hh of spacings
+     note: this is done already in the fortran routine.
+           the spline node radii won't change and so do their spacings hh
+            between different spline evaluation calls.
+            thus, there is no need to re-allocate and compute this array for each spline call.
+  */
+  //float *hh;
+  //hh = farray1(0,Nx - 1);
+  //fill_hh_A3d(hh,knot,Nx);
 
   /* Consistency checks */
-  if ((xi-(float)TOL)>knot[Nx]) {
+  if ((xi - TOL) > knot[Nx]) {
     printf("xi=%g / knot[%d]=%g",xi,Nx,knot[Nx]);
     stop("spl: xi>knot[Nx]");
   }
-  else if ((xi+(float)TOL)<knot[0]) {
+  else if ((xi + TOL) < knot[0]) {
     printf("xi=%g / knot[0]=%g",xi,knot[0]);
     stop("spl: xi<knot[0]");
   }
-  else if (ord>Nx)
+  else if (ord > Nx)
     stop("spl: order > Nx");
 
-  if (ord==0) {	/* LHS */
-    float denom;
-    denom = 3.*hh[ord]*hh[ord]+3.*hh[ord]*hh[ord+1]+hh[ord+1]*hh[ord+1];
-    if (xi >= knot[ord] && xi <= knot[ord+1]) {			/* x0<=x<=x1 */
-      coefa = 4./(hh[ord]*(hh[ord]+hh[ord+1])*denom);
-      coefb = 0.0;
-      coefc = -12/denom;
-      coefd = 4*(2*hh[ord]+hh[ord+1])/denom;
+  if (ord == 0) {	/* LHS */
+    float hh0 = hh[ord];
+    float hhp1 = hh[ord+1];
 
-      rho_x = coefa*(xi-knot[ord])*(xi-knot[ord])*(xi-knot[ord]);
-      rho_x += coefb*(xi-knot[ord])*(xi-knot[ord]);
-      rho_x += coefc*(xi-knot[ord]);
-      rho_x += coefd;
+    float denom = 3.0f * hh0 * hh0 + 3.0f * hh0 * hhp1 + hhp1 * hhp1;
+
+    if (xi >= knot[ord] && xi <= knot[ord+1]) {			/* x0<=x<=x1 */
+      coefa = 4.0f / (hh0 * (hh0 + hhp1) * denom);
+      coefb = 0.0f;
+      coefc = -12.0f / denom;
+      coefd = 4.0f * (2.0f * hh0 + hhp1) / denom;
+
+      dxi = xi - knot[ord];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
     else if (xi > knot[ord+1] && xi <= knot[ord+2]){		/* x1<=x<=x2 */
-      coefa = -4./(hh[ord+1]*(hh[ord]+hh[ord+1])*denom);
-      coefb = 12/((hh[ord]+hh[ord+1])*denom);
-      coefc = -12.*hh[ord+1]/((hh[ord]+hh[ord+1])*denom);
-      coefd = 4.*hh[ord+1]*hh[ord+1]/((hh[ord]+hh[ord+1])*denom);
+      coefa = -4.0f / (hhp1 * (hh0 + hhp1) * denom);
+      coefb = 12.0f / ((hh0 + hhp1) * denom);
+      coefc = -12.0f * hhp1 / ((hh0 + hhp1) * denom);
+      coefd = 4.0f * hhp1 * hhp1 / ((hh0 + hhp1) * denom);
 
-      rho_x = coefa*(xi-knot[ord+1])*(xi-knot[ord+1])*(xi-knot[ord+1]);
-      rho_x += coefb*(xi-knot[ord+1])*(xi-knot[ord+1]);
-      rho_x += coefc*(xi-knot[ord+1]);
-      rho_x += coefd;
+      dxi = xi - knot[ord+1];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
     else						/* x>x2 */
-      rho_x = 0.0;
+      rho_x = 0.0f;
   }
 
-  else if (ord==1) {	/* LHS+1 */
-    float denom,denomsum,dd;
-    denom = (3.*hh[ord-1]*hh[ord-1]+4.*hh[ord-1]*hh[ord]+hh[ord]*hh[ord]+
-             2.*hh[ord-1]*hh[ord+1]+hh[ord]*hh[ord+1]);
-    denomsum = hh[ord-1]+hh[ord]+hh[ord+1];
-    dd = denomsum*denom;
-    if (xi >= knot[ord-1] && xi <= knot[ord]) {			/* x0<=x<=x1 */
-      coefa = -4.*(3.*hh[ord-1]+2.*hh[ord]+hh[ord+1])/
-      	          (hh[ord-1]*(hh[ord-1]+hh[ord])*dd);
-      coefb = 0.;
-      coefc = 12./denom;
-      coefd = 0.;
+  else if (ord == 1) {	/* LHS+1 */
+    float hh0 = hh[ord];
+    float hhp1 = hh[ord+1];
+    float hhm1 = hh[ord-1];
 
-      rho_x = coefa*(xi-knot[ord-1])*(xi-knot[ord-1])*(xi-knot[ord-1]);
-      rho_x += coefb*(xi-knot[ord-1])*(xi-knot[ord-1]);
-      rho_x += coefc*(xi-knot[ord-1]);
-      rho_x += coefd;
+    float denom = 3.0f * hhm1 * hhm1 + 4.0f * hhm1 * hh0 + hh0 * hh0 + 2.0f * hhm1 * hhp1 + hh0 * hhp1;
+    float denomsum = hhm1 + hh0 + hhp1;
+    float dd = denomsum * denom;
+
+    if (xi >= knot[ord-1] && xi <= knot[ord]) {			/* x0<=x<=x1 */
+      coefa = -4.0f * (3.0f * hhm1 + 2.0f * hh0 + hhp1) /
+      	          (hhm1 * (hhm1 + hh0) * dd);
+      coefb = 0.0f;
+      coefc = 12.0f / denom;
+      coefd = 0.0f;
+
+      dxi = xi - knot[ord-1];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
     else if (xi >= knot[ord] && xi <= knot[ord+1]) {			/* x1<=x<=x2 */
-      coefa = 4.*(2.*hh[ord-1]*hh[ord-1]+6.*hh[ord-1]*hh[ord]+3.*hh[ord]*hh[ord]+3.*hh[ord-1]*hh[ord+1]+
-              3.*hh[ord]*hh[ord+1]+hh[ord+1]*hh[ord+1])/
-                (hh[ord]*(hh[ord-1]+hh[ord])*(hh[ord]+hh[ord+1])*dd);
-      coefb = -12.*(3.*hh[ord-1]+2.*hh[ord]+hh[ord+1])/
-      	       ((hh[ord-1]+hh[ord])*dd);
-      coefc = 12.*(-2.*hh[ord-1]*hh[ord-1]+hh[ord]*hh[ord]+hh[ord]*hh[ord+1])/
-      	       ((hh[ord-1]+hh[ord])*dd);
-      coefd = 4.*hh[ord-1]*(4.*hh[ord-1]*hh[ord]+3.*hh[ord]*hh[ord]+2.*hh[ord-1]*hh[ord+1]+3.*hh[ord]*hh[ord+1])/
-      	       ((hh[ord-1]+hh[ord])*dd);
+      coefa = 4.0f * (2.0f * hhm1 * hhm1 + 6.0f * hhm1 * hh0 + 3.0f * hh0 * hh0 + 3.0f * hhm1 * hhp1 +
+              3.0f * hh0 * hhp1 + hhp1 * hhp1) /
+                (hh0 * (hhm1 + hh0) * (hh0 + hhp1) * dd);
+      coefb = -12.0f * (3.0f * hhm1 + 2.0f * hh0 + hhp1) /
+      	       ((hhm1 + hh0) * dd);
+      coefc = 12.0f * (-2.0f * hhm1 * hhm1 + hh0 * hh0 + hh0 * hhp1) /
+      	       ((hhm1 + hh0) * dd);
+      coefd = 4.0f * hhm1 * (4.0f * hhm1 * hh0 + 3.0f * hh0 * hh0 + 2.0f * hhm1 * hhp1 + 3.0f * hh0 * hhp1) /
+      	       ((hhm1 + hh0) * dd);
 
-      rho_x = coefa*(xi-knot[ord])*(xi-knot[ord])*(xi-knot[ord]);
-      rho_x += coefb*(xi-knot[ord])*(xi-knot[ord]);
-      rho_x += coefc*(xi-knot[ord]);
-      rho_x += coefd;
+      dxi = xi - knot[ord];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
     else if (xi >= knot[ord+1] && xi <= knot[ord+2]) {			/* x2<=x<=x3 */
-      dd *= (hh[ord]+hh[ord+1]);
-      coefa = -4.*(2.*hh[ord-1]+hh[ord])/(hh[ord+1]*dd);
-      coefb = 12.*(2.*hh[ord-1]+hh[ord])/dd;
-      coefc = -12.*(2.*hh[ord-1]+hh[ord])*hh[ord+1]/dd;
-      coefd = 4.*(2.*hh[ord-1]+hh[ord])*hh[ord+1]*hh[ord+1]/dd;
+      dd *= (hh0 + hhp1);
+      coefa = -4.0f * (2.0f * hhm1 + hh0) / (hhp1 * dd);
+      coefb = 12.0f * (2.0f * hhm1 + hh0) / dd;
+      coefc = -12.0f * (2.0f * hhm1 + hh0) * hhp1 / dd;
+      coefd = 4.0f * (2.0f * hhm1 + hh0) * hhp1 * hhp1 / dd;
 
-      rho_x = coefa*(xi-knot[ord+1])*(xi-knot[ord+1])*(xi-knot[ord+1]);
-      rho_x += coefb*(xi-knot[ord+1])*(xi-knot[ord+1]);
-      rho_x += coefc*(xi-knot[ord+1]);
-      rho_x += coefd;
+      dxi = xi - knot[ord+1];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
     else						/* x>x3 */
-      rho_x = 0.0;
+      rho_x = 0.0f;
   }
 
   else if (ord==Nx-1) {		/* RHS-1 */
-    float denom,denomsum,dd;
-    denom = hh[ord-2]*hh[ord-1]+hh[ord-1]*hh[ord-1]+2.*hh[ord-2]*hh[ord]+4.*hh[ord-1]*hh[ord]+3.*hh[ord]*hh[ord];
-    denomsum = hh[ord-2]+hh[ord-1]+hh[ord];
-    dd = denomsum*denom;
-    if (xi >= knot[ord-2] && xi <= knot[ord-1]) {	/* x0<=x<=x1 */
-      coefa = 4.*(hh[ord-1]+2.*hh[ord])/(hh[ord-2]*(hh[ord-2]+hh[ord-1])*dd);
-      coefb = coefc = coefd = 0.0;
+    float hh0 = hh[ord];
+    float hhm1 = hh[ord-1];
+    float hhm2 = hh[ord-2];
 
-      rho_x = coefa*(xi-knot[ord-2])*(xi-knot[ord-2])*(xi-knot[ord-2]);
-      rho_x += coefb*(xi-knot[ord-2])*(xi-knot[ord-2]);
-      rho_x += coefc*(xi-knot[ord-2]);
-      rho_x += coefd;
+    float denom = hhm2 * hhm1 + hhm1 * hhm1 + 2.0f * hhm2 * hh0 + 4.0f * hhm1 * hh0 + 3.0f * hh0 * hh0;
+    float denomsum = hhm2 + hhm1 + hh0;
+    float dd = denomsum * denom;
+
+    if (xi >= knot[ord-2] && xi <= knot[ord-1]) {	/* x0<=x<=x1 */
+      coefa = 4.0f * (hhm1 + 2.0f * hh0) / (hhm2 * (hhm2 + hhm1) * dd);
+      coefb = coefc = coefd = 0.0f;
+
+      dxi = xi - knot[ord-2];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
 
     else if (xi >= knot[ord-1] && xi <= knot[ord]) {	/* x1<=x<=x2 */
-      coefa = -4.*(hh[ord-2]*hh[ord-2]+3.*hh[ord-2]*hh[ord-1]+3.*hh[ord-1]*hh[ord-1]+3.*hh[ord-2]*hh[ord]+
-               6.*hh[ord-1]*hh[ord]+2.*hh[ord]*hh[ord])/
-                 (hh[ord-1]*(hh[ord-2]+hh[ord-1])*(hh[ord-1]+hh[ord])*dd);
-      coefb = 12.*(hh[ord-1]+2.*hh[ord])/((hh[ord-2]+hh[ord-1])*dd);
-      coefc = 12.*hh[ord-2]*(hh[ord-1]+2.*hh[ord])/((hh[ord-2]+hh[ord-1])*dd);
-      coefd = 4.*hh[ord-2]*hh[ord-2]*(hh[ord-1]+2.*hh[ord])/((hh[ord-2]+hh[ord-1])*dd);
+      coefa = -4.0f * (hhm2 * hhm2 + 3.0f * hhm2 * hhm1 + 3.0f * hhm1 * hhm1 + 3.0f * hhm2 * hh0 +
+               6.0f * hhm1 * hh0 + 2.0f * hh0 * hh0) /
+                 (hhm1 * (hhm2 + hhm1) * (hhm1 + hh0) * dd);
+      coefb = 12.0f * (hhm1 + 2.0f * hh0) / ((hhm2 + hhm1) * dd);
+      coefc = 12.0f * hhm2 * (hhm1 + 2.0f * hh0) / ((hhm2 + hhm1) * dd);
+      coefd = 4.0f * hhm2 * hhm2 * (hhm1 + 2.0f * hh0) / ((hhm2 + hhm1) * dd);
 
-      rho_x = coefa*(xi-knot[ord-1])*(xi-knot[ord-1])*(xi-knot[ord-1]);
-      rho_x += coefb*(xi-knot[ord-1])*(xi-knot[ord-1]);
-      rho_x += coefc*(xi-knot[ord-1]);
-      rho_x += coefd;
+      dxi = xi - knot[ord-1];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
 
     else if (xi >= knot[ord] && xi <= knot[ord+1]) {	/* x2<=x<=x3 */
-      dd *= (hh[ord-1]+hh[ord]);
-      coefa = 4.*(hh[ord-2]+2.*hh[ord-1]+3.*hh[ord])/(hh[ord]*dd);
-      coefb = -12.*(hh[ord-2]+2.*hh[ord-1]+3.*hh[ord])/dd;
-      coefc = 12.*(-hh[ord-2]*hh[ord-1]-hh[ord-1]*hh[ord-1]+2.*hh[ord]*hh[ord])/dd;
-      coefd = 4.*hh[ord]*(3.*hh[ord-2]*hh[ord-1]+3.*hh[ord-1]*hh[ord-1]+2.*hh[ord-2]*hh[ord]+4.*hh[ord-1]*hh[ord])/dd;
+      dd *= (hhm1 + hh0);
+      coefa = 4.0f * (hhm2 + 2.0f * hhm1 + 3.0f * hh0) / (hh0 * dd);
+      coefb = -12.0f * (hhm2 + 2.0f * hhm1 + 3.0f * hh0) / dd;
+      coefc = 12.0f * (-hhm2 * hhm1 - hhm1 * hhm1 + 2.0f * hh0 * hh0) / dd;
+      coefd = 4.0f * hh0 * (3.0f * hhm2 * hhm1 + 3.0f * hhm1 * hhm1 + 2.0f * hhm2 * hh0 + 4.0f * hhm1 * hh0) / dd;
 
-      rho_x = coefa*(xi-knot[ord])*(xi-knot[ord])*(xi-knot[ord]);
-      rho_x += coefb*(xi-knot[ord])*(xi-knot[ord]);
-      rho_x += coefc*(xi-knot[ord]);
-      rho_x += coefd;
+      dxi = xi - knot[ord];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
     else						/* x>x4 */
-      rho_x = 0.0;
+      rho_x = 0.0f;
   }
 
   else if (ord==Nx) {		/* RHS */
-    float denom;
-    denom = (hh[ord-2]+hh[ord-1])*(hh[ord-2]*hh[ord-2]+3.*hh[ord-2]*hh[ord-1]+3.*hh[ord-1]*hh[ord-1]);
-    if (xi >= knot[ord-2] && xi <= knot[ord-1]) {	/* x0<=x<=x1 */
-      coefa = 4./(hh[ord-2]*denom);
-      coefb = coefc = coefd = 0.0;
+    float hhm1 = hh[ord-1];
+    float hhm2 = hh[ord-2];
 
-      rho_x = coefa*(xi-knot[ord-2])*(xi-knot[ord-2])*(xi-knot[ord-2]);
-      rho_x += coefb*(xi-knot[ord-2])*(xi-knot[ord-2]);
-      rho_x += coefc*(xi-knot[ord-2]);
-      rho_x += coefd;
+    float denom = (hhm2 + hhm1) * (hhm2 * hhm2 + 3.0f * hhm2 * hhm1 + 3.0f * hhm1 * hhm1);
+
+    if (xi >= knot[ord-2] && xi <= knot[ord-1]) {	/* x0<=x<=x1 */
+      coefa = 4.0f / (hhm2 * denom);
+      coefb = coefc = coefd = 0.0f;
+
+      dxi = xi - knot[ord-2];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
 
     else if (xi >= knot[ord-1] && xi <= knot[ord]) {	/* x1<=x<=x2 */
-      coefa = -4./(hh[ord-1]*denom);
-      coefb = 12/denom;
-      coefc = 12*hh[ord-2]/denom;
-      coefd = 4.*hh[ord-2]*hh[ord-2]/denom;
+      coefa = -4.0f / (hhm1 * denom);
+      coefb = 12.0f / denom;
+      coefc = 12.0f * hhm2 / denom;
+      coefd = 4.0f * hhm2 * hhm2 / denom;
 
-      rho_x = coefa*(xi-knot[ord-1])*(xi-knot[ord-1])*(xi-knot[ord-1]);
-      rho_x += coefb*(xi-knot[ord-1])*(xi-knot[ord-1]);
-      rho_x += coefc*(xi-knot[ord-1]);
-      rho_x += coefd;
+      dxi = xi - knot[ord-1];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
 
     else						/* x>x2 */
-      rho_x = 0.0;
+      rho_x = 0.0f;
   }
 
-  else {			/* Away from borders */
-    float denom1,denom2,denom;
-    denom1 = hh[ord-2]+hh[ord-1]+hh[ord]+hh[ord+1];
-    if (xi >= knot[ord-2] && xi <= knot[ord-1]) {	/* x0<=x<=x1 */
-      coefa = 4./(hh[ord-2]*(hh[ord-2]+hh[ord-1])*(hh[ord-2]+hh[ord-1]+hh[ord])*denom1);
-      coefb = coefc = coefd = 0.;
+  else {
+    /* Away from borders */
+    float hh0 = hh[ord];
+    float hhp1 = hh[ord+1];
+    float hhm1 = hh[ord-1];
+    float hhm2 = hh[ord-2];
 
-      rho_x = coefa*(xi-knot[ord-2])*(xi-knot[ord-2])*(xi-knot[ord-2]);
-      rho_x += coefb*(xi-knot[ord-2])*(xi-knot[ord-2]);
-      rho_x += coefc*(xi-knot[ord-2]);
-      rho_x += coefd;
+    float denom1 = hhm2 + hhm1 + hh0 + hhp1;
+
+    if (xi >= knot[ord-2] && xi <= knot[ord-1]) {	/* x0<=x<=x1 */
+      coefa = 4.0f / (hhm2 * (hhm2 + hhm1) * (hhm2 + hhm1 + hh0) * denom1);
+      coefb = coefc = coefd = 0.0f;
+
+      dxi = xi - knot[ord-2];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
     else if (xi >= knot[ord-1] && xi <= knot[ord]) {	/* x1<=x<=x2 */
-      denom2 = (hh[ord-2]+hh[ord-1])*(hh[ord-2]+hh[ord-1]+hh[ord]);
-      denom = denom1*denom2;
+      float denom2 = (hhm2 + hhm1) * (hhm2 + hhm1 + hh0);
+      float denom = denom1 * denom2;
 
-      coefa = -4.*(hh[ord-2]*hh[ord-2]+3.*hh[ord-2]*hh[ord-1]+3.*hh[ord-1]*hh[ord-1]+2.*hh[ord-2]*hh[ord]+
-               4.*hh[ord-1]*hh[ord]+hh[ord]*hh[ord]+hh[ord-2]*hh[ord+1]+2.*hh[ord-1]*hh[ord+1]+hh[ord]*hh[ord+1])/
-                  (hh[ord-1]*(hh[ord-1]+hh[ord])*(hh[ord-1]+hh[ord]+hh[ord+1])*denom);
-      coefb = 12./denom;
-      coefc = 12.*hh[ord-2]/denom;
-      coefd = 4.*hh[ord-2]*hh[ord-2]/denom;
+      coefa = -4.0f * (hhm2 * hhm2 + 3.0f * hhm2 * hhm1 + 3.0f * hhm1 * hhm1 + 2.0f * hhm2 * hh0 +
+               4.0f * hhm1 * hh0 + hh0 * hh0 + hhm2 * hhp1 + 2.0f * hhm1 * hhp1 + hh0 * hhp1) /
+                  (hhm1 * (hhm1 + hh0) * (hhm1 + hh0 + hhp1) * denom);
+      coefb = 12.0f / denom;
+      coefc = 12.0f * hhm2 / denom;
+      coefd = 4.0f * hhm2 * hhm2 / denom;
 
-      rho_x = coefa*(xi-knot[ord-1])*(xi-knot[ord-1])*(xi-knot[ord-1]);
-      rho_x += coefb*(xi-knot[ord-1])*(xi-knot[ord-1]);
-      rho_x += coefc*(xi-knot[ord-1]);
-      rho_x += coefd;
+      dxi = xi - knot[ord-1];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
 
     else if (xi >= knot[ord] && xi <= knot[ord+1]) {	/* x2<=x<=x3 */
-      denom2 = (hh[ord-1]+hh[ord])*(hh[ord-2]+hh[ord-1]+hh[ord])*(hh[ord-1]+hh[ord]+hh[ord+1]);
-      denom = denom1*denom2;
+      float denom2 = (hhm1 + hh0) * (hhm2 + hhm1 + hh0) * (hhm1 + hh0 + hhp1);
+      float denom = denom1 * denom2;
 
-      coefa = 4.*(hh[ord-2]*hh[ord-1]+hh[ord-1]*hh[ord-1]+2.*hh[ord-2]*hh[ord]+4.*hh[ord-1]*hh[ord]+3.*hh[ord]*hh[ord]+
-      	      hh[ord-2]*hh[ord+1]+2.*hh[ord-1]*hh[ord+1]+3.*hh[ord]*hh[ord+1]+hh[ord+1]*hh[ord+1])/
-                (hh[ord]*(hh[ord]+hh[ord+1])*denom);
-      coefb = -12.*(hh[ord-2]+2.*hh[ord-1]+2.*hh[ord]+hh[ord+1])/denom;
-      coefc = 12.*(-hh[ord-2]*hh[ord-1]-hh[ord-1]*hh[ord-1]+hh[ord]*hh[ord]+hh[ord]*hh[ord+1])/denom;
-      coefd = 4.*(2.*hh[ord-2]*hh[ord-1]*hh[ord]+2.*hh[ord-1]*hh[ord-1]*hh[ord]+hh[ord-2]*hh[ord]*hh[ord]+
-              2.*hh[ord-1]*hh[ord]*hh[ord]+hh[ord-2]*hh[ord-1]*hh[ord+1]+hh[ord-1]*hh[ord-1]*hh[ord+1]+
-              hh[ord-2]*hh[ord]*hh[ord+1]+2.*hh[ord-1]*hh[ord]*hh[ord+1])/denom;
+      coefa = 4.0f * (hhm2 * hhm1 + hhm1 * hhm1 + 2.0f * hhm2 * hh0 + 4.0f * hhm1 * hh0 + 3.0f * hh0 * hh0 +
+      	      hhm2 * hhp1 + 2.0f * hhm1 * hhp1 + 3.0f * hh0 * hhp1 + hhp1 * hhp1) /
+                (hh0 * (hh0 + hhp1) * denom);
+      coefb = -12.0f * (hhm2 + 2.0f * hhm1 + 2.0f * hh0 + hhp1) / denom;
+      coefc = 12.0f * (-hhm2 * hhm1 - hhm1 * hhm1 + hh0 * hh0 + hh0 * hhp1) / denom;
+      coefd = 4.0f * (2.0f * hhm2 * hhm1 * hh0 + 2.0f * hhm1 * hhm1 * hh0 + hhm2 * hh0 * hh0 +
+              2.0f * hhm1 * hh0 * hh0 + hhm2 * hhm1 * hhp1 + hhm1 * hhm1 * hhp1 +
+              hhm2 * hh0 * hhp1 + 2.0f * hhm1 * hh0 * hhp1) / denom;
 
-      rho_x = coefa*(xi-knot[ord])*(xi-knot[ord])*(xi-knot[ord]);
-      rho_x += coefb*(xi-knot[ord])*(xi-knot[ord]);
-      rho_x += coefc*(xi-knot[ord]);
-      rho_x += coefd;
+      dxi = xi - knot[ord];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
 
     else if (xi >= knot[ord+1] && xi <= knot[ord+2]) {	/* x3<=x<=x4 */
-      denom2 = (hh[ord]+hh[ord+1])*(hh[ord-1]+hh[ord]+hh[ord+1]);
-      denom = denom1*denom2;
+      float denom2 = (hh0 + hhp1) * (hhm1 + hh0 + hhp1);
+      float denom = denom1 * denom2;
 
-      coefa = -4./(hh[ord+1]*denom);
-      coefb = 12/denom;
-      coefc = -12*hh[ord+1]/denom;
-      coefd = 4.*hh[ord+1]*hh[ord+1]/denom;
+      coefa = -4.0f / (hhp1 * denom);
+      coefb = 12.0f / denom;
+      coefc = -12.0f * hhp1 / denom;
+      coefd = 4.0f * hhp1 * hhp1 / denom;
 
-      rho_x = coefa*(xi-knot[ord+1])*(xi-knot[ord+1])*(xi-knot[ord+1]);
-      rho_x += coefb*(xi-knot[ord+1])*(xi-knot[ord+1]);
-      rho_x += coefc*(xi-knot[ord+1]);
-      rho_x += coefd;
+      dxi = xi - knot[ord+1];
+      rho_x = ((coefa * dxi + coefb) * dxi + coefc) * dxi + coefd;
     }
 
     else						/* x>x4 */
-      rho_x=0.0;
+      rho_x = 0.0f;
   }
-  free_farray1(hh,0);
-  return(rho_x);
+
+  // frees temporary array
+  //free_farray1(hh,0);
+
+  return (rho_x);
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -348,11 +358,11 @@ void fill_hh_A3d(float *hh, float *knot, int Nx)
 float *farray1(int n11, int n12)
 {
   float *m;
-  m = (float *) malloc( U (n12-n11+1)*sizeof(float) );
+  m = (float *) malloc( U (n12-n11+1) * sizeof(float) );
   if(!m) {
     stop("allocation error in farray1");
   }
-  return(m-n11);
+  return (m-n11);
 }
 
 /* ----------------------------------------------------------------------------- */

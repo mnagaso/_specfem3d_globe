@@ -60,7 +60,7 @@
   use specfem_par_movie, only: vtkdata_source_x,vtkdata_source_y,vtkdata_source_z
 
   ! for Berkeley stf
-  use shared_parameters, only: UCB_SOURCE_T1,UCB_SOURCE_T2,UCB_SOURCE_T3,UCB_SOURCE_T4,UCB_TAU
+  use shared_parameters, only: STF_IS_UCB_HEAVISIDE,UCB_SOURCE_T1,UCB_SOURCE_T2,UCB_SOURCE_T3,UCB_SOURCE_T4,UCB_TAU
 
   implicit none
 

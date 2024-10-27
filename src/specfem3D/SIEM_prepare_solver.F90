@@ -31,13 +31,27 @@
   use specfem_par_full_gravity
 
   implicit none
-
+  integer :: ier
   ! timing
   double precision :: tstart,tstart0,tCPU
   double precision, external :: wtime
 
   ! check if anything to do
-  if (.not. FULL_GRAVITY) return
+  if (.not. FULL_GRAVITY) then
+    ! allocate dummy arrays
+    ! (needed for function arguments even in case full gravity is turned off)
+    allocate(pgrav_cm(1),pgrav_ic(1),pgrav_oc(1),stat=ier)
+    if (ier /= 0) stop 'Error allocating dummy pgrav_cm,.. arrays'
+    pgrav_cm(:) = 0._CUSTOM_REAL; pgrav_ic(:) = 0._CUSTOM_REAL; pgrav_oc(:) = 0._CUSTOM_REAL
+    if (SIMULATION_TYPE == 3 ) then
+      allocate(b_pgrav_cm(1),b_pgrav_ic(1),b_pgrav_oc(1),stat=ier)
+      if (ier /= 0) stop 'Error allocating dummy b_pgrav_cm,.. arrays'
+      b_pgrav_cm(:) = 0._CUSTOM_REAL; b_pgrav_ic(:) = 0._CUSTOM_REAL; b_pgrav_oc(:) = 0._CUSTOM_REAL
+    endif
+
+    ! nothing left to do
+    return
+  endif
 
   ! user output
   if (myrank == 0) then

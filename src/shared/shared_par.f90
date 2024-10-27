@@ -209,6 +209,7 @@
   double precision :: FILESYSTEM_IO_BANDWIDTH = 0.d0
 
   ! UCB Source time function parameters
+  logical :: STF_IS_UCB_HEAVISIDE = .false.  ! source-time function is a UCB-style filtered heaviside
   double precision :: UCB_SOURCE_T1 = 400.d0, UCB_SOURCE_T2 = 250.d0, UCB_SOURCE_T3 = 53.d0, UCB_SOURCE_T4 = 40.d0
   double precision :: UCB_TAU = 400.d0
 

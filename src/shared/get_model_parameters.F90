@@ -350,6 +350,11 @@
     HONOR_1D_SPHERICAL_MOHO = .true.
     REFERENCE_1D_MODEL = REFERENCE_MODEL_CCREM
 
+  case ('1d_berkeley')
+    REFERENCE_1D_MODEL = REFERENCE_MODEL_SEMUCB
+    TRANSVERSE_ISOTROPY = .true.
+    HONOR_1D_SPHERICAL_MOHO = .true.
+
   ! Mars 1D models
   case ('1d_sohl')
     ! Mars model A
@@ -1153,6 +1158,17 @@
     HONOR_DEEP_MOHO = EARTH_HONOR_DEEP_MOHO
   end select
 
+  ! special cases - additional overwrites
+  ! Berkeley model
+  if (REFERENCE_1D_MODEL == REFERENCE_MODEL_SEMUCB) then
+    ! SEMUCB uses a homogenized crustal model with its own smooth topo
+    ! uses default Berkeley topo
+    PATHNAME_TOPO_FILE = PATHNAME_TOPO_FILE_BERKELEY
+    RESOLUTION_TOPO_FILE = RESOLUTION_TOPO_FILE_BERKELEY
+    NX_BATHY = NX_BATHY_BERKELEY
+    NY_BATHY = NY_BATHY_BERKELEY
+  endif
+
   end subroutine get_model_planet_constants
 
 !
@@ -1229,7 +1245,11 @@
     R771 = PREM_R771
     RTOPDDOUBLEPRIME = PREM_RTOPDDOUBLEPRIME
     RCMB = PREM_RCMB
-    RICB = PREM_RICB
+    if (USE_OLD_VERSION_FORMAT) then
+      RICB = PREM_RICB_OLD
+    else
+      RICB = PREM_RICB
+    endif
 
     ! non-dimensionalizes densities
     ! density ocean

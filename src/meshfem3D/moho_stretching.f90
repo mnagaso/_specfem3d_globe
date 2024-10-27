@@ -130,8 +130,8 @@
   endif
 
   ! radii for stretching criteria
-  R_moho = RMOHO_FICTITIOUS_IN_MESHER/R_PLANET
-  R_middlecrust = RMIDDLE_CRUST/R_PLANET
+  R_moho = RMOHO_FICTITIOUS_IN_MESHER / R_PLANET
+  R_middlecrust = RMIDDLE_CRUST / R_PLANET
 
   ! loops over element's anchor points
   count_crust = 0
@@ -171,7 +171,7 @@
     !
     ! note: flag found_crust returns .false. for points below moho,
     !          nevertheless its moho depth should be set and will be used in linear stretching
-    if (moho < TINYVAL ) call exit_mpi(myrank,'Error moho depth to honor')
+    if (moho < TINYVAL) call exit_mpi(myrank,'Error moho depth to honor')
 
     ! limits moho depth to a threshold value to avoid stretching problems
     if (moho < MOHO_MINIMUM) then

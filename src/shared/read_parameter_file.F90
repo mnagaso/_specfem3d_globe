@@ -221,6 +221,7 @@
   if (ier /= 0) stop 'an error occurred while reading the parameter file: USE_MONOCHROMATIC_CMT_SOURCE'
 
   ! (optional) Berkeley UCB STF parameters
+  call read_value_logical(STF_IS_UCB_HEAVISIDE, 'STF_IS_UCB_HEAVISIDE', ier); ier = 0
   if (STF_IS_UCB_HEAVISIDE) then
     call read_value_double_precision(UCB_SOURCE_T1,'SOURCE_T1', ier); ier = 0
     call read_value_double_precision(UCB_SOURCE_T2,'SOURCE_T2', ier); ier = 0

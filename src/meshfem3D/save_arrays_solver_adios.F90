@@ -578,7 +578,7 @@
   NSPEC2DMAX_XMIN_XMAX_wmax = ints_to_reduce(3)
   NSPEC2DMAX_YMIN_YMAX_wmax = ints_to_reduce(4)
 
-  ! debug daniel
+  ! debug
   !call synchronize_all()
   !print *,'debug: ',myrank,'nspec2d top      :',NSPEC2D_TOP,NSPEC2D_TOP_wmax
   !print *,'debug: ',myrank,'nspec2d bottom   :',NSPEC2D_BOTTOM,NSPEC2D_BOTTOM_wmax

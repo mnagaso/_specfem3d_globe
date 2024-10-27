@@ -47,13 +47,20 @@ module smooth_etopo5_par
 
   private
 
+  ! unused
   !integer, parameter ::  NBT_TOPO5 = 2160, NBP_TOPO5 = 4320, INITR_TOPO5 = 12
   !integer, dimension(:,:), allocatable :: topo_start
 
-  !integer :: NBT,NBP,INITR
-
+  ! values taken from constants.h
   integer, parameter :: NBT = NY_BATHY_BERKELEY - 1  ! 181 - 1 == 180 to match gauss_filtre
   integer, parameter :: NBP = NX_BATHY_BERKELEY      ! 360
+
+  ! resolution
+  ! given in minutes -> 1/60 to get resolution in degrees
+  ! default:
+  !   RESOLUTION_TOPO_FILE_BERKELEY == 60 -> INITR = int( 1.0 / ( 60 / 60.0) ) == 1
+  ! or finer example: (would need NX/NY_BATHY adapted also)
+  !   RESOLUTION_TOPO_FILE_BERKELEY == 30 -> INITR = int( 1.0 / ( 30 / 60.0) ) == 2
   integer, parameter :: INITR = int(1.0 / (RESOLUTION_TOPO_FILE_BERKELEY / 60.0)) ! resolution
 
 contains
@@ -125,64 +132,70 @@ contains
   integer, dimension(NX_BATHY_BERKELEY,NY_BATHY_BERKELEY),intent(in) :: ibathy_topo
 
   ! local parameters
-  real :: value
-  real :: theta,phi
-  !real, parameter :: pi = 3.141592653589793, deg2rad = pi / 180.
-
-  real, parameter :: drfiltre = 2.e0
+  double precision :: value
+  double precision :: colat,lon
 
   ! colatitude/longitude
-  theta = sngl(90.d0 - xlat)
-  phi = sngl(xlon)
+  colat = 90.d0 - xlat         ! range [0,180]
+  lon = xlon
 
-  if (phi < -180.0) phi = phi + 360.0
-  if (phi > 180.0) phi = phi - 360.0
+  ! puts lon in range [-180,180]
+  if (lon < -180.d0) lon = lon + 360.d0
+  if (lon > 180.d0) lon = lon - 360.d0
 
-  ! in rad
-  !theta = theta * deg2rad
-  !phi = phi * deg2rad
-  ! elevation (in meters)
-  !value = dble(etopo_filtre(theta,phi))
-
-  ! or
-  ! in degrees
-  value = gauss_filtre(ibathy_topo,theta,phi,drfiltre)
+  ! filtered topo value
+  value = gauss_filtre(ibathy_topo,colat,lon)
 
   ! return value
-  get_etopo5_filtre = dble(value)
+  get_etopo5_filtre = value
 
   end function get_etopo5_filtre
 
   !-----------------------------------------------------------------
 
-  real function gauss_filtre(tin,theta,phi,dr)
+  double precision function gauss_filtre(tin,colat,lon)
+
+  use constants, only: USE_OLD_VERSION_FORMAT
 
   implicit none
-  integer, dimension(:,:),intent(in)  :: tin
-  real,intent(in) :: theta,phi,dr
+  integer, dimension(NX_BATHY_BERKELEY,NY_BATHY_BERKELEY),intent(in)  :: tin
+  double precision, intent(in) :: colat,lon
 
   ! local parameters
-  real :: tmp,thetar,phir,tmpnorm,int_val
+  real :: t,p,thetar,phir
+  real :: tmp,tmpnorm,int_val
   integer :: i,ii,j,jj
 
-  real, parameter :: pi = 3.141592653589793, deg2rad = pi / 180.
+  real, parameter :: pi = 3.141592653589793, deg2rad = pi / 180.0
   integer, parameter :: LARG = 2
 
-  tmp = 0.
-  tmpnorm = 0.
+  real, parameter :: drfiltre = 2.e0
 
-  do i = 1,int(LARG*dr*INITR + 1)
-    do j = 1,int(LARG*dr*INITR + 1)
-      call get_indexloc(phi,theta,i,j,dr,LARG,ii,jj,phir,thetar)
+  ! converts to real values
+  t = sngl(colat)
+  p = sngl(lon)
 
-      int_val = cos_cylindre(theta,phi,dr,thetar,phir) * (1./real(INITR))**2 * sin(thetar * deg2rad)
+  tmp = 0.0
+  tmpnorm = 0.0
+
+  do i = 1,int(LARG * drfiltre * INITR + 1)
+    do j = 1,int(LARG * drfiltre * INITR + 1)
+      call get_indexloc(p,t,i,j,drfiltre,LARG,ii,jj,phir,thetar)
+
+      int_val = cos_cylindre(t,p,drfiltre,thetar,phir) * (1./real(INITR))**2 * sin(thetar * deg2rad)
 
       tmp = tmp + tin(ii,jj) * int_val
       tmpnorm = tmpnorm + int_val
     enddo
   enddo
 
-  gauss_filtre = tmp / tmpnorm
+  gauss_filtre = dble(tmp / tmpnorm)
+
+  ! old version uses integer for elevation values from gauss_filtre() routine
+  if (USE_OLD_VERSION_FORMAT) then
+    ! convert elevation to integer value before returning as a real/double number
+    gauss_filtre = dble(int(gauss_filtre))
+  endif
 
   end function gauss_filtre
 
@@ -191,10 +204,11 @@ contains
   real function cos_cylindre(t0_,p0_,d0_,theta_,phi_)
 
   implicit none
-  real :: t0,p0,d0,theta,phi, d_ang
-  real :: t0_,p0_,d0_,theta_,phi_
+  real, intent(in) :: t0_,p0_,d0_,theta_,phi_
+  ! local parameters
+  real :: t0,p0,d0,theta,phi,d_ang
   real :: d_arg_clean
-  real, parameter :: pi = 3.141592653589793, deg2rad = pi / 180.
+  real, parameter :: pi = 3.141592653589793e0, deg2rad = pi / 180.e0
 
   t0 = t0_ * deg2rad
   p0 = p0_ * deg2rad
@@ -204,13 +218,13 @@ contains
 
   !distance angulaire au centre du cylindre:
   !d_ang=acos(cos(theta)*cos(t0)+sin(theta)*sin(t0)*cos(phi-p0))
-  d_arg_clean = min( 1.0, max( 0.0, real( cos(theta)*cos(t0)+sin(theta)*sin(t0)*cos(phi-p0) ) ) )
+  d_arg_clean = min( 1.e0, max( 0.e0, real( cos(theta) * cos(t0) + sin(theta) * sin(t0) * cos(phi-p0) ) ) )
   d_ang       = acos( d_arg_clean )
 
   if (d_ang > d0) then
-     cos_cylindre = 0.0
+     cos_cylindre = 0.e0
   else
-     cos_cylindre = 0.5 * (1.0 + cos(PI*d_ang/d0))
+     cos_cylindre = 0.5e0 * (1.e0 + cos(pi * d_ang/d0))
   endif
 
   end function cos_cylindre
@@ -233,20 +247,20 @@ contains
   t = theta + (j - 1 - (LARG * dr * INITR)/2) / real(INITR)
 
   ! longitude in range [0,360]
-  if (p < 0.0 - eps) p = p + 360.0
-  if (p >= 360.0 - eps) p = p - 360.0
+  if (p < 0.e0 - eps) p = p + 360.e0
+  if (p >= 360.e0 - eps) p = p - 360.e0
 
   ! colatitude in range [0,180]
-  if (t > 180.0 - eps) then
-     t = t - 180.0
-     p = 360.0 - p
-  else if (t < 0.0 - eps) then
-     t = 180.0 + t
-     p = 360.0 - p
+  if (t > 180.e0 - eps) then
+     t = t - 180.e0
+     p = 360.e0 - p
+  else if (t < 0.e0 - eps) then
+     t = 180.e0 + t
+     p = 360.e0 - p
   endif
 
-  if (p < 0.0 - eps) p = p + 360.0
-  if (p >= 360.0 - eps) p = p - 360.0
+  if (p < 0.e0 - eps) p = p + 360.e0
+  if (p >= 360.e0 - eps) p = p - 360.e0
 
   ii = nint(p * INITR) + 1
 
@@ -419,6 +433,7 @@ end module smooth_etopo5_par
   double precision :: time1,tCPU
   double precision, external :: wtime
 
+  ! gets topo file ending ('.bin' or '.dat')
   ending = ''
   if (len_trim(PATHNAME_TOPO_FILE) > 4) ending = PATHNAME_TOPO_FILE(len_trim(PATHNAME_TOPO_FILE)-3:len_trim(PATHNAME_TOPO_FILE))
 

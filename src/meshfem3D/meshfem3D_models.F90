@@ -924,7 +924,8 @@
         case (THREE_D_MODEL_BERKELEY)
           ! 3D Berkeley Model SEMUCB
           ! note: passes r/theta/phi (geocentric coordinates)
-          call model_berkeley_shsv(r_used,theta,phi,dvsh,dvsv,dvph,dvpv,drho,eta_aniso,iregion_code,CRUSTAL)
+          call model_berkeley_shsv(r_used,theta,phi,vpv,vph,vsv,vsh,rho, &
+                                   dvsh,dvsv,dvph,dvpv,drho,eta_aniso,iregion_code,CRUSTAL)
 
           ! updates velocities from reference model
           if (TRANSVERSE_ISOTROPY) then
@@ -1625,9 +1626,9 @@
       ! Berkeley crustal model
       ! note: passes r/theta/phi (geocentric coordinates)
       !       Berkeley crustal model is referencing geocentric positions in a spherical Earth frame
-      call model_berkeley_crust_aniso(r,theta,phi,vpvc,vphc,vsvc,vshc,etac,rhoc,moho,found_crust)
+      call model_berkeley_crust_aniso(r,theta,phi,vpvc,vphc,vsvc,vshc,etac,rhoc,moho,found_crust,elem_in_crust,moho_only)
       ! old version - isotropic crustal velocities
-      !call model_berkeley_crust(r,theta,phi,vpc,vsc,rhoc,moho,found_crust)
+      !call model_berkeley_crust(r,theta,phi,vpc,vsc,rhoc,moho,found_crust,elem_in_crust,moho_only)
       !vpvc = vpc
       !vphc = vpc
       !vsvc = vsc

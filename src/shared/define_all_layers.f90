@@ -536,7 +536,7 @@
       ! simulations (larger time step), 1D models can be run with just one average crustal
       ! layer instead of two.
 
-      !daniel debug
+      ! debug
       !print *,'one_crust case in define_all_layers'
 
       ! check with define_all_layers_number_and_offset()
@@ -769,7 +769,7 @@
       !   contains the crustal layers
       !   doubling at the base of the crust
 
-      !daniel debug
+      ! debug
       !print *,'default case in define_all_layers'
 
       ! check with define_all_layers_number_and_offset()
