@@ -1158,6 +1158,17 @@
     HONOR_DEEP_MOHO = EARTH_HONOR_DEEP_MOHO
   end select
 
+  ! special cases - additional overwrites
+  ! Berkeley model
+  if (REFERENCE_1D_MODEL == REFERENCE_MODEL_SEMUCB) then
+    ! SEMUCB uses a homogenized crustal model with its own smooth topo
+    ! uses default Berkeley topo
+    PATHNAME_TOPO_FILE = PATHNAME_TOPO_FILE_BERKELEY
+    RESOLUTION_TOPO_FILE = RESOLUTION_TOPO_FILE_BERKELEY
+    NX_BATHY = NX_BATHY_BERKELEY
+    NY_BATHY = NY_BATHY_BERKELEY
+  endif
+
   end subroutine get_model_planet_constants
 
 !

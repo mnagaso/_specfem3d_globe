@@ -266,7 +266,10 @@
 ! pathname of the topography file (un-smoothed)
   character (len=*), parameter :: PATHNAME_TOPO_FILE_BERKELEY = trim(A3d_folder)//"ETOPO5_1x1_filtre.dat"
 
-!! uncomment this to use Berkeley topography as default - and comment out corresponding parameters above !!
+!! uncomment this only to use Berkeley topography as default for all other Earth models as well
+!! note: Berkeley topography setting is used by default for SEMUCB model (see in get_model_parameters.F90 file).
+!!       uncommenting the lines below here (- and commenting out corresponding parameters in the topo/bathy section above)
+!!       will force the Berkeley topo to be used as the default topography for all Earth models.
 !! Topography defaults to Berkeley
 !  integer, parameter :: EARTH_NX_BATHY = NX_BATHY_BERKELEY
 !  integer, parameter :: EARTH_NY_BATHY = NY_BATHY_BERKELEY

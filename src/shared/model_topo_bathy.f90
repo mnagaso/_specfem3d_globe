@@ -47,13 +47,20 @@ module smooth_etopo5_par
 
   private
 
+  ! unused
   !integer, parameter ::  NBT_TOPO5 = 2160, NBP_TOPO5 = 4320, INITR_TOPO5 = 12
   !integer, dimension(:,:), allocatable :: topo_start
 
-  !integer :: NBT,NBP,INITR
-
+  ! values taken from constants.h
   integer, parameter :: NBT = NY_BATHY_BERKELEY - 1  ! 181 - 1 == 180 to match gauss_filtre
   integer, parameter :: NBP = NX_BATHY_BERKELEY      ! 360
+
+  ! resolution
+  ! given in minutes -> 1/60 to get resolution in degrees
+  ! default:
+  !   RESOLUTION_TOPO_FILE_BERKELEY == 60 -> INITR = int( 1.0 / ( 60 / 60.0) ) == 1
+  ! or finer example: (would need NX/NY_BATHY adapted also)
+  !   RESOLUTION_TOPO_FILE_BERKELEY == 30 -> INITR = int( 1.0 / ( 30 / 60.0) ) == 2
   integer, parameter :: INITR = int(1.0 / (RESOLUTION_TOPO_FILE_BERKELEY / 60.0)) ! resolution
 
 contains
@@ -426,6 +433,7 @@ end module smooth_etopo5_par
   double precision :: time1,tCPU
   double precision, external :: wtime
 
+  ! gets topo file ending ('.bin' or '.dat')
   ending = ''
   if (len_trim(PATHNAME_TOPO_FILE) > 4) ending = PATHNAME_TOPO_FILE(len_trim(PATHNAME_TOPO_FILE)-3:len_trim(PATHNAME_TOPO_FILE))
 
