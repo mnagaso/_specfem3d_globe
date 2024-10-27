@@ -81,7 +81,7 @@ FULL_GRAVITY                    = .false.
 POISSON_SOLVER                  = 0
 
 # record length in minutes
-RECORD_LENGTH_IN_MINUTES        = 3.0d0
+RECORD_LENGTH_IN_MINUTES        = 5.0d0
 
 #-----------------------------------------------------------
 #

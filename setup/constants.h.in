@@ -245,9 +245,6 @@
 !!
 !!-----------------------------------------------------------
 
-! Save mirror files
-  logical, parameter :: SAVE_MIRRORS = .false.
-
 ! Path to A3d model
 ! Make sure this line ends on "/"
   character (len=*), parameter :: A3d_folder = "DATA/SEMUCB_A3d/"
@@ -272,6 +269,9 @@
 !  integer, parameter :: EARTH_NY_BATHY = NY_BATHY_BERKELEY
 !  double precision, parameter :: EARTH_RESOLUTION_TOPO_FILE = RESOLUTION_TOPO_FILE_BERKELEY
 !  character (len=*), parameter :: EARTH_PATHNAME_TOPO_FILE = PATHNAME_TOPO_FILE_BERKELEY
+
+! Save mirror files - not implemented yet
+!  logical, parameter :: SAVE_MIRRORS = .false.
 
 
 !!-----------------------------------------------------------
