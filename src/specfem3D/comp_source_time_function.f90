@@ -27,10 +27,10 @@
 
   double precision function comp_source_time_function(t,hdur,it_index)
 
-  use constants, only: EXTERNAL_SOURCE_TIME_FUNCTION, &
-    STF_IS_UCB_HEAVISIDE
+  use constants, only: EXTERNAL_SOURCE_TIME_FUNCTION
 
   ! for berkeley source time function
+  use shared_parameters, only: STF_IS_UCB_HEAVISIDE
   use ucb_heaviside, only: comp_source_time_function_ucb_stf
 
   implicit none

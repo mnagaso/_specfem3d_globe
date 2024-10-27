@@ -81,7 +81,7 @@ FULL_GRAVITY                    = .false.
 POISSON_SOLVER                  = 0
 
 # record length in minutes
-RECORD_LENGTH_IN_MINUTES        = 2.5d0
+RECORD_LENGTH_IN_MINUTES        = 3.0d0
 
 #-----------------------------------------------------------
 #
@@ -269,6 +269,17 @@ USE_MONOCHROMATIC_CMT_SOURCE    = .false.
 # print source time function
 PRINT_SOURCE_TIME_FUNCTION      = .true.
 
+## Berkeley source time function
+STF_IS_UCB_HEAVISIDE            = .true.
+# UCB source frequency content (i.e., heaviside function)
+SOURCE_T1                       = 500.d0
+SOURCE_T2                       = 400.d0
+SOURCE_T3                       =  50.d0
+SOURCE_T4                       =  40.d0
+# UCB source time shift
+TAU                             = 500.d0
+
+
 #-----------------------------------------------------------
 #
 # Seismograms
@@ -347,7 +358,7 @@ APPROXIMATE_HESS_KL             = .false.
 # forces transverse isotropy for all mantle elements
 # (default is to use transverse isotropy only between crust and 220)
 # means we allow radial anisotropy throughout the whole crust/mantle region
-USE_FULL_TISO_MANTLE            = .false.
+USE_FULL_TISO_MANTLE            = .true.
 
 # output kernel mask to zero out source region
 # to remove large values near the sources in the sensitivity kernels

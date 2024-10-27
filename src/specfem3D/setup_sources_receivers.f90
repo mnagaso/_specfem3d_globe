@@ -582,6 +582,7 @@
   use specfem_par_movie
 
   ! for berkeley ucb stf
+  !use shared_parameters, only: STF_IS_UCB_HEAVISIDE
   use ucb_heaviside, only: init_ucb_heaviside
 
   implicit none

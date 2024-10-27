@@ -245,9 +245,6 @@
 !!
 !!-----------------------------------------------------------
 
-! source-time function is a UCB-style filtered heaviside
-  logical, parameter :: STF_IS_UCB_HEAVISIDE = .false.
-
 ! Save mirror files
   logical, parameter :: SAVE_MIRRORS = .false.
 

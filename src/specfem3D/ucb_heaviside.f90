@@ -90,6 +90,7 @@ contains
   subroutine init_ucb_heaviside(nstep_,dt_)
 
   use constants, only: myrank
+  use shared_parameters, only: STF_IS_UCB_HEAVISIDE
 
   implicit none
 
@@ -107,6 +108,9 @@ contains
 
   double precision :: pi = 4.d0 * datan(1.d0)
 
+  ! check if anything to do
+  if (.not. STF_IS_UCB_HEAVISIDE) return
+
   ! frequencies
   f1h = 1.d0 / UCB_SOURCE_T1
   f2h = 1.d0 / UCB_SOURCE_T2
@@ -118,11 +122,12 @@ contains
   ! user info
   if (myrank == 0) then
     write(*,*) "*****************************************"
-    write(*,*) "Heaviside Source T1:", UCB_SOURCE_T1
-    write(*,*) "Heaviside Source T2:", UCB_SOURCE_T2
-    write(*,*) "Heaviside Source T3:", UCB_SOURCE_T3
-    write(*,*) "Heaviside Source T4:", UCB_SOURCE_T4
-    write(*,*) "Source time-shift:", t0
+    write(*,*) "STF is UCB Heaviside:"
+    write(*,*) "  Heaviside Source T1:", UCB_SOURCE_T1
+    write(*,*) "  Heaviside Source T2:", UCB_SOURCE_T2
+    write(*,*) "  Heaviside Source T3:", UCB_SOURCE_T3
+    write(*,*) "  Heaviside Source T4:", UCB_SOURCE_T4
+    write(*,*) "  Source time-shift:", t0
     write(*,*) "*****************************************"
   endif
 

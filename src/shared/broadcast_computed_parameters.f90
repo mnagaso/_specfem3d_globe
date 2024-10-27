@@ -27,7 +27,7 @@
 
   subroutine broadcast_computed_parameters()
 
-  use constants, only: myrank,STF_IS_UCB_HEAVISIDE
+  use constants, only: myrank
   use shared_parameters
 
   implicit none
@@ -206,6 +206,7 @@
   call bcast_all_singlei(NZ_DOUBLING_5)
 
   ! (optional) Berkeley UCB stf
+  call bcast_all_singlel(STF_IS_UCB_HEAVISIDE)
   if (STF_IS_UCB_HEAVISIDE) then
     call bcast_all_singledp(UCB_SOURCE_T1)
     call bcast_all_singledp(UCB_SOURCE_T2)
