@@ -49,7 +49,9 @@ module model_berkeley_par
   implicit none
 
   ! spline arrays
-  double precision, dimension(:), allocatable :: aknot,oknot,aknot2,oknot2
+  !double precision, dimension(:), allocatable :: aknot,oknot,aknot2,oknot2    ! old: only for getdel()
+  double precision, dimension(:,:), allocatable :: knot_coeff,knot_coeff2
+
   double precision, dimension(:), allocatable :: mdl
   integer, dimension(:), allocatable :: level,level2
 
@@ -83,17 +85,22 @@ end module model_berkeley_par
 ! standard routine to setup model
 
   use model_berkeley_par
-  use constants, only: A3d_folder,myrank,IMAIN,EARTH_R_KM
+  use constants, only: A3d_folder,myrank,IMAIN,EARTH_R_KM,PI
 
   implicit none
 
   integer,parameter :: unit1 = 51,unit2 = 52
   integer :: dum2,i,j,k,n,mdim,ier
-  integer :: size_work
+  integer :: size_work,size_knots
+  double precision, dimension(:), allocatable :: aknot,oknot,aknot2,oknot2  ! temporary for reading
+  double precision :: theta,phi
   character :: trash
+
   character(len=100), parameter :: A3d_dat            = trim(A3d_folder) // 'A3d.dat'
   character(len=100), parameter :: hknots_dat         = trim(A3d_folder) // 'hknots.dat'
   character(len=100), parameter :: hknots2_dat        = trim(A3d_folder) // 'hknots2.dat'
+
+  double precision, parameter :: deg2rad = PI / 180.d0
 
   ! user info
   if (myrank == 0) then
@@ -188,6 +195,7 @@ end module model_berkeley_par
 
     NBPARAM = npar
     if (npar > MAXPAR)   stop 'npar greater than MAXPAR'
+    if (npar <= 0)   stop 'npar must be > 0'
 
     allocate(parblock(npar),stat=ier)
     if (ier /= 0) stop 'Error allocating parblock array'
@@ -333,6 +341,40 @@ end module model_berkeley_par
   work_dh(:) = 0.d0
   work_kindex(:) = 0
 
+  ! great-circle distance evaluations between GLL point position theta/phi and knot position
+  ! pre-compute knot position coefficients for getdel_pre()
+  size_knots = nknotA2(1)
+  allocate(knot_coeff(3,size_knots),stat=ier)
+  if (ier /= 0) stop 'Error allocating knot_coeff array for Berkeley model'
+  knot_coeff(:,:) = 0.d0
+  do i = 1,size_knots
+    ! knot coefficients colat/lon in rad
+    theta = (90.d0 - aknot(i)) * deg2rad
+    phi = oknot(i) * deg2rad
+    knot_coeff(1,i) = sin(theta)
+    knot_coeff(2,i) = cos(theta)
+    knot_coeff(3,i) = phi
+  enddo
+  ! free unneeded arrays
+  deallocate(aknot,oknot)
+
+  if (hknots2_exist) then
+    size_knots = nknotA2(2)
+    allocate(knot_coeff2(3,size_knots),stat=ier)
+    if (ier /= 0) stop 'Error allocating knot_coeff2 array for Berkeley model'
+    knot_coeff2(:,:) = 0.d0
+    do i = 1,size_knots
+      ! knot position colat/lon in rad
+      theta = (90.d0 - aknot2(i)) * deg2rad
+      phi = oknot2(i) * deg2rad
+      knot_coeff2(1,i) = sin(theta)
+      knot_coeff2(2,i) = cos(theta)
+      knot_coeff2(3,i) = phi
+    enddo
+    ! free unneeded arrays
+    deallocate(aknot2,oknot2)
+  endif
+
   end subroutine model_berkeley_broadcast
 
 
@@ -367,26 +409,29 @@ end module model_berkeley_par
   double precision :: fi_inv
 
   integer :: jump,effnknot,i,j,k
+  integer :: nknots_horiz,nknots_radial
   !integer, dimension(:), allocatable :: kindex
 
-  double precision :: lat,lon
   double precision :: del,dr,dv
   double precision :: AA,CC,FF,LL,NN
   double precision :: eta1,adel1,r_
 
+  ! knot great-circle distances for different spline levels
+  !double precision, dimension(8), parameter :: adel = (/63.4, 31.7, 15.8, 7.9, 3.95, 1.98, 0.99/)
   ! Include level 8 (FM, April 2021 - Mod. courtesy of Dan Frost)
   double precision, dimension(8), parameter :: adel = (/63.4, 31.7, 15.8, 7.9, 3.95, 1.98, 0.99, 0.495/)
-  !adel=(/63.4, 31.7, 15.8, 7.9, 3.95, 1.98, 0.99/)
 
   !double precision, dimension(:), allocatable :: dh
+  !double precision :: lat,lon  ! unused
 
-  double precision,external :: getdel
-  double precision,external :: spbsp
-
+  double precision :: sin_theta0,cos_theta0
   double precision :: vsv,vsh,vpv,vph,scaleval
   double precision :: aa1, bb1
 
-  double precision, parameter :: rad2deg = 180.d0/PI
+  double precision,external :: getdel_pre
+  double precision,external :: spbsp
+
+  !double precision, parameter :: rad2deg = 180.d0/PI
 
   ! tolerance for water density check
   double precision, parameter :: TOL_RHO_WATER = 1200.d0 / EARTH_RHOAV   ! non-dimensionalized
@@ -491,22 +536,32 @@ end module model_berkeley_par
   xi = NN / LL
   fi = CC / AA
 
-  ! point lat/lon in degrees
-  lat = 90.d0 - rad2deg * theta
-  lon = rad2deg * phi
+  ! point lat/lon in degrees for getdel()
+  !lat = 90.d0 - rad2deg * theta
+  !lon = rad2deg * phi
+
+  ! coefficients for getdel_pre()
+  sin_theta0 = sin(theta)
+  cos_theta0 = cos(theta)
 
   ! Vs perturbation
   if (r_ > kntrad(nknotA1(1)) .or. r_ < kntrad(1)) then
     dv = 0.d0
   else
     jump = 0
+
     !allocate(dh(nknotA2(1)),kindex(nknotA2(1)))
     work_dh(:) = 0.d0
     work_kindex(:) = 0
-
     effnknot = 0
-    do i = 1,nknotA2(1)
-      del = getdel(lat,lon,aknot(i),oknot(i))
+
+    nknots_horiz = nknotA2(1)
+    nknots_radial = nknotA1(1)
+
+    do i = 1,nknots_horiz
+      ! gets great-circle distance between position theta/phi and knot
+      !old: del = getdel(lat,lon,aknot(i),oknot(i))
+      del = getdel_pre(sin_theta0,cos_theta0,phi,knot_coeff(1,i),knot_coeff(2,i),knot_coeff(3,i))
 
       if (del <= adel(level(i)) * 2.d0) then
         effnknot = effnknot+1
@@ -516,12 +571,12 @@ end module model_berkeley_par
     enddo
 
     dv = 0.d0
-    do i = 1,nknotA1(1)
+    do i = 1,nknots_radial
       ! spline value
-      call fspl(i,nknotA1(1),kntrad,kntrad_hh,r_,dr)
+      call fspl(i,nknots_radial,kntrad,kntrad_hh,r_,dr)
 
       do j = 1,effnknot
-        dv = dv + dr * work_dh(j) * mdl(jump + work_kindex(j) + nknotA2(1) * (i-1))
+        dv = dv + dr * work_dh(j) * mdl(jump + work_kindex(j) + nknots_horiz * (i-1))
       enddo
     enddo
     !deallocate(dh,kindex)
@@ -534,7 +589,67 @@ end module model_berkeley_par
 
   ! Perturbation of other parameters
   ! note: default in A3d.dat is npar == 2
-  if (npar > 1) then
+  if (npar == 2) then
+    ! xi perturbation (dv)
+    if (r_ > kntrad(nknotA1(2)) .or. r_ < kntrad(1)) then
+      dv = 0.d0
+    else
+      jump = jump + nknotA1(1) * nknotA2(1)
+
+      work_dh(:) = 0.d0
+      work_kindex(:) = 0
+      effnknot = 0
+
+      nknots_horiz = nknotA2(2)
+      nknots_radial = nknotA1(2)
+
+      if (unconformal) then
+        ! unconformal grid
+        do i = 1,nknots_horiz
+          ! gets great-circle distance between position theta/phi and knot
+          !old: del = getdel(lat,lon,aknot2(i),oknot2(i))
+          del = getdel_pre(sin_theta0,cos_theta0,phi,knot_coeff2(1,i),knot_coeff2(2,i),knot_coeff2(3,i))
+
+          adel1 = adel(level2(i))
+          if (del <= adel1 * 2.d0) then
+            effnknot = effnknot + 1
+            work_kindex(effnknot) = i
+            work_dh(effnknot) = spbsp(del,adel1)
+          endif
+        enddo
+      else
+        ! conformal grid
+        do i = 1,nknots_horiz
+          ! gets great-circle distance between position theta/phi and knot
+          !old: del = getdel(lat,lon,aknot(i),oknot(i))
+          del = getdel_pre(sin_theta0,cos_theta0,phi,knot_coeff(1,i),knot_coeff(2,i),knot_coeff(3,i))
+
+          adel1 = adel(level(i))
+          if (del <= adel1 * 2.d0) then
+            effnknot = effnknot + 1
+            work_kindex(effnknot) = i
+            work_dh(effnknot) = spbsp(del,adel1)
+          endif
+        enddo
+      endif
+
+      dv = 0.d0
+      do i = 1,nknots_radial
+        ! spline value
+        call fspl(i,nknots_radial,kntrad,kntrad_hh,r_,dr)
+
+        do j = 1,effnknot
+          dv = dv + dr * work_dh(j) * mdl(jump + work_kindex(j) + nknots_horiz * (i-1))
+        enddo
+      enddo
+    endif
+
+    ! npar == k == 2
+    xi = xi + dv * xi
+    fi = fi - 1.5d0 * dv * fi
+    eta = eta - 2.5d0 * dv * eta
+  else if (npar > 2) then
+    ! npar > 2
     do k = 2,npar
       if (r_ > kntrad(nknotA1(k)) .or. r_ < kntrad(1)) then
         dv = 0.d0
@@ -548,12 +663,17 @@ end module model_berkeley_par
         effnknot = 0
         do i = 1,nknotA2(k)
           if (unconformal) then
-            del = getdel(lat,lon,aknot2(i),oknot2(i))
+            ! gets great-circle distance between position theta/phi and knot
+            !old: del = getdel(lat,lon,aknot2(i),oknot2(i))
+            del = getdel_pre(sin_theta0,cos_theta0,phi,knot_coeff2(1,i),knot_coeff2(2,i),knot_coeff2(3,i))
             adel1 = adel(level2(i))
           else
-            del = getdel(lat,lon,aknot(i),oknot(i))
+            ! gets great-circle distance between position theta/phi and knot
+            !old: del = getdel(lat,lon,aknot(i),oknot(i))
+            del = getdel_pre(sin_theta0,cos_theta0,phi,knot_coeff(1,i),knot_coeff(2,i),knot_coeff(3,i))
             adel1 = adel(level(i))
           endif
+
           if (del <= adel1 * 2.d0) then
             effnknot = effnknot+1
             work_kindex(effnknot) = i
@@ -636,16 +756,46 @@ end module model_berkeley_par
 !--------------------------------------------------------------------------------------------------
 !
 
+  double precision function getdel_pre(sin_theta0,cos_theta0,phi0,sin_theta,cos_theta,phi)
+
+  use constants, only: PI
+
+  implicit none
+  double precision,intent(in) :: sin_theta0,cos_theta0,phi0,sin_theta,cos_theta,phi
+  ! local parameters
+  double precision :: a
+  double precision, parameter :: rad2deg = 180.d0 / PI    ! 180.d0 / (4.d0 * datan(1.d0))
+
+  ! great-circle distance (by law of cosines formula) in degrees
+  a = cos_theta * cos_theta0 + sin_theta * sin_theta0 * cos(phi - phi0)
+
+  ! limit to +/- 1 numerical accuracy for acos(..)
+  if (abs(a) > 1.d0) a = sign(1.d0,a) * 1.d0
+
+  ! great-circle distance in degrees
+  getdel_pre = rad2deg * acos(a)
+
+  end function getdel_pre
+
+!
+!--------------------------------------------------------------------------------------------------
+!
+
   double precision function getdel(a0,o0,a,o)
+
+  use constants, only: PI
 
   implicit none
   double precision,intent(in) :: a0,o0,a,o
   ! local parameters
-  double precision :: q0,sq0,cq0,q,sq,cq,ff,cff,arg  ! sff
+  double precision :: q0,sq0,cq0
+  double precision :: q,sq,cq
+  double precision :: ff,cff,arg  ! sff
 
-  double precision, parameter :: deg2rad = (4.d0 * datan(1.d0)) / 180.d0
-  double precision, parameter :: rad2deg = 180.d0 / (4.d0 * datan(1.d0))
+  double precision, parameter :: deg2rad = PI / 180.d0    ! (4.d0 * datan(1.d0)) / 180.d0
+  double precision, parameter :: rad2deg = 180.d0 / PI    ! 180.d0 / (4.d0 * datan(1.d0))
 
+  ! great-circle distance (by law of cosines formula) in degrees
   q0 = (90.d0 - a0) * deg2rad
   sq0 = sin(q0)
   cq0 = cos(q0)
