@@ -924,7 +924,8 @@
         case (THREE_D_MODEL_BERKELEY)
           ! 3D Berkeley Model SEMUCB
           ! note: passes r/theta/phi (geocentric coordinates)
-          call model_berkeley_shsv(r_used,theta,phi,dvsh,dvsv,dvph,dvpv,drho,eta_aniso,iregion_code,CRUSTAL)
+          call model_berkeley_shsv(r_used,theta,phi,vpv,vph,vsv,vsh,rho, &
+                                   dvsh,dvsv,dvph,dvpv,drho,eta_aniso,iregion_code,CRUSTAL)
 
           ! updates velocities from reference model
           if (TRANSVERSE_ISOTROPY) then

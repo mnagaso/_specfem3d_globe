@@ -340,7 +340,8 @@ end module model_berkeley_par
 !--------------------------------------------------------------------------------------------------
 !
 
-  subroutine model_berkeley_shsv(r,theta,phi,dvsh,dvsv,dvph,dvpv,drho,eta_aniso,iregion_code,CRUSTAL)
+  subroutine model_berkeley_shsv(r,theta,phi,vpv_ref,vph_ref,vsv_ref,vsh_ref,rho_ref, &
+                                 dvsh,dvsv,dvph,dvpv,drho,eta_aniso,iregion_code,CRUSTAL)
 
 ! returns isotropic vs, vp, and rho assuming scaling dlnVs/dlnVp=2 dlnVs/dlnrho=3
 ! also returns anisotropic parameters xi,fi,eta,Gc,Gs,Hc,Hs,Bc,Bs if ifanis=1
@@ -351,7 +352,9 @@ end module model_berkeley_par
   implicit none
 
   double precision, intent(in) :: r,theta,phi
-  double precision, intent(out) :: dvsv,dvsh,dvpv,dvph,drho,eta_aniso
+  double precision, intent(in) :: vpv_ref,vph_ref,vsv_ref,vsh_ref,rho_ref
+  double precision, intent(out) :: dvsv,dvsh,dvpv,dvph,drho
+  double precision, intent(inout) :: eta_aniso
 
   integer, intent(in) :: iregion_code
   logical, intent(in) :: CRUSTAL
@@ -359,7 +362,7 @@ end module model_berkeley_par
   ! local parameters
   double precision :: x,rho1d,vpv1d,vph1d,vsv1d,vsh1d,eta1d,Qmu1d,Qkappa1d
 
-  double precision :: vs,vp,rho,Qs
+  double precision :: vs,vp,rho   ! Qs
   double precision :: xi,fi,eta,Gc,Gs
   double precision :: fi_inv
 
@@ -385,13 +388,15 @@ end module model_berkeley_par
 
   double precision, parameter :: rad2deg = 180.d0/PI
 
+  ! tolerance for water density check
+  double precision, parameter :: TOL_RHO_WATER = 1200.d0 / EARTH_RHOAV   ! non-dimensionalized
+
   ! initializes model perturbations
   dvsv = 0.d0
   dvsh = 0.d0
   dvpv = 0.d0
   dvph = 0.d0
   drho = 0.d0
-  eta_aniso = 1.d0
 
   xi = 1.d0
   fi = 1.d0
@@ -408,19 +413,48 @@ end module model_berkeley_par
   ! note: r is non-dimensionalized/normalized input radius between [0,1]
   if (r > moho1D_radius) then
     r_ = moho1D_radius  ! * EARTH_R_KM
+    ! re-evaluate reference 1D model values for this updated radius
+    call model_1dberkeley(r_,rho1d,vpv1d,vph1d,vsv1d,vsh1d,eta1d,Qkappa1d,Qmu1d,iregion_code,CRUSTAL)
   else
     r_ = r              ! * EARTH_R_KM
+    ! reference model values already setup prior to this routine call
+    vpv1d = vpv_ref
+    vph1d = vph_ref
+    vsv1d = vsv_ref
+    vsh1d = vsh_ref
+    rho1d = rho_ref
+    eta1d = eta_aniso
+    Qkappa1d = 9999.d0  ! unused
+    Qmu1d = 9999.d0     ! unused
   endif
 
   ! non-dimensionalized radius
   x = r_                ! / EARTH_R_KM
 
-  call model_1dberkeley(x,rho1d,vpv1d,vph1d,vsv1d,vsh1d,eta1d,Qkappa1d,Qmu1d,iregion_code,CRUSTAL)
+  if (USE_OLD_VERSION_FORMAT) then
+    ! old version by mistake compares non-dimensionalized rho1d with density value 1200.d0
+    ! thus, this will always be evaluated since rho1d is much smaller than that.
+    if (rho1d < 1200.d0) then
+      ! No water in RegSEM please
+      !
+      !debug
+      !print *,'debug: rho1d ',rho1d, rho1d * EARTH_RHOAV, rho_ref * EARTH_RHOAV,'radius ',x * EARTH_R_KM
 
-  if (rho1d < 1200.d0) then
-    ! No water in RegSEM please
-    x = r_ * EARTH_R_KM / 6367.999d0
-    call model_1dberkeley(x,rho1d,vpv1d,vph1d,vsv1d,vsh1d,eta1d,Qkappa1d,Qmu1d,iregion_code,CRUSTAL)
+      ! originally, this likely wanted to re-scale the radius to be below ocean at 6368.0 km?
+      ! however, this formula won't work - x can still be above ocean radius.
+      ! this scaling was moving up the radius value, thus shifting all mantle velocities from the 1D definition slightly up.
+      x = r_ * EARTH_R_KM / 6367.999d0
+      call model_1dberkeley(x,rho1d,vpv1d,vph1d,vsv1d,vsh1d,eta1d,Qkappa1d,Qmu1d,iregion_code,CRUSTAL)
+    endif
+  else
+    ! fix
+    ! check non-dimensionalized density
+    if (rho1d < TOL_RHO_WATER) then
+      ! No water in RegSEM please
+      ! takes radius slightly below ocean at 6368.0 km to get mantle/crust values from the layer below ocean
+      x = 6367.999d0 / EARTH_R_KM
+      call model_1dberkeley(x,rho1d,vpv1d,vph1d,vsv1d,vsh1d,eta1d,Qkappa1d,Qmu1d,iregion_code,CRUSTAL)
+    endif
   endif
 
   ! below use r_ as radius in km
@@ -441,8 +475,9 @@ end module model_berkeley_par
   LL  = vsv1d*vsv1d * rho
   NN  = vsh1d*vsh1d * rho
   FF  = eta1d * (AA - 2.d0 * LL)
-  qs  = qmu1d
 
+  ! unused
+  !Qs  = Qmu1d
   !call get_1Dmodel_TI(AA,CC,FF,LL,NN,rho,Qs,r_*1000.d0)
   !if (rho < 1200.d0)   call get_1Dmodel_TI(AA,CC,FF,LL,NN,rho,Qs,6367999.d0)   ! No water in RegSEM please
 
