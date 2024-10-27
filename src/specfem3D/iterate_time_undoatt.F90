@@ -473,7 +473,7 @@
             endif
             call register_host_array(NDIM*NGLOB_CRUST_MANTLE_ADJOINT, b_displ_cm_store_buffer(:,:, it_of_buffer))
 #endif
-            ! daniel debug: check if these transfers could be made async to overlap
+            ! daniel TODO: check if these transfers could be made async to overlap
             call transfer_ofs_b_displ_cm_from_device(NDIM*NGLOB_CRUST_MANTLE_ADJOINT,it_of_buffer, &
                                                     b_displ_cm_store_buffer,Mesh_pointer)
             call transfer_ofs_b_displ_ic_from_device(NDIM*NGLOB_INNER_CORE_ADJOINT,it_of_buffer, &
@@ -521,7 +521,7 @@
           ! crust/mantle
           ! transfers wavefields from CPU to GPU
           if (GPU_MODE) then
-            ! daniel debug: check if these transfers could be made async to overlap
+            ! daniel TODO: check if these transfers could be made async to overlap
             call transfer_ofs_b_displ_cm_to_device(NDIM*NGLOB_CRUST_MANTLE_ADJOINT,it_of_buffer, &
                                                   b_displ_cm_store_buffer,Mesh_pointer)
             call transfer_ofs_b_displ_ic_to_device(NDIM*NGLOB_INNER_CORE_ADJOINT,it_of_buffer, &

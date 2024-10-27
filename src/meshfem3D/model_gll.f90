@@ -977,7 +977,7 @@
     Gc = Gc_prime * mu0
     Gs = Gs_prime * mu0
 
-    !daniel debug:
+    ! debug
     ! test: ignore Gc,Gs contributions
     !Gc = 0.d0
     !Gs = 0.d0

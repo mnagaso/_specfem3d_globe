@@ -386,7 +386,7 @@
   ! checks
   if (SIMULATION_TYPE /= 3 ) return
 
-!daniel debug: att - debug
+! debug: att - debug
 !  integer :: iglob
 !  logical,parameter :: DEBUG = .false.
 !  if (DEBUG) then
@@ -719,7 +719,7 @@
     call update_veloc_elastic_newmark_backward()
   endif
 
-!daniel debug: att - debug
+! debug: att - debug
 !  if (DEBUG) then
 !    if (SIMULATION_TYPE == 1) then
 !      if (it > NSTEP - 1000 .and. myrank == 0) then

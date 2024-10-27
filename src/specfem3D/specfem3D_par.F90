@@ -33,7 +33,7 @@ module constants_solver
 
   implicit none
 
-! daniel debug: todo
+
 #ifdef USE_STATIC_COMPILATION
   ! static compilation
 

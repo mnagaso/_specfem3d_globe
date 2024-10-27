@@ -515,7 +515,7 @@ contains
 ! helper functions
 !
 !
-!daniel debug: att - debug update
+! debug: att - debug update
 !
 !  subroutine compute_element_att_mem_up_cm(ispec,i,j,k, &
 !                                              R_xx_loc,R_yy_loc,R_xy_loc,R_xz_loc,R_yz_loc, &
@@ -524,7 +524,7 @@ contains
 !! update memory variables based upon the Runge-Kutta scheme
 !
 !
-!!daniel: att - debug update
+!! debug: att - debug update
 !  use specfem_par, only: tau_sigma_dble,deltat,b_deltat
 !
 !  use specfem_par_crustmantle, only: factor_common => factor_common_crust_mantle
