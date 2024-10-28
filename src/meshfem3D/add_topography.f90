@@ -31,6 +31,10 @@
   use shared_parameters, only: REGIONAL_MESH_CUTOFF,REGIONAL_MESH_CUTOFF_DEPTH,USE_LOCAL_MESH,ELLIPTICITY
   use meshfem_par, only: R220,NX_BATHY,NY_BATHY,R_PLANET
 
+  ! for old version Berkeley compatibility
+  use constants, only: USE_OLD_VERSION_FORMAT,ICRUST_BERKELEY,THREE_D_MODEL_BERKELEY
+  use meshfem_models_par, only: THREE_D_MODEL,REFERENCE_CRUSTAL_MODEL
+
   implicit none
 
   double precision,dimension(NGNOD), intent(inout) :: xelm,yelm,zelm
@@ -44,6 +48,13 @@
   double precision :: gamma
 
   integer :: ia
+
+  ! for compatibility
+  double precision :: theta,phi
+  double precision :: vpvc,vphc,vsvc,vshc,etac,rhoc
+  double precision :: moho
+  double precision :: rmoho
+  logical :: found_crust,elem_in_crust,moho_only
 
   ! we loop on all the points of the element
   do ia = 1,NGNOD
@@ -76,6 +87,29 @@
     endif
     gamma = (r - rbottom) / (R_UNIT_SPHERE - rbottom)
 
+    ! old version compatility
+    if (USE_OLD_VERSION_FORMAT) then
+      ! Berkeley model
+      if (THREE_D_MODEL == THREE_D_MODEL_BERKELEY .and. &
+          REFERENCE_CRUSTAL_MODEL == ICRUST_BERKELEY) then
+        ! convert lat/lon to theta/phi
+        call latlon_2_thetaphi_dble(lat,lon,theta,phi)
+
+        ! gets smoothed moho depth
+        elem_in_crust = .true.
+        moho_only = .true.
+        call model_berkeley_crust_aniso(r,theta,phi,vpvc,vphc,vsvc,vshc,etac,rhoc,moho,found_crust,elem_in_crust,moho_only)
+
+        rmoho = R_UNIT_SPHERE - moho
+
+        ! if point above moho then move points, otherwise skip
+        if (r <= rmoho) cycle
+
+        ! adjust gamma stretching to moho boundary distance
+        gamma = (r - rmoho) / (R_UNIT_SPHERE - rmoho)
+      endif
+    endif
+
     ! add elevation to all the points of that element
     ! also make sure gamma makes sense
     if (gamma < -0.02 .or. gamma > 1.02) then
@@ -106,7 +140,6 @@
   use shared_parameters, only: R_PLANET
   use shared_parameters, only: REGIONAL_MESH_CUTOFF,REGIONAL_MESH_CUTOFF_DEPTH,USE_LOCAL_MESH,ELLIPTICITY
   use meshfem_par, only: R220,NX_BATHY,NY_BATHY
-
 
   implicit none
 

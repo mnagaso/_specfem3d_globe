@@ -76,7 +76,7 @@ void FC_FUNC_ (compute_stacey_acoustic_gpu,
     size_t local_work_size[2];
     cl_uint idx = 0;
 
-    //daniel debug
+    // debug
     //clCheck (clFinish (mocl.command_queue));
     //printf ("rank %d: stacey a %i, %i save %i num blocks x/y= %i %i nglob %i nspec2D %i nspec %i\n",
     //          mp->myrank,interface_type,num_abs_boundary_faces,mp->save_forward,num_blocks_x,num_blocks_y,
@@ -104,7 +104,7 @@ void FC_FUNC_ (compute_stacey_acoustic_gpu,
     clCheck (clEnqueueNDRangeKernel (mocl.command_queue, mocl.kernels.compute_stacey_acoustic_kernel, 2, NULL,
                                      global_work_size, local_work_size, 0, NULL, NULL));
 
-    //daniel debug
+    // debug
     //clCheck (clFinish (mocl.command_queue));
     //printf ("rank %d: stacey b %i, %i \n", mp->myrank,interface_type,num_abs_boundary_faces);
     //fflush (stdout);

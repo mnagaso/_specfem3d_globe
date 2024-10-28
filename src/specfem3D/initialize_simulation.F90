@@ -168,6 +168,12 @@
       tiny(1._CUSTOM_REAL),huge(1._CUSTOM_REAL)
     write(IMAIN,*)
 
+    ! backward compatibility
+    if (USE_OLD_VERSION_FORMAT) then
+      write(IMAIN,*) 'using old version backward compatibility (versions 7.0 to 8.0)'
+      write(IMAIN,*)
+    endif
+
     ! model user parameters
     write(IMAIN,*) 'model: ',trim(MODEL)
     if (OCEANS) then
@@ -247,8 +253,10 @@
     else
       write(IMAIN,*) '  no general mantle anisotropy'
     endif
-
     write(IMAIN,*)
+    if (ASSUME_PERFECT_SPHERE) then
+      write(IMAIN,*) '  assuming perfect sphere'
+    endif
     write(IMAIN,*)
     if (REGIONAL_MESH_CUTOFF) then
       write(IMAIN,*) 'Regional mesh cutoff:'

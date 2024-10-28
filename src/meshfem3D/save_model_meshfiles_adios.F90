@@ -126,7 +126,7 @@
   write(region_name_scalar,"('reg',i1)") iregion_code
   write(group_name,"('SPECFEM3D_GLOBE_MODEL_reg',i1)") iregion_code
 
-!daniel
+
 ! note: on Mac OsX with OpenMPI 3.1, an error can occur at the end when finalizing MPI:
 !
 !--------------------------------------------------------------------------

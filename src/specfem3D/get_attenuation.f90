@@ -203,7 +203,10 @@
 
   ! local parameters
   double precision, dimension(N_SLS) :: tauinv,beta
-  double precision :: omsb1,omsb2
+
+  ! debugging
+  !double precision :: omsb1,omsb2
+
   integer :: i
 
   tauinv(:) = 0.d0
@@ -225,20 +228,20 @@
   !          M_U = M_R / [ 1 - sum( (tau_eps - tau_sigma)/tau_eps ) ] = M_R / [ 1 - sum(1 - tau_sigma/tau_eps) ]
   !       with a scaling factor = 1 / [ 1 - sum(1 - tau_sigma/tau_eps) ]
   !
-  ! to compare these two factors:
-  if (.false.) then
-    ! factor to scale from relaxed to unrelaxed moduli: see Komatitsch
-    omsb1 = 1.0d0
-    do i = 1,N_SLS
-      omsb1  = omsb1 - (1.d0 - tau_e(i)/tau_s(i))
-    enddo
-    ! factor to scale from relaxed to unrelaxed moduli: see Liu
-    omsb2 = 1.0d0
-    do i = 1,N_SLS
-      omsb2 = omsb2 - (1.d0 - tau_s(i)/tau_e(i))
-    enddo
-    print *,'debug: one_minus_sum_beta1,2 = ',omsb1,1.d0/omsb2
-  endif
+  ! debugging - to compare these two factors:
+  !if (.false.) then
+  !  ! factor to scale from relaxed to unrelaxed moduli: see Komatitsch
+  !  omsb1 = 1.0d0
+  !  do i = 1,N_SLS
+  !    omsb1  = omsb1 - (1.d0 - tau_e(i)/tau_s(i))
+  !  enddo
+  !  ! factor to scale from relaxed to unrelaxed moduli: see Liu
+  !  omsb2 = 1.0d0
+  !  do i = 1,N_SLS
+  !    omsb2 = omsb2 - (1.d0 - tau_s(i)/tau_e(i))
+  !  enddo
+  !  print *,'debug: one_minus_sum_beta1,2 = ',omsb1,1.d0/omsb2
+  !endif
   ! results:
   ! Q ~    65: one_minus_sum_beta1,2 = 1.0648735275165400        1.0677815840121743   -> ratio = 0.997276
   ! Q ~   184: one_minus_sum_beta1,2 = 1.0233224020801992        1.0236877302481358   -> ratio = 0.999643

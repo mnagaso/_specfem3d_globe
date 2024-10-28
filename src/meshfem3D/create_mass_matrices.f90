@@ -543,18 +543,23 @@
   ! checks if anything to do
   if (.not. OCEANS) return
 
-  ! user output
-  if (myrank == 0) then
-    write(IMAIN,*) '     updates mass matrix with ocean load'
-    call flush_IMAIN()
-  endif
-
   ! initializes
   do_ocean_load = .false.
 
   ! note: new version:
   !       for 3D Earth with topography, compute local height of oceans
   if (TOPOGRAPHY) do_ocean_load = .true.
+
+  ! user output
+  if (myrank == 0) then
+    write(IMAIN,*) '     updates mass matrix with ocean load'
+    if (do_ocean_load) then
+      write(IMAIN,*) '       using minimum ocean thickness: ',MINIMUM_THICKNESS_3D_OCEANS,'(m)'
+    else
+      write(IMAIN,*) '       using 1D ocean PREM thickness: ',THICKNESS_OCEANS_PREM * EARTH_R,'(m)'
+    endif
+    call flush_IMAIN()
+  endif
 
   ! create ocean load mass matrix for degrees of freedom at ocean bottom
   rmass_ocean_load(:) = 0._CUSTOM_REAL

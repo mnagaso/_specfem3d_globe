@@ -84,6 +84,7 @@ shared_OBJECTS = \
 	$O/SIEM_math_library.shared.o \
 	$O/smooth_weights_vec.shared.o \
 	$O/sort_array_coordinates.shared.o \
+	$O/spl_A3d.cc.o \
 	$O/spline_routines.shared.o \
 	$O/write_VTK_file.shared.o \
 	$O/ylm.shared.o \
@@ -103,6 +104,7 @@ shared_MODULES = \
 	$(FC_MODDIR)/siem_math_library.$(FC_MODEXT) \
 	$(FC_MODDIR)/siem_math_library_mpi.$(FC_MODEXT) \
 	$(FC_MODDIR)/siem_gll_library.$(FC_MODEXT) \
+	$(FC_MODDIR)/smooth_etopo5_par.$(FC_MODEXT) \
 	$(FC_MODDIR)/kdtree_search.$(FC_MODEXT) \
 	$(EMPTY_MACRO)
 

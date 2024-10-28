@@ -85,7 +85,7 @@
 ! for mars, creates a spline for the ellipticity profile in Mars (Sohl $ Spohn)
 
 
-  use constants, only: NR_DENSITY,TWO_PI,PI,GRAV,R_UNIT_SPHERE,myrank
+  use constants, only: NR_DENSITY,TWO_PI,PI,GRAV,R_UNIT_SPHERE,myrank,USE_OLD_VERSION_FORMAT
 
   use shared_parameters, only: PLANET_TYPE,IPLANET_EARTH,IPLANET_MARS,IPLANET_MOON, &
     R_PLANET,R_PLANET_KM,RHOAV, &
@@ -137,9 +137,9 @@
 !                      please check the effect.
 
   ! Earth
-  ! PREM radius of the Earth for gravity calculation
+  ! PREM radius of the Earth for calculation
   double precision, parameter :: R_EARTH_ELLIPTICITY = 6371000.d0
-  ! PREM radius of the ocean floor for gravity calculation
+  ! PREM radius of the ocean floor for calculation
   double precision, parameter :: ROCEAN_ELLIPTICITY = PREM_ROCEAN
 
   ! initializes
@@ -162,7 +162,7 @@
   case (IPLANET_EARTH)
     ! Earth
     ! default PREM
-    ! radius of the planet for gravity calculation
+    ! radius of the planet for calculation
     RSURFACE = R_EARTH_ELLIPTICITY  ! physical surface (Earth: 6371000, ..)
     ROCEAN = ROCEAN_ELLIPTICITY
     RMIDDLE_CRUST = PREM_RMIDDLE_CRUST
@@ -175,7 +175,11 @@
     R771 = PREM_R771
     RTOPDDOUBLEPRIME = PREM_RTOPDDOUBLEPRIME
     RCMB = PREM_RCMB
-    RICB = PREM_RICB
+    if (USE_OLD_VERSION_FORMAT) then
+      RICB = PREM_RICB_OLD
+    else
+      RICB = PREM_RICB
+    endif
 
   case (IPLANET_MARS)
     ! Mars
@@ -343,8 +347,8 @@
     z = (2.0d0/3.0d0) * integral_radau / (integral_rho*r(i)*r(i))
 
     ! this comes from equation (14.19) in Dahlen and Tromp (1998)
-    eta(i) = (25.0d0/4.0d0)*((1.0d0-(3.0d0/2.0d0)*z)**2.0d0)-1.0d0
-    k(i) = eta(i)/(r(i)**3.0d0)
+    eta(i) = (25.0d0/4.0d0) * ( (1.0d0-(3.0d0/2.0d0)*z)**2 ) - 1.0d0
+    k(i) = eta(i) / ( r(i)**3 )
   enddo
 
   ! day rotation
@@ -355,11 +359,11 @@
 
   g_a = 4.0d0 * integral_rho
   ! this is the equation right above (14.21) in Dahlen and Tromp (1998)
-  epsilonval(NR_DENSITY) = (5.0d0/2.d0)*(bom**2.0d0)*R_UNIT_SPHERE / (g_a * (eta(NR_DENSITY)+2.0d0))
+  epsilonval(NR_DENSITY) = (5.0d0/2.d0) * (bom**2) * R_UNIT_SPHERE / (g_a * (eta(NR_DENSITY) + 2.0d0))
 
   do i = 1,NR_DENSITY-1
     call intgrl(exponentval,r,i,NR_DENSITY,k,s1,s2,s3)
-    epsilonval(i) = epsilonval(NR_DENSITY)*exp(-exponentval)
+    epsilonval(i) = epsilonval(NR_DENSITY) * exp(-exponentval)
   enddo
 
   ! initializes spline coefficients

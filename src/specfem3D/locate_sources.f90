@@ -59,6 +59,9 @@
 
   use specfem_par_movie, only: vtkdata_source_x,vtkdata_source_y,vtkdata_source_z
 
+  ! for Berkeley stf
+  use shared_parameters, only: STF_IS_UCB_HEAVISIDE,UCB_SOURCE_T1,UCB_SOURCE_T2,UCB_SOURCE_T3,UCB_SOURCE_T4,UCB_TAU
+
   implicit none
 
   ! local parameters
@@ -124,6 +127,9 @@
   ! timer MPI
   double precision :: time_start,tCPU
   double precision, external :: wtime
+
+  ! compatibility to previous version
+  double precision :: radius_ell,dcost,p20,ell
 
   ! user output
   if (myrank == 0) then
@@ -335,8 +341,18 @@
 
       ! ellipticity
       if (ELLIPTICITY_VAL) then
-        ! adds ellipticity factor to radius
-        call add_ellipticity_rtheta(r0,theta,nspl_ellip,rspl_ellip,ellipicity_spline,ellipicity_spline2)
+       ! adds ellipticity factor to radius
+        if (USE_OLD_VERSION_FORMAT) then
+          ! removes depth from r0 as reference location to determine ellipticity factor (ell)
+          radius_ell = r0 - depth/R_PLANET
+          call spline_evaluation(rspl_ellip,ellipicity_spline,ellipicity_spline2,nspl_ellip,radius_ell,ell)
+          dcost = dcos(theta)
+          p20 = 0.5d0 * (3.0d0 * dcost*dcost - 1.0d0)
+          r0 = r0 * (1.0d0 - (2.0d0/3.0d0) * ell * p20)
+        else
+          ! takes r0 as reference location to determine ellipticity factor
+          call add_ellipticity_rtheta(r0,theta,nspl_ellip,rspl_ellip,ellipicity_spline,ellipicity_spline2)
+        endif
       endif
 
       ! stores surface radius for info output
@@ -477,39 +493,29 @@
         write(IMAIN,*) '  source located in slice ',islice_selected_source(isource_in_this_subset)
         write(IMAIN,*) '                 in element ',ispec_selected_source(isource_in_this_subset)
         write(IMAIN,*)
+        write(IMAIN,*) '  at xi,eta,gamma coordinates = ', &
+                       sngl(xi_source(isource)),sngl(eta_source(isource)),sngl(gamma_source(isource))
+        write(IMAIN,*) '  at (x,y,z)                  = ', sngl(xyz_found_subset(1,isource_in_this_subset)), &
+                       sngl(xyz_found_subset(2,isource_in_this_subset)),sngl(xyz_found_subset(3,isource_in_this_subset))
+        write(IMAIN,*)
         ! different output for force point sources
         if (USE_FORCE_POINT_SOURCE) then
           write(IMAIN,*) '  using force point source:'
-          write(IMAIN,*) '    xi coordinate of source in that element: ',xi_source(isource)
-          write(IMAIN,*) '    eta coordinate of source in that element: ',eta_source(isource)
-          write(IMAIN,*) '    gamma coordinate of source in that element: ',gamma_source(isource)
-
-          write(IMAIN,*)
-          write(IMAIN,*) '    component of direction vector in East direction: ',comp_dir_vect_source_E(isource)
-          write(IMAIN,*) '    component of direction vector in North direction: ',comp_dir_vect_source_N(isource)
-          write(IMAIN,*) '    component of direction vector in Vertical direction: ',comp_dir_vect_source_Z_UP(isource)
-
+          write(IMAIN,*) '    component of direction vector in East direction: ',sngl(comp_dir_vect_source_E(isource))
+          write(IMAIN,*) '    component of direction vector in North direction: ',sngl(comp_dir_vect_source_N(isource))
+          write(IMAIN,*) '    component of direction vector in Vertical direction: ',sngl(comp_dir_vect_source_Z_UP(isource))
           !write(IMAIN,*) '  i index of source in that element: ',nint(xi_source(isource))
           !write(IMAIN,*) '  j index of source in that element: ',nint(eta_source(isource))
           !write(IMAIN,*) '  k index of source in that element: ',nint(gamma_source(isource))
           !write(IMAIN,*)
           !write(IMAIN,*) '  component direction: ',COMPONENT_FORCE_SOURCE
           write(IMAIN,*)
-          write(IMAIN,*) '    nu1 = ',nu_source(1,:,isource),'North'
-          write(IMAIN,*) '    nu2 = ',nu_source(2,:,isource),'East'
-          write(IMAIN,*) '    nu3 = ',nu_source(3,:,isource),'Vertical'
-          write(IMAIN,*)
-          write(IMAIN,*) '    at (x,y,z) coordinates = ',xyz_found_subset(1,isource_in_this_subset), &
-            xyz_found_subset(2,isource_in_this_subset),xyz_found_subset(3,isource_in_this_subset)
+          write(IMAIN,*) '    nu1 = ',sngl(nu_source(1,:,isource)),'North'
+          write(IMAIN,*) '    nu2 = ',sngl(nu_source(2,:,isource)),'East'
+          write(IMAIN,*) '    nu3 = ',sngl(nu_source(3,:,isource)),'Vertical'
         else
           ! moment tensor
-          write(IMAIN,*) '  using moment tensor source:'
-          write(IMAIN,*) '    xi coordinate of source in that element: ',xi_source(isource)
-          write(IMAIN,*) '    eta coordinate of source in that element: ',eta_source(isource)
-          write(IMAIN,*) '    gamma coordinate of source in that element: ',gamma_source(isource)
-          write(IMAIN,*)
-          write(IMAIN,*) '    at (x,y,z) coordinates = ',xyz_found_subset(1,isource_in_this_subset), &
-            xyz_found_subset(2,isource_in_this_subset),xyz_found_subset(3,isource_in_this_subset)
+          write(IMAIN,*) '  using moment tensor source'
         endif
         write(IMAIN,*)
 
@@ -546,8 +552,17 @@
               write(IMAIN,*) '    half duration in frequency: ',hdur(isource),' seconds**(-1)'
             case (2)
               ! Heaviside
-              write(IMAIN,*) '    using (quasi) Heaviside source time function'
-              write(IMAIN,*) '             half duration: ',hdur(isource),' seconds'
+              if (STF_IS_UCB_HEAVISIDE) then
+                ! Berkeley UCB stf
+                write(IMAIN,*) '    using Berkeley UCB (quasi) Heaviside source time function'
+                write(IMAIN,*) '             source T1/T2/T3/T4: ',sngl(UCB_SOURCE_T1),'/',sngl(UCB_SOURCE_T2),'/', &
+                                                                   sngl(UCB_SOURCE_T3),'/',sngl(UCB_SOURCE_T4)
+                write(IMAIN,*) '             source time-shift : ',sngl(UCB_TAU)
+              else
+                ! default Heaviside
+                write(IMAIN,*) '    using (quasi) Heaviside source time function'
+                write(IMAIN,*) '             half duration: ',hdur(isource),' seconds'
+              endif
             case (3)
               ! Monochromatic
               write(IMAIN,*) '    using monochromatic source time function'
@@ -564,6 +579,13 @@
             case default
               stop 'unsupported force_stf value!'
             end select
+          else if (STF_IS_UCB_HEAVISIDE) then
+            ! moment tensor
+            ! Berkeley UCB stf
+            write(IMAIN,*) '    using Berkeley UCB (quasi) Heaviside source time function'
+            write(IMAIN,*) '             source T1/T2/T3/T4: ',sngl(UCB_SOURCE_T1),'/',sngl(UCB_SOURCE_T2),'/', &
+                                                               sngl(UCB_SOURCE_T3),'/',sngl(UCB_SOURCE_T4)
+            write(IMAIN,*) '             source time-shift : ',sngl(UCB_TAU)
           else if (USE_MONOCHROMATIC_CMT_SOURCE) then
             ! moment tensor
             write(IMAIN,*) '    using monochromatic source time function'
@@ -571,13 +593,13 @@
             write(IMAIN,*)
             write(IMAIN,*) '    period: ',hdur(isource),' seconds'
           else
-            ! moment tensor
+            ! default quasi Heaviside
             write(IMAIN,*) '    using (quasi) Heaviside source time function'
             ! add message if source is a Heaviside
             if (hdur(isource) <= 5.0*DT) then
-              write(IMAIN,*)
-              write(IMAIN,*) '    Source time function is a Heaviside, convolve later'
-              write(IMAIN,*)
+              write(IMAIN,*) '    ***'
+              write(IMAIN,*) '    *** Source time function is a Heaviside, convolve later'
+              write(IMAIN,*) '    ***'
             endif
             write(IMAIN,*)
             write(IMAIN,*) '    half duration: ',hdur(isource),' seconds'
