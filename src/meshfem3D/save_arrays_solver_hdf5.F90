@@ -7,7 +7,7 @@
     nspec
 
 #ifdef USE_HDF5
-  use shared_parameters, only: LOCAL_PATH, ATT_F_C_SOURCE
+  use shared_parameters, only: LOCAL_PATH, ATT_F_C_SOURCE, H5_COL
   use meshfem_models_par, only: &
     OCEANS,TRANSVERSE_ISOTROPY,ANISOTROPIC_3D_MANTLE, &
     ANISOTROPIC_INNER_CORE,ATTENUATION
@@ -61,8 +61,6 @@
 
   ! MPI variables
   integer :: info, comm
-
-  logical :: if_collective = .true.
 
   ! processor dependent group names
   character(len=64) :: gname_region
@@ -350,10 +348,10 @@
   write(gname_region, "('reg',i1)") iregion_code
   call h5_open_group(gname_region)
 
-  call h5_write_dataset_collect_hyperslab_in_group("offset_nnodes", (/offset_nnodes(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group("offset_nnodes_xy", (/offset_nnodes_xy(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group("offset_nnodes_oceans", (/offset_nnodes_oceans(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group("offset_nelems", (/offset_nelems(myrank)/), (/myrank/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group("offset_nnodes", (/offset_nnodes(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group("offset_nnodes_xy", (/offset_nnodes_xy(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group("offset_nnodes_oceans", (/offset_nnodes_oceans(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group("offset_nelems", (/offset_nelems(myrank)/), (/myrank/), H5_COL)
 
   allocate(tmp_array(nglob),stat=ier)
   if (ier /= 0 ) call exit_MPI(myrank,'Error allocating temporary array for mesh topology')
@@ -372,7 +370,7 @@
     enddo
   enddo
 
-  call h5_write_dataset_collect_hyperslab_in_group('xstore', tmp_array, (/sum(offset_nnodes(0:myrank-1))/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('xstore', tmp_array, (/sum(offset_nnodes(0:myrank-1))/), H5_COL)
   !--- y coordinate
   tmp_array(:) = 0._CUSTOM_REAL
   do ispec = 1,nspec
@@ -386,7 +384,7 @@
       enddo
     enddo
   enddo
-  call h5_write_dataset_collect_hyperslab_in_group('ystore', tmp_array, (/sum(offset_nnodes(0:myrank-1))/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('ystore', tmp_array, (/sum(offset_nnodes(0:myrank-1))/), H5_COL)
   !--- z coordinate
   tmp_array(:) = 0._CUSTOM_REAL
   do ispec = 1,nspec
@@ -400,25 +398,25 @@
       enddo
     enddo
   enddo
-  call h5_write_dataset_collect_hyperslab_in_group('zstore', tmp_array, (/sum(offset_nnodes(0:myrank-1))/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('zstore', tmp_array, (/sum(offset_nnodes(0:myrank-1))/), H5_COL)
   deallocate(tmp_array)
 
-  call h5_write_dataset_collect_hyperslab_in_group('ibool', ibool, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('idoubling', idoubling, (/sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('ispec_is_tiso', ispec_is_tiso, (/sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('xixstore', xixstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('xiystore', xiystore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('xizstore', xizstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('etaxstore', etaxstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('etaystore', etaystore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('etazstore', etazstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('gammaxstore', gammaxstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('gammaystore', gammaystore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('gammazstore', gammazstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('rhostore', rhostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('kappavstore', kappavstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('ibool', ibool, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('idoubling', idoubling, (/sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('ispec_is_tiso', ispec_is_tiso, (/sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('xixstore', xixstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('xiystore', xiystore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('xizstore', xizstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('etaxstore', etaxstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('etaystore', etaystore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('etazstore', etazstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('gammaxstore', gammaxstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('gammaystore', gammaystore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('gammazstore', gammazstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('rhostore', rhostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('kappavstore', kappavstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   if (iregion_code /= IREGION_OUTER_CORE) then
-    call h5_write_dataset_collect_hyperslab_in_group('muvstore', muvstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('muvstore', muvstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   endif
 
   select case(iregion_code)
@@ -426,55 +424,55 @@
     ! crusl/mantle region mesh
     ! save anisotropy in the mantle only
     if (ANISOTROPIC_3D_MANTLE) then
-      call h5_write_dataset_collect_hyperslab_in_group('c11store', c11store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c12store', c12store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c13store', c13store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c14store', c14store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c15store', c15store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c16store', c16store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c22store', c22store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c23store', c23store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c24store', c24store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c25store', c25store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c26store', c26store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c33store', c33store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c34store', c34store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c35store', c35store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c36store', c36store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c44store', c44store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c45store', c45store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c46store', c46store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c55store', c55store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c56store', c56store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c66store', c66store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+      call h5_write_dataset_collect_hyperslab_in_group('c11store', c11store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c12store', c12store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c13store', c13store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c14store', c14store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c15store', c15store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c16store', c16store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c22store', c22store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c23store', c23store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c24store', c24store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c25store', c25store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c26store', c26store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c33store', c33store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c34store', c34store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c35store', c35store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c36store', c36store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c44store', c44store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c45store', c45store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c46store', c46store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c55store', c55store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c56store', c56store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c66store', c66store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     else
       if (TRANSVERSE_ISOTROPY) then
-        call h5_write_dataset_collect_hyperslab_in_group('kappahstore', kappahstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-        call h5_write_dataset_collect_hyperslab_in_group('muhstore', muhstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-        call h5_write_dataset_collect_hyperslab_in_group('eta_anisostore', eta_anisostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+        call h5_write_dataset_collect_hyperslab_in_group('kappahstore', kappahstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+        call h5_write_dataset_collect_hyperslab_in_group('muhstore', muhstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+        call h5_write_dataset_collect_hyperslab_in_group('eta_anisostore', eta_anisostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       endif
     endif
     ! for azimutahl aniso kernels
-    call h5_write_dataset_collect_hyperslab_in_group('mu0store', mu0store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('mu0store', mu0store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
 !!
   case(IREGION_INNER_CORE)
     ! inner core region mesh
     if (ANISOTROPIC_INNER_CORE) then
-      call h5_write_dataset_collect_hyperslab_in_group('c11store', c11store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c12store', c12store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c13store', c13store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c33store', c33store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('c44store', c44store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+      call h5_write_dataset_collect_hyperslab_in_group('c11store', c11store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c12store', c12store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c13store', c13store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c33store', c33store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('c44store', c44store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     endif
   end select
 !!
   ! Stacy
   if (ABSORBING_CONDITIONS) then
     if (iregion_code == IREGION_CRUST_MANTLE) then
-      call h5_write_dataset_collect_hyperslab_in_group('rho_vp', rho_vp, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('rho_vs', rho_vs, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+      call h5_write_dataset_collect_hyperslab_in_group('rho_vp', rho_vp, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('rho_vs', rho_vs, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     else if (iregion_code == IREGION_OUTER_CORE) then
-      call h5_write_dataset_collect_hyperslab_in_group('rho_vp', rho_vp, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+      call h5_write_dataset_collect_hyperslab_in_group('rho_vp', rho_vp, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     endif
   endif
 !!!
@@ -482,23 +480,23 @@
   if (((NCHUNKS /= 6 .and. ABSORBING_CONDITIONS) .and. iregion_code == IREGION_CRUST_MANTLE) .or. &
     ((ROTATION .and. EXACT_MASS_MATRIX_FOR_ROTATION) .and. iregion_code == IREGION_CRUST_MANTLE) .or. &
     ((ROTATION .and. EXACT_MASS_MATRIX_FOR_ROTATION) .and. iregion_code == IREGION_INNER_CORE)) then
-    call h5_write_dataset_collect_hyperslab_in_group('rmassx', rmassx, (/sum(offset_nnodes_xy(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('rmassy', rmassy, (/sum(offset_nnodes_xy(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('rmassx', rmassx, (/sum(offset_nnodes_xy(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('rmassy', rmassy, (/sum(offset_nnodes_xy(0:myrank-1))/), H5_COL)
   endif
 
-  call h5_write_dataset_collect_hyperslab_in_group('rmassz', rmassz, (/sum(offset_nnodes(0:myrank-1))/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('rmassz', rmassz, (/sum(offset_nnodes(0:myrank-1))/), H5_COL)
 
   ! maxx matrices for backward simulation when ROTATION is .true.
   if (ROTATION .and. EXACT_MASS_MATRIX_FOR_ROTATION) then
     if (iregion_code == IREGION_CRUST_MANTLE .or. iregion_code == IREGION_INNER_CORE) then
-      call h5_write_dataset_collect_hyperslab_in_group('b_rmassx', b_rmassx, (/sum(offset_nnodes_xy(0:myrank-1))/), if_collective)
-      call h5_write_dataset_collect_hyperslab_in_group('b_rmassy', b_rmassy, (/sum(offset_nnodes_xy(0:myrank-1))/), if_collective)
+      call h5_write_dataset_collect_hyperslab_in_group('b_rmassx', b_rmassx, (/sum(offset_nnodes_xy(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('b_rmassy', b_rmassy, (/sum(offset_nnodes_xy(0:myrank-1))/), H5_COL)
     endif
   endif
 
   ! ocean load mass matrix
   if (OCEANS .and. iregion_code == IREGION_CRUST_MANTLE) then
-    call h5_write_dataset_collect_hyperslab_in_group('rmass_ocean_load', rmass_ocean_load, (/sum(offset_nnodes_oceans(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('rmass_ocean_load', rmass_ocean_load, (/sum(offset_nnodes_oceans(0:myrank-1))/), H5_COL)
   endif
 
   ! close group for iregion_code
@@ -515,49 +513,49 @@
   ! open group for iregion_code
   call h5_open_group(gname_region)
 
-  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_xmin', (/act_arr_nspec2d_xmin(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_xmax', (/act_arr_nspec2d_xmax(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_ymin', (/act_arr_nspec2d_ymin(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_ymax', (/act_arr_nspec2d_ymax(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_bottom', (/act_arr_nspec2d_bottom(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_top', (/act_arr_nspec2d_top(myrank)/), (/myrank/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_xmin', (/act_arr_nspec2d_xmin(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_xmax', (/act_arr_nspec2d_xmax(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_ymin', (/act_arr_nspec2d_ymin(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_ymax', (/act_arr_nspec2d_ymax(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_bottom', (/act_arr_nspec2d_bottom(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('nspec2D_top', (/act_arr_nspec2d_top(myrank)/), (/myrank/), H5_COL)
 
-  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_xmin', (/arr_nspec2d_xmin(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_xmax', (/arr_nspec2d_xmax(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_ymin', (/arr_nspec2d_ymin(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_ymax', (/arr_nspec2d_ymax(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_bottom', (/arr_nspec2d_bottom(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_top', (/arr_nspec2d_top(myrank)/), (/myrank/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_xmin', (/arr_nspec2d_xmin(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_xmax', (/arr_nspec2d_xmax(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_ymin', (/arr_nspec2d_ymin(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_ymax', (/arr_nspec2d_ymax(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_bottom', (/arr_nspec2d_bottom(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_top', (/arr_nspec2d_top(myrank)/), (/myrank/), H5_COL)
 
   if (arr_nspec2d_xmin(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_xmin', ibelm_xmin, (/sum(arr_nspec2d_xmin(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_xmin', normal_xmin, (/0,0,0,sum(arr_nspec2d_xmin(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_xmin', jacobian2D_xmin, (/0,0,sum(arr_nspec2d_xmin(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_xmin', ibelm_xmin, (/sum(arr_nspec2d_xmin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_xmin', normal_xmin, (/0,0,0,sum(arr_nspec2d_xmin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_xmin', jacobian2D_xmin, (/0,0,sum(arr_nspec2d_xmin(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_xmax(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_xmax', ibelm_xmax, (/sum(arr_nspec2d_xmax(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_xmax', normal_xmax, (/0,0,0,sum(arr_nspec2d_xmax(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_xmax', jacobian2D_xmax, (/0,0,sum(arr_nspec2d_xmax(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_xmax', ibelm_xmax, (/sum(arr_nspec2d_xmax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_xmax', normal_xmax, (/0,0,0,sum(arr_nspec2d_xmax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_xmax', jacobian2D_xmax, (/0,0,sum(arr_nspec2d_xmax(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_ymin(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_ymin', ibelm_ymin, (/sum(arr_nspec2d_ymin(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_ymin', normal_ymin, (/0,0,0,sum(arr_nspec2d_ymin(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_ymin', jacobian2D_ymin, (/0,0,sum(arr_nspec2d_ymin(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_ymin', ibelm_ymin, (/sum(arr_nspec2d_ymin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_ymin', normal_ymin, (/0,0,0,sum(arr_nspec2d_ymin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_ymin', jacobian2D_ymin, (/0,0,sum(arr_nspec2d_ymin(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_ymax(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_ymax', ibelm_ymax, (/sum(arr_nspec2d_ymax(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_ymax', normal_ymax, (/0,0,0,sum(arr_nspec2d_ymax(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_ymax', jacobian2D_ymax, (/0,0,sum(arr_nspec2d_ymax(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_ymax', ibelm_ymax, (/sum(arr_nspec2d_ymax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_ymax', normal_ymax, (/0,0,0,sum(arr_nspec2d_ymax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_ymax', jacobian2D_ymax, (/0,0,sum(arr_nspec2d_ymax(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_bottom(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_bottom', ibelm_bottom, (/sum(arr_nspec2d_bottom(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_bottom', normal_bottom, (/0,0,0,sum(arr_nspec2d_bottom(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_bottom', jacobian2D_bottom, (/0,0,sum(arr_nspec2d_bottom(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_bottom', ibelm_bottom, (/sum(arr_nspec2d_bottom(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_bottom', normal_bottom, (/0,0,0,sum(arr_nspec2d_bottom(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_bottom', jacobian2D_bottom, (/0,0,sum(arr_nspec2d_bottom(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_top(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_top', ibelm_top, (/sum(arr_nspec2d_top(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_top', normal_top, (/0,0,0,sum(arr_nspec2d_top(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_top', jacobian2D_top, (/0,0,sum(arr_nspec2d_top(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_top', ibelm_top, (/sum(arr_nspec2d_top(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_top', normal_top, (/0,0,0,sum(arr_nspec2d_top(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_top', jacobian2D_top, (/0,0,sum(arr_nspec2d_top(0:myrank-1))/), H5_COL)
   endif
 
   ! close group for iregion_code
@@ -575,10 +573,10 @@
     call h5_open_group(gname_region)
 
     ! create dataset for attenuation
-    call h5_write_dataset_collect_hyperslab_in_group('tau_s_store', tau_s_store, (/myrank*N_SLS/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('tau_e_store', tau_e_store, (/0,0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('Qmu_store', Qmu_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group('att_f_c_source', (/ATT_F_C_SOURCE/), (/myrank/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group('tau_s_store', tau_s_store, (/myrank*N_SLS/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('tau_e_store', tau_e_store, (/0,0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('Qmu_store', Qmu_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('att_f_c_source', (/ATT_F_C_SOURCE/), (/myrank/), H5_COL)
 
     call h5_close_group()
     call h5_close_file_p()
@@ -607,7 +605,7 @@ end subroutine save_arrays_solver_hdf5
 ! saves arrays for boundaries such as MOHO, 400 and 670 discontinuities
 
 #ifdef USE_HDF5
-  use shared_parameters, only: LOCAL_PATH
+  use shared_parameters, only: LOCAL_PATH, H5_COL
 
   use constants, only: myrank,SUPPRESS_CRUSTAL_MESH,CUSTOM_REAL, &
                         NDIM, NGLLX, NGLLY
@@ -632,10 +630,6 @@ end subroutine save_arrays_solver_hdf5
   implicit none
 
 #ifdef USE_HDF5
-
-  ! local parameters
-  logical :: if_collective = .true.
-
 
   ! arrays for Moho, 400, 670
   integer, dimension(0:NPROCTOT-1) :: arr_nspec2d_moho_top
@@ -738,25 +732,25 @@ end subroutine save_arrays_solver_hdf5
   call h5_open_group(gname_region)
 
   ! write datasets
-  call h5_write_dataset_collect_hyperslab_in_group('NSPEC2D_MOHO', (/act_arr_nspec2d_moho_top(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('NSPEC2D_400', (/act_arr_nspec2d_400_top(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('NSPEC2D_670', (/act_arr_nspec2d_670_top(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_MOHO_top', (/act_arr_nspec2d_moho_top(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_MOHO_bot', (/act_arr_nspec2d_moho_bot(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_400_top', (/act_arr_nspec2d_400_top(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_400_bot', (/act_arr_nspec2d_400_bot(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_670_top', (/act_arr_nspec2d_670_top(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_670_bot', (/act_arr_nspec2d_670_bot(myrank)/), (/myrank/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('NSPEC2D_MOHO', (/act_arr_nspec2d_moho_top(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('NSPEC2D_400', (/act_arr_nspec2d_400_top(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('NSPEC2D_670', (/act_arr_nspec2d_670_top(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_MOHO_top', (/act_arr_nspec2d_moho_top(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_MOHO_bot', (/act_arr_nspec2d_moho_bot(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_400_top', (/act_arr_nspec2d_400_top(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_400_bot', (/act_arr_nspec2d_400_bot(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_670_top', (/act_arr_nspec2d_670_top(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_670_bot', (/act_arr_nspec2d_670_bot(myrank)/), (/myrank/), H5_COL)
 
-  call h5_write_dataset_collect_hyperslab_in_group('ibelm_moho_top', ibelm_moho_top, (/sum(arr_nspec2d_moho_top(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('ibelm_moho_bot', ibelm_moho_bot, (/sum(arr_nspec2d_moho_bot(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('ibelm_400_top', ibelm_400_top, (/sum(arr_nspec2d_400_top(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('ibelm_400_bot', ibelm_400_bot, (/sum(arr_nspec2d_400_bot(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('ibelm_670_top', ibelm_670_top, (/sum(arr_nspec2d_670_top(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('ibelm_670_bot', ibelm_670_bot, (/sum(arr_nspec2d_670_bot(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('normal_moho', normal_moho, (/0,0,0,sum(arr_nspec2d_moho_top(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('normal_400', normal_400, (/0,0,0,sum(arr_nspec2d_400_top(0:myrank-1))/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('normal_670', normal_670, (/0,0,0,sum(arr_nspec2d_670_top(0:myrank-1))/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('ibelm_moho_top', ibelm_moho_top, (/sum(arr_nspec2d_moho_top(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('ibelm_moho_bot', ibelm_moho_bot, (/sum(arr_nspec2d_moho_bot(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('ibelm_400_top', ibelm_400_top, (/sum(arr_nspec2d_400_top(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('ibelm_400_bot', ibelm_400_bot, (/sum(arr_nspec2d_400_bot(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('ibelm_670_top', ibelm_670_top, (/sum(arr_nspec2d_670_top(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('ibelm_670_bot', ibelm_670_bot, (/sum(arr_nspec2d_670_bot(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('normal_moho', normal_moho, (/0,0,0,sum(arr_nspec2d_moho_top(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('normal_400', normal_400, (/0,0,0,sum(arr_nspec2d_400_top(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('normal_670', normal_670, (/0,0,0,sum(arr_nspec2d_670_top(0:myrank-1))/), H5_COL)
 
   ! close group for iregion_code
   call h5_close_group()
@@ -789,6 +783,7 @@ end subroutine save_arrays_boundary_hdf5
                                   num_colors_outer,num_colors_inner, &
                                   num_elem_colors)
   use constants
+  use shared_parameters, only: H5_COL
 
 #ifdef USE_HDF5
   use meshfem_par, only: &
@@ -822,7 +817,6 @@ end subroutine save_arrays_boundary_hdf5
 #ifdef USE_HDF5
   ! local parameters
   character(len=64) :: gname_region
-  logical :: if_collective = .true.
 
   ! offset arrays
   integer, dimension(0:NPROCTOT-1) :: offset_num_interfaces
@@ -915,41 +909,41 @@ end subroutine save_arrays_boundary_hdf5
   call h5_open_group(gname_region)
 
   ! write datasets
-  call h5_write_dataset_collect_hyperslab_in_group('offset_num_interfaces', (/offset_num_interfaces(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_max_nibool_interfaces', (/offset_max_nibool_interfaces(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_nspec_inner', (/offset_nspec_inner(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_nspec_outer', (/offset_nspec_outer(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_num_phase_ispec', (/offset_num_phase_ispec(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_num_colors_outer', (/offset_num_colors_outer(myrank)/), (/myrank/), if_collective)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_num_colors_inner', (/offset_num_colors_inner(myrank)/), (/myrank/), if_collective)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_num_interfaces', (/offset_num_interfaces(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_max_nibool_interfaces', (/offset_max_nibool_interfaces(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_nspec_inner', (/offset_nspec_inner(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_nspec_outer', (/offset_nspec_outer(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_num_phase_ispec', (/offset_num_phase_ispec(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_num_colors_outer', (/offset_num_colors_outer(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_num_colors_inner', (/offset_num_colors_inner(myrank)/), (/myrank/), H5_COL)
 
   if (sum(offset_num_interfaces) > 0) then
-    call h5_write_dataset_collect_hyperslab_in_group("max_nibool_interfaces", (/max_nibool_interfaces/), (/myrank/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group("my_neighbors", my_neighbors, (/sum(offset_num_interfaces(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group("nibool_interfaces", nibool_interfaces, (/sum(offset_num_interfaces(0:myrank-1))/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group("ibool_interfaces", ibool_interfaces, (/0,sum(offset_num_interfaces(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group("max_nibool_interfaces", (/max_nibool_interfaces/), (/myrank/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("my_neighbors", my_neighbors, (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("nibool_interfaces", nibool_interfaces, (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("ibool_interfaces", ibool_interfaces, (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
   else
     ! dummy
-    call h5_write_dataset_collect_hyperslab_in_group("max_nibool_interfaces", (/max_nibool_interfaces/), (/myrank/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group("my_neighbors", my_neighbors, (/myrank/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group("nibool_interfaces", nibool_interfaces, (/myrank/), if_collective)
-    call h5_write_dataset_collect_hyperslab_in_group("ibool_interfaces", ibool_interfaces, (/0,myrank/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group("max_nibool_interfaces", (/max_nibool_interfaces/), (/myrank/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("my_neighbors", my_neighbors, (/myrank/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("nibool_interfaces", nibool_interfaces, (/myrank/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("ibool_interfaces", ibool_interfaces, (/0,myrank/), H5_COL)
   endif
 
   ! num_phase_ispec
   if (sum(offset_num_phase_ispec) > 0) then
-    call h5_write_dataset_collect_hyperslab_in_group("phase_ispec_inner", phase_ispec_inner, (/sum(offset_num_phase_ispec(0:myrank-1)),0/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group("phase_ispec_inner", phase_ispec_inner, (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
   else
     ! dummy
-    call h5_write_dataset_collect_hyperslab_in_group("phase_ispec_inner", phase_ispec_inner, (/myrank,0/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group("phase_ispec_inner", phase_ispec_inner, (/myrank,0/), H5_COL)
   endif
 
   ! mesh coloring
   if (sum(offset_num_colors_outer) + sum(offset_num_colors_inner) > 0) then
-    call h5_write_dataset_collect_hyperslab_in_group("num_elem_colors", num_elem_colors, (/sum(offset_num_colors_outer(0:myrank-1)) + sum(offset_num_colors_inner(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group("num_elem_colors", num_elem_colors, (/sum(offset_num_colors_outer(0:myrank-1)) + sum(offset_num_colors_inner(0:myrank-1))/), H5_COL)
   else
     ! dummy
-    call h5_write_dataset_collect_hyperslab_in_group("num_elem_colors", num_elem_colors, (/myrank/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group("num_elem_colors", num_elem_colors, (/myrank/), H5_COL)
   endif
 
   ! close group for iregion_code
@@ -975,6 +969,7 @@ end subroutine save_arrays_boundary_hdf5
 
 #ifdef USE_HDF5
   use constants, only: myrank
+  use shared_parameters, only: H5_COL
   use meshfem_par, only: LOCAL_PATH, NPROCTOT
   use manager_hdf5
 #endif
@@ -1005,7 +1000,6 @@ end subroutine save_arrays_boundary_hdf5
 
   ! variables for HDF5
   character(len=64) :: gname_region
-  logical :: if_col = .true.  ! collective write
 
   ! get MPI parameters
   call world_get_comm(comm)
@@ -1075,21 +1069,21 @@ end subroutine save_arrays_boundary_hdf5
   call h5_write_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", (/offset_num_abs_boundary_faces(myrank)/), (/myrank/), .true.)
 
   if (sum(offset_num_abs_boundary_faces) > 0) then
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ispec", abs_boundary_ispec, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_npoin", abs_boundary_npoin, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ijk", abs_boundary_ijk, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", abs_boundary_jacobian2Dw, (/0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ispec", abs_boundary_ispec, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_npoin", abs_boundary_npoin, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ijk", abs_boundary_ijk, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", abs_boundary_jacobian2Dw, (/0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
     if (iregion == IREGION_CRUST_MANTLE) then
-      call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_normal", abs_boundary_normal, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_normal", abs_boundary_normal, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
     endif
   else
     ! dummy
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ispec", (/0/), (/myrank/), if_col)
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_npoin", (/0/), (/myrank/), if_col)
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ijk", i3d_dummy, (/0,0,myrank/), if_col)
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", r2d_dummy, (/0,myrank/), if_col)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ispec", (/0/), (/myrank/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_npoin", (/0/), (/myrank/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ijk", i3d_dummy, (/0,0,myrank/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", r2d_dummy, (/0,myrank/), H5_COL)
     if (iregion == IREGION_CRUST_MANTLE) then
-      call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_normal", r3d_dummy, (/0,0,myrank/), if_col)
+      call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_normal", r3d_dummy, (/0,0,myrank/), H5_COL)
     endif
   endif
 

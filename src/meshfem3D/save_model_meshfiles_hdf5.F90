@@ -32,7 +32,7 @@
 #ifdef USE_HDF5
 ! outputs model files in binary format
 
-  use shared_parameters, only: R_PLANET,RHOAV,LOCAL_PATH
+  use shared_parameters, only: R_PLANET,RHOAV,LOCAL_PATH,H5_COL
 
   use meshfem_par, only: nspec,iregion_code,NPROCTOT
 
@@ -62,9 +62,6 @@
 
   ! offset for nspec
   integer, dimension(0:NPROCTOT-1) :: offset_nelems
-
-  ! if collective write
-  logical :: if_collective = .true.
 
   ! gather nspec
   call gather_all_all_singlei(nspec, offset_nelems, NPROCTOT)
@@ -176,27 +173,27 @@
     temp_store(:,:,:,:) = sqrt((kappavstore(:,:,:,:) + 4.0_CUSTOM_REAL * muvstore(:,:,:,:)/3.0_CUSTOM_REAL)/rhostore(:,:,:,:)) &
                           * scaleval1
     dset_name = 'vpv'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     ! vph
     temp_store(:,:,:,:) = sqrt((kappahstore(:,:,:,:) + 4.0_CUSTOM_REAL * muhstore(:,:,:,:)/3.0_CUSTOM_REAL)/rhostore(:,:,:,:)) &
                           * scaleval1
     dset_name = 'vph'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     ! vsv
     temp_store(:,:,:,:) = sqrt( muvstore(:,:,:,:)/rhostore(:,:,:,:) )*scaleval1
     dset_name = 'vsv'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     ! vsh
     temp_store(:,:,:,:) = sqrt( muhstore(:,:,:,:)/rhostore(:,:,:,:) )*scaleval1
     dset_name = 'vsh'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     ! rho
     temp_store(:,:,:,:) = rhostore(:,:,:,:) * scaleval2
     dset_name = 'rho'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     ! eta
     dset_name = 'eta'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, eta_anisostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, eta_anisostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
 
   else
     ! isotropic model
@@ -204,15 +201,15 @@
     temp_store(:,:,:,:) = sqrt((kappavstore(:,:,:,:) + 4.0_CUSTOM_REAL * muvstore(:,:,:,:)/3.0_CUSTOM_REAL)/rhostore(:,:,:,:)) &
                           * scaleval1
     dset_name = 'vp'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     ! vs
     temp_store(:,:,:,:) = sqrt( muvstore(:,:,:,:)/rhostore(:,:,:,:) )*scaleval1
     dset_name = 'vs'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     ! rho
     temp_store(:,:,:,:) = rhostore(:,:,:,:) * scaleval2
     dset_name = 'rho'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
 
   endif ! TRANSVERSE_ISOTROPY
 
@@ -224,14 +221,14 @@
 
     ! Gc_prime
     dset_name = 'Gc_prime'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, Gc_prime_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, Gc_prime_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     ! Gs_prime
     dset_name = 'Gs_prime'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, Gs_prime_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, Gs_prime_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     ! mu0
     temp_store(:,:,:,:) = mu0store(:,:,:,:) * scale_GPa
     dset_name = 'mu0'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
 
   endif
 
@@ -252,7 +249,7 @@
 
     ! Qmu
     dset_name = 'Qmu'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, temp_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
 
   endif ! ATTENUATION
 
@@ -261,7 +258,7 @@
   if (HETEROGEN_3D_MANTLE .and. iregion_code == IREGION_CRUST_MANTLE) then
     ! dvp
     dset_name = 'dvp'
-    call h5_write_dataset_collect_hyperslab_in_group(dset_name, dvpstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_collective)
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, dvpstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   endif
 
   ! close the group

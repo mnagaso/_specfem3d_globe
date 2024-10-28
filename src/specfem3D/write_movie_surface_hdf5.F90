@@ -25,7 +25,7 @@
 !
 !=====================================================================
 
-subroutine movie_surface_init()
+subroutine movie_surface_init_hdf5()
 #ifdef USE_HDF5
   use specfem_par
   use specfem_par_movie_hdf5
@@ -45,7 +45,7 @@ subroutine movie_surface_init()
       write(*,*) 'Please recompile with the HDF5 option enabled with --with-hdf5'
       stop
 #endif
-end subroutine movie_surface_init
+end subroutine movie_surface_init_hdf5
 
 
 subroutine movie_surface_finalize_hdf5()
@@ -78,8 +78,9 @@ subroutine write_movie_surface_mesh_hdf5()
   ! local parameters
   real(kind=CUSTOM_REAL), dimension(:), allocatable :: store_val_x,store_val_y,store_val_z
   integer :: ipoin,ispec2D,ispec,i,j,k,ier,iglob1,iglob2,iglob3,iglob4,npoin
+  real(kind=CUSTOM_REAL) :: rval,thetaval,phival,xval,yval,zval
 
-  call movie_surface_init()
+  call movie_surface_init_hdf5()
 
   ! gather npoints on each process
   call gather_all_all_singlei(nmovie_points,offset_poin,NPROCTOT_VAL)
@@ -137,52 +138,84 @@ subroutine write_movie_surface_mesh_hdf5()
           iglob3 = ibool_crust_mantle(i+1,j+1,k,ispec)
           iglob4 = ibool_crust_mantle(i,j+1,k,ispec)
           ! iglob1
-          ipoin = ipoin + 1
-          store_val_x(ipoin) = rstore_crust_mantle(1,iglob1) ! radius r (normalized)
-          store_val_y(ipoin) = rstore_crust_mantle(2,iglob1) ! colatitude theta (in radian)
-          store_val_z(ipoin) = rstore_crust_mantle(3,iglob1) ! longitude phi (in radian)
+          ipoin    = ipoin + 1
+          rval     = rstore_crust_mantle(1,iglob1) ! radius r (normalized)
+          thetaval = rstore_crust_mantle(2,iglob1) ! colatitude theta (in radian)
+          phival   = rstore_crust_mantle(3,iglob1) ! longitude phi (in radian)
+          call rthetaphi_2_xyz(xval,yval,zval,rval,thetaval,phival)
+          store_val_x(ipoin) = xval
+          store_val_y(ipoin) = yval
+          store_val_z(ipoin) = zval
           ! iglob2
           ipoin = ipoin + 1
-          store_val_x(ipoin) = rstore_crust_mantle(1,iglob2) ! radius r (normalized)
-          store_val_y(ipoin) = rstore_crust_mantle(2,iglob2) ! colatitude theta (in radian)
-          store_val_z(ipoin) = rstore_crust_mantle(3,iglob2) ! longitude phi (in radian)
+          rval     = rstore_crust_mantle(1,iglob2) ! radius r (normalized)
+          thetaval = rstore_crust_mantle(2,iglob2) ! colatitude theta (in radian)
+          phival   = rstore_crust_mantle(3,iglob2) ! longitude phi (in radian)
+          call rthetaphi_2_xyz(xval,yval,zval,rval,thetaval,phival)
+          store_val_x(ipoin) = xval
+          store_val_y(ipoin) = yval
+          store_val_z(ipoin) = zval
           ! iglob3
           ipoin = ipoin + 1
-          store_val_x(ipoin) = rstore_crust_mantle(1,iglob3) ! radius r (normalized)
-          store_val_y(ipoin) = rstore_crust_mantle(2,iglob3) ! colatitude theta (in radian)
-          store_val_z(ipoin) = rstore_crust_mantle(3,iglob3) ! longitude phi (in radian)
+          rval     = rstore_crust_mantle(1,iglob3) ! radius r (normalized)
+          thetaval = rstore_crust_mantle(2,iglob3) ! colatitude theta (in radian)
+          phival   = rstore_crust_mantle(3,iglob3) ! longitude phi (in radian)
+          call rthetaphi_2_xyz(xval,yval,zval,rval,thetaval,phival)
+          store_val_x(ipoin) = xval
+          store_val_y(ipoin) = yval
+          store_val_z(ipoin) = zval
           ! iglob4
           ipoin = ipoin + 1
-          store_val_x(ipoin) = rstore_crust_mantle(1,iglob4) ! radius r (normalized)
-          store_val_y(ipoin) = rstore_crust_mantle(2,iglob4) ! colatitude theta (in radian)
-          store_val_z(ipoin) = rstore_crust_mantle(3,iglob4) ! longitude phi (in radian)
+          rval     = rstore_crust_mantle(1,iglob4) ! radius r (normalized)
+          thetaval = rstore_crust_mantle(2,iglob4) ! colatitude theta (in radian)
+          phival   = rstore_crust_mantle(3,iglob4) ! longitude phi (in radian)
+          call rthetaphi_2_xyz(xval,yval,zval,rval,thetaval,phival)
+          store_val_x(ipoin) = xval
+          store_val_y(ipoin) = yval
+          store_val_z(ipoin) = zval
         enddo
       enddo
     else ! MOVIE_COARSE
       iglob1 = ibool_crust_mantle(1,1,k,ispec)
-      iglob2 = ibool_crust_mantle(NGLLX-1,1,k,ispec)
-      iglob3 = ibool_crust_mantle(NGLLX-1,NGLLY-1,k,ispec)
-      iglob4 = ibool_crust_mantle(1,NGLLY-1,k,ispec)
+      iglob2 = ibool_crust_mantle(NGLLX,1,k,ispec)
+      iglob3 = ibool_crust_mantle(NGLLX,NGLLY,k,ispec)
+      iglob4 = ibool_crust_mantle(1,NGLLY,k,ispec)
 
       ipoin = ipoin + 1
-      store_val_x(ipoin) = rstore_crust_mantle(1,iglob1) ! radius r (normalized)
-      store_val_y(ipoin) = rstore_crust_mantle(2,iglob1) ! colatitude theta (in radian)
-      store_val_z(ipoin) = rstore_crust_mantle(3,iglob1) ! longitude phi (in radian)
+      rval  = rstore_crust_mantle(1,iglob1) ! radius r (normalized)
+      thetaval = rstore_crust_mantle(2,iglob1) ! colatitude theta (in radian)
+      phival   = rstore_crust_mantle(3,iglob1) ! longitude phi (in radian)
+      call rthetaphi_2_xyz(xval,yval,zval,rval,thetaval,phival)
+      store_val_x(ipoin) = xval
+      store_val_y(ipoin) = yval
+      store_val_z(ipoin) = zval
 
       ipoin = ipoin + 1
-      store_val_x(ipoin) = rstore_crust_mantle(1,iglob2) ! radius r (normalized)
-      store_val_y(ipoin) = rstore_crust_mantle(2,iglob2) ! colatitude theta (in radian)
-      store_val_z(ipoin) = rstore_crust_mantle(3,iglob2) ! longitude phi (in radian)
+      rval  = rstore_crust_mantle(1,iglob2) ! radius r (normalized)
+      thetaval = rstore_crust_mantle(2,iglob2) ! colatitude theta (in radian)
+      phival   = rstore_crust_mantle(3,iglob2) ! longitude phi (in radian)
+      call rthetaphi_2_xyz(xval,yval,zval,rval,thetaval,phival)
+      store_val_x(ipoin) = xval
+      store_val_y(ipoin) = yval
+      store_val_z(ipoin) = zval
 
       ipoin = ipoin + 1
-      store_val_x(ipoin) = rstore_crust_mantle(1,iglob3) ! radius r (normalized)
-      store_val_y(ipoin) = rstore_crust_mantle(2,iglob3) ! colatitude theta (in radian)
-      store_val_z(ipoin) = rstore_crust_mantle(3,iglob3) ! longitude phi (in radian)
+      rval  = rstore_crust_mantle(1,iglob3) ! radius r (normalized)
+      thetaval = rstore_crust_mantle(2,iglob3) ! colatitude theta (in radian)
+      phival   = rstore_crust_mantle(3,iglob3) ! longitude phi (in radian)
+      call rthetaphi_2_xyz(xval,yval,zval,rval,thetaval,phival)
+      store_val_x(ipoin) = xval
+      store_val_y(ipoin) = yval
+      store_val_z(ipoin) = zval
 
       ipoin = ipoin + 1
-      store_val_x(ipoin) = rstore_crust_mantle(1,iglob4) ! radius r (normalized)
-      store_val_y(ipoin) = rstore_crust_mantle(2,iglob4) ! colatitude theta (in radian)
-      store_val_z(ipoin) = rstore_crust_mantle(3,iglob4) ! longitude phi (in radian)
+      rval  = rstore_crust_mantle(1,iglob4) ! radius r (normalized)
+      thetaval = rstore_crust_mantle(2,iglob4) ! colatitude theta (in radian)
+      phival   = rstore_crust_mantle(3,iglob4) ! longitude phi (in radian)
+      call rthetaphi_2_xyz(xval,yval,zval,rval,thetaval,phival)
+      store_val_x(ipoin) = xval
+      store_val_y(ipoin) = yval
+      store_val_z(ipoin) = zval
 
     endif
   enddo
@@ -196,9 +229,9 @@ subroutine write_movie_surface_mesh_hdf5()
   call h5_open_group("surf_coord")
 
   ! write x, y, z
-  call h5_write_dataset_collect_hyperslab_in_group("x", store_val_x, (/sum(offset_poin(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab_in_group("y", store_val_y, (/sum(offset_poin(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab_in_group("z", store_val_z, (/sum(offset_poin(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab_in_group("x", store_val_x, (/sum(offset_poin(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group("y", store_val_y, (/sum(offset_poin(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group("z", store_val_z, (/sum(offset_poin(0:myrank-1))/), H5_COL)
 
   ! close group and file
   call h5_close_group()
@@ -394,9 +427,9 @@ subroutine write_movie_surface_hdf5()
   call h5_open_group(group_name)
 
   ! write ux, uy, uz
-  call h5_write_dataset_collect_hyperslab_in_group("ux", store_val_ux, (/sum(offset_poin(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab_in_group("uy", store_val_uy, (/sum(offset_poin(0:myrank-1))/), if_col)
-  call h5_write_dataset_collect_hyperslab_in_group("uz", store_val_uz, (/sum(offset_poin(0:myrank-1))/), if_col)
+  call h5_write_dataset_collect_hyperslab_in_group("ux", store_val_ux, (/sum(offset_poin(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group("uy", store_val_uy, (/sum(offset_poin(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group("uz", store_val_uz, (/sum(offset_poin(0:myrank-1))/), H5_COL)
 
   ! close group and file
   call h5_close_group()

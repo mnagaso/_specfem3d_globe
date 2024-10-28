@@ -18,6 +18,7 @@
   use constants_solver
 
 #ifdef USE_HDF5
+  use shared_parameters, only: H5_COL
   use specfem_par, only: &
     ABSORBING_CONDITIONS, &
     LOCAL_PATH,ABSORBING_CONDITIONS
@@ -78,9 +79,6 @@
   ! MPI variables
   integer :: info, comm
 
-  ! if collective read
-  logical :: if_col = .true.
-
   ! offset arrays
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_nnodes
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_nnodes_xy
@@ -102,10 +100,10 @@
   ! open the group
   call h5_open_group(gname_region)
 
-  call h5_read_dataset_collect_hyperslab_in_group("offset_nnodes", offset_nnodes, (/0/), if_col)
-  call h5_read_dataset_collect_hyperslab_in_group("offset_nnodes_xy", offset_nnodes_xy, (/0/), if_col)
-  call h5_read_dataset_collect_hyperslab_in_group("offset_nnodes_oceans", offset_nnodes_oceans, (/0/), if_col)
-  call h5_read_dataset_collect_hyperslab_in_group("offset_nelems", offset_nelems, (/0/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("offset_nnodes", offset_nnodes, (/0/), H5_COL)
+  call h5_read_dataset_collect_hyperslab_in_group("offset_nnodes_xy", offset_nnodes_xy, (/0/), H5_COL)
+  call h5_read_dataset_collect_hyperslab_in_group("offset_nnodes_oceans", offset_nnodes_oceans, (/0/), H5_COL)
+  call h5_read_dataset_collect_hyperslab_in_group("offset_nelems", offset_nelems, (/0/), H5_COL)
 
   lnspec = offset_nelems(myrank)
   lnglob = offset_nnodes(myrank)
@@ -128,35 +126,35 @@
   endif
 
   ! read xstore
-  call h5_read_dataset_collect_hyperslab_in_group("xstore", xstore, (/sum(offset_nnodes(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("xstore", xstore, (/sum(offset_nnodes(0:myrank-1))/), H5_COL)
   ! read ystore
-  call h5_read_dataset_collect_hyperslab_in_group("ystore", ystore, (/sum(offset_nnodes(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("ystore", ystore, (/sum(offset_nnodes(0:myrank-1))/), H5_COL)
   ! read zstore
-  call h5_read_dataset_collect_hyperslab_in_group("zstore", zstore, (/sum(offset_nnodes(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("zstore", zstore, (/sum(offset_nnodes(0:myrank-1))/), H5_COL)
   ! ibool
-  call h5_read_dataset_collect_hyperslab_in_group("ibool", ibool, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("ibool", ibool, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! idoubling
-  call h5_read_dataset_collect_hyperslab_in_group("idoubling", idoubling, (/sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("idoubling", idoubling, (/sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! ispec_is_tiso
-  call h5_read_dataset_collect_hyperslab_in_group("ispec_is_tiso", ispec_is_tiso, (/sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("ispec_is_tiso", ispec_is_tiso, (/sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! xix
-  call h5_read_dataset_collect_hyperslab_in_group("xixstore", xix, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("xixstore", xix, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! xiy
-  call h5_read_dataset_collect_hyperslab_in_group("xiystore", xiy, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("xiystore", xiy, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! xiz
-  call h5_read_dataset_collect_hyperslab_in_group("xizstore", xiz, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("xizstore", xiz, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! etax
-  call h5_read_dataset_collect_hyperslab_in_group("etaxstore", etax, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("etaxstore", etax, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! etay
-  call h5_read_dataset_collect_hyperslab_in_group("etaystore", etay, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("etaystore", etay, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! etaz
-  call h5_read_dataset_collect_hyperslab_in_group("etazstore", etaz, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("etazstore", etaz, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! gammax
-  call h5_read_dataset_collect_hyperslab_in_group("gammaxstore", gammax, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("gammaxstore", gammax, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! gammay
-  call h5_read_dataset_collect_hyperslab_in_group("gammaystore", gammay, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("gammaystore", gammay, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! gammaz
-  call h5_read_dataset_collect_hyperslab_in_group("gammazstore", gammaz, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("gammazstore", gammaz, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
 
   if (iregion_code == IREGION_TRINFINITE .or. iregion_code == IREGION_INFINITE) then
     call h5_close_group()
@@ -165,13 +163,13 @@
   endif
 
   ! rhostore
-  call h5_read_dataset_collect_hyperslab_in_group("rhostore", rhostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("rhostore", rhostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! kappavstore
-  call h5_read_dataset_collect_hyperslab_in_group("kappavstore", kappavstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("kappavstore", kappavstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
 
   if (iregion_code /= IREGION_OUTER_CORE) then
     ! muvstore
-    call h5_read_dataset_collect_hyperslab_in_group("muvstore", muvstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("muvstore", muvstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   endif
 
   select case (iregion_code)
@@ -179,74 +177,74 @@
     ! crust/mantle
     if (ANISOTROPIC_3D_MANTLE_VAL) then
       ! c11store
-      call h5_read_dataset_collect_hyperslab_in_group("c11store", c11store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c11store", c11store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c12store
-      call h5_read_dataset_collect_hyperslab_in_group("c12store", c12store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c12store", c12store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c13store
-      call h5_read_dataset_collect_hyperslab_in_group("c13store", c13store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c13store", c13store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c14store
-      call h5_read_dataset_collect_hyperslab_in_group("c14store", c14store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c14store", c14store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c15store
-      call h5_read_dataset_collect_hyperslab_in_group("c15store", c15store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c15store", c15store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c16store
-      call h5_read_dataset_collect_hyperslab_in_group("c16store", c16store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c16store", c16store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c22store
-      call h5_read_dataset_collect_hyperslab_in_group("c22store", c22store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c22store", c22store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c23store
-      call h5_read_dataset_collect_hyperslab_in_group("c23store", c23store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c23store", c23store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c24store
-      call h5_read_dataset_collect_hyperslab_in_group("c24store", c24store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c24store", c24store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c25store
-      call h5_read_dataset_collect_hyperslab_in_group("c25store", c25store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c25store", c25store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c26store
-      call h5_read_dataset_collect_hyperslab_in_group("c26store", c26store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c26store", c26store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c33store
-      call h5_read_dataset_collect_hyperslab_in_group("c33store", c33store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c33store", c33store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c34store
-      call h5_read_dataset_collect_hyperslab_in_group("c34store", c34store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c34store", c34store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c35store
-      call h5_read_dataset_collect_hyperslab_in_group("c35store", c35store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c35store", c35store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c36store
-      call h5_read_dataset_collect_hyperslab_in_group("c36store", c36store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c36store", c36store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c44store
-      call h5_read_dataset_collect_hyperslab_in_group("c44store", c44store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c44store", c44store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c45store
-      call h5_read_dataset_collect_hyperslab_in_group("c45store", c45store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c45store", c45store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c46store
-      call h5_read_dataset_collect_hyperslab_in_group("c46store", c46store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c46store", c46store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c55store
-      call h5_read_dataset_collect_hyperslab_in_group("c55store", c55store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c55store", c55store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c56store
-      call h5_read_dataset_collect_hyperslab_in_group("c56store", c56store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c56store", c56store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c66store
-      call h5_read_dataset_collect_hyperslab_in_group("c66store", c66store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c66store", c66store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     else
       if (TRANSVERSE_ISOTROPY_VAL) then
         ! kappahstore
-        call h5_read_dataset_collect_hyperslab_in_group("kappahstore", kappahstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("kappahstore", kappahstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
         ! muhstore
-        call h5_read_dataset_collect_hyperslab_in_group("muhstore", muhstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("muhstore", muhstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
         ! eta_anisostore
-        call h5_read_dataset_collect_hyperslab_in_group("eta_anisostore", eta_anisostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("eta_anisostore", eta_anisostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       endif
     endif
 
     ! mu0store
-    call h5_read_dataset_collect_hyperslab_in_group("mu0store", mu0store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("mu0store", mu0store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
 
   case (IREGION_INNER_CORE)
     ! inner core
     if (ANISOTROPIC_INNER_CORE_VAL) then
       ! c11store
-      call h5_read_dataset_collect_hyperslab_in_group("c11store", c11store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c11store", c11store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c12store
-      call h5_read_dataset_collect_hyperslab_in_group("c12store", c12store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c12store", c12store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c13store
-      call h5_read_dataset_collect_hyperslab_in_group("c13store", c13store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c13store", c13store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c33store
-      call h5_read_dataset_collect_hyperslab_in_group("c33store", c33store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c33store", c33store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! c44store
-      call h5_read_dataset_collect_hyperslab_in_group("c44store", c44store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("c44store", c44store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     endif
   end select
 
@@ -254,12 +252,12 @@
   if (ABSORBING_CONDITIONS) then
     if (iregion_code == IREGION_CRUST_MANTLE) then
       ! rho_vp
-      call h5_read_dataset_collect_hyperslab_in_group("rho_vp", rho_vp, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("rho_vp", rho_vp, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       ! rho_vs
-      call h5_read_dataset_collect_hyperslab_in_group("rho_vs", rho_vs, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("rho_vs", rho_vs, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     else if (iregion_code == IREGION_OUTER_CORE) then
       ! rho_vp
-      call h5_read_dataset_collect_hyperslab_in_group("rho_vp", rho_vp, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("rho_vp", rho_vp, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     endif
   endif
 
@@ -268,26 +266,26 @@
       ((ROTATION_VAL .and. EXACT_MASS_MATRIX_FOR_ROTATION_VAL) .and. iregion_code == IREGION_CRUST_MANTLE) .or. &
       ((ROTATION_VAL .and. EXACT_MASS_MATRIX_FOR_ROTATION_VAL) .and. iregion_code == IREGION_INNER_CORE)) then
     ! rmassx
-    call h5_read_dataset_collect_hyperslab_in_group("rmassx", rmassx, (/sum(offset_nnodes_xy(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("rmassx", rmassx, (/sum(offset_nnodes_xy(0:myrank-1))/), H5_COL)
     ! rmassy
-    call h5_read_dataset_collect_hyperslab_in_group("rmassy", rmassy, (/sum(offset_nnodes_xy(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("rmassy", rmassy, (/sum(offset_nnodes_xy(0:myrank-1))/), H5_COL)
   endif
 
   ! rmassz
-  call h5_read_dataset_collect_hyperslab_in_group("rmassz", rmassz, (/sum(offset_nnodes(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("rmassz", rmassz, (/sum(offset_nnodes(0:myrank-1))/), H5_COL)
 
   if (((ROTATION_VAL .and. EXACT_MASS_MATRIX_FOR_ROTATION_VAL) .and. iregion_code == IREGION_CRUST_MANTLE) .or. &
       ((ROTATION_VAL .and. EXACT_MASS_MATRIX_FOR_ROTATION_VAL) .and. iregion_code == IREGION_INNER_CORE)) then
     ! b_rmassx
-    call h5_read_dataset_collect_hyperslab_in_group("b_rmassx", b_rmassx, (/sum(offset_nnodes_xy(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("b_rmassx", b_rmassx, (/sum(offset_nnodes_xy(0:myrank-1))/), H5_COL)
     ! b_rmassy
-    call h5_read_dataset_collect_hyperslab_in_group("b_rmassy", b_rmassy, (/sum(offset_nnodes_xy(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("b_rmassy", b_rmassy, (/sum(offset_nnodes_xy(0:myrank-1))/), H5_COL)
   endif
 
   ! read additional ocean load mass matrix
   if (OCEANS_VAL .and. iregion_code == IREGION_CRUST_MANTLE) then
     ! rmass_ocean_load
-    call h5_read_dataset_collect_hyperslab_in_group("rmass_ocean_load", rmass_ocean_load, (/sum(offset_nnodes_oceans(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("rmass_ocean_load", rmass_ocean_load, (/sum(offset_nnodes_oceans(0:myrank-1))/), H5_COL)
   endif
 
   ! close group
@@ -337,8 +335,6 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
   character(len=64) :: gname_region
   ! MPI variables
   integer :: info, comm
-  ! if collective read
-  logical :: if_col = .true.
 
   ! offset arrays
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_num_interfaces
@@ -366,13 +362,13 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
   ! open the group
   call h5_open_group(gname_region)
 
-  call h5_read_dataset_collect_hyperslab_in_group('offset_num_interfaces', offset_num_interfaces, (/0/), if_col)
-  call h5_read_dataset_collect_hyperslab_in_group('offset_max_nibool_interfaces', offset_max_nibool_interfaces, (/0/), if_col)
-  call h5_read_dataset_collect_hyperslab_in_group('offset_num_phase_ispec', offset_num_phase_ispec, (/0/), if_col)
-  call h5_read_dataset_collect_hyperslab_in_group('offset_nspec_inner', offset_nspec_inner, (/0/), if_col)
-  call h5_read_dataset_collect_hyperslab_in_group('offset_nspec_outer', offset_nspec_outer, (/0/), if_col)
-  call h5_read_dataset_collect_hyperslab_in_group('offset_num_colors_outer', offset_num_colors_outer, (/0/), if_col)
-  call h5_read_dataset_collect_hyperslab_in_group('offset_num_colors_inner', offset_num_colors_inner, (/0/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group('offset_num_interfaces', offset_num_interfaces, (/0/), H5_COL)
+  call h5_read_dataset_collect_hyperslab_in_group('offset_max_nibool_interfaces', offset_max_nibool_interfaces, (/0/), H5_COL)
+  call h5_read_dataset_collect_hyperslab_in_group('offset_num_phase_ispec', offset_num_phase_ispec, (/0/), H5_COL)
+  call h5_read_dataset_collect_hyperslab_in_group('offset_nspec_inner', offset_nspec_inner, (/0/), H5_COL)
+  call h5_read_dataset_collect_hyperslab_in_group('offset_nspec_outer', offset_nspec_outer, (/0/), H5_COL)
+  call h5_read_dataset_collect_hyperslab_in_group('offset_num_colors_outer', offset_num_colors_outer, (/0/), H5_COL)
+  call h5_read_dataset_collect_hyperslab_in_group('offset_num_colors_inner', offset_num_colors_inner, (/0/), H5_COL)
 
   num_interfaces = offset_num_interfaces(myrank)
   max_nibool_interfaces = offset_max_nibool_interfaces(myrank)
@@ -399,10 +395,10 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
     if (num_interfaces > 0) then
       call h5_read_dataset_collect_hyperslab_in_group("my_neighbors", &
                                     my_neighbors_crust_mantle(1:num_interfaces), &
-                                    (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
       call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                     nibool_interfaces_crust_mantle(1:num_interfaces), &
-                                    (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
     end if
 
     allocate(ibool_interfaces_crust_mantle(max_nibool_interfaces,num_interfaces), stat=ierr)
@@ -411,7 +407,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       ibool_interfaces_crust_mantle(:,:) = 0
       call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                     ibool_interfaces_crust_mantle(1:max_nibool_interfaces,1:num_interfaces), &
-                                    (/0,sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
     end if
 
     allocate(phase_ispec_inner_crust_mantle(num_phase_ispec,2), stat=ierr)
@@ -420,7 +416,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       phase_ispec_inner_crust_mantle(:,:) = 0
       call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                     phase_ispec_inner_crust_mantle(1:num_phase_ispec,1:2), &
-                                    (/sum(offset_num_phase_ispec(0:myrank-1)),0/), if_col)
+                                    (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
     end if
 
     allocate(num_elem_colors_crust_mantle(num_colors_outer+num_colors_inner), stat=ierr)
@@ -428,7 +424,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
     if (USE_MESH_COLORING_GPU) then
       call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                     num_elem_colors_crust_mantle(1:(num_colors_outer+num_colors_inner)), &
-                                    (/sum(offset_num_colors_outer(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
     end if
 
   case (IREGION_OUTER_CORE)
@@ -447,10 +443,10 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
     if (num_interfaces > 0) then
       call h5_read_dataset_collect_hyperslab_in_group("my_neighbors", &
                                     my_neighbors_outer_core(1:num_interfaces), &
-                                    (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
       call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                     nibool_interfaces_outer_core(1:num_interfaces), &
-                                    (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
     end if
 
     allocate(ibool_interfaces_outer_core(max_nibool_interfaces,num_interfaces), stat=ierr)
@@ -459,7 +455,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
     ibool_interfaces_outer_core(:,:) = 0
       call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                     ibool_interfaces_outer_core(1:max_nibool_interfaces,1:num_interfaces), &
-                                    (/0,sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
     end if
 
     allocate(phase_ispec_inner_outer_core(num_phase_ispec,2), stat=ierr)
@@ -468,7 +464,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       phase_ispec_inner_outer_core(:,:) = 0
       call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                     phase_ispec_inner_outer_core(1:num_phase_ispec,1:2), &
-                                    (/sum(offset_num_phase_ispec(0:myrank-1)),0/), if_col)
+                                    (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
     end if
 
     allocate(num_elem_colors_outer_core(num_colors_outer+num_colors_inner), stat=ierr)
@@ -476,7 +472,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
     if (USE_MESH_COLORING_GPU) then
       call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                     num_elem_colors_outer_core(1:(num_colors_outer+num_colors_inner)), &
-                                    (/sum(offset_num_colors_outer(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
     end if
 
   case (IREGION_INNER_CORE)
@@ -495,10 +491,10 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       if (num_interfaces > 0) then
         call h5_read_dataset_collect_hyperslab_in_group("my_neighbors", &
                                       my_neighbors_inner_core(1:num_interfaces), &
-                                      (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                      (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
         call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                       nibool_interfaces_inner_core(1:num_interfaces), &
-                                      (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                      (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
       end if
 
       allocate(ibool_interfaces_inner_core(max_nibool_interfaces,num_interfaces), stat=ierr)
@@ -507,7 +503,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
         ibool_interfaces_inner_core(:,:) = 0
         call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                       ibool_interfaces_inner_core(1:max_nibool_interfaces,1:num_interfaces), &
-                                      (/0,sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                      (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
       end if
 
       allocate(phase_ispec_inner_inner_core(num_phase_ispec,2), stat=ierr)
@@ -516,7 +512,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
         phase_ispec_inner_inner_core(:,:) = 0
         call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                       phase_ispec_inner_inner_core(1:num_phase_ispec,1:2), &
-                                      (/sum(offset_num_phase_ispec(0:myrank-1)),0/), if_col)
+                                      (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
       end if
 
       allocate(num_elem_colors_inner_core(num_colors_outer+num_colors_inner), stat=ierr)
@@ -524,7 +520,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       if (USE_MESH_COLORING_GPU) then
         call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                       num_elem_colors_inner_core(1:(num_colors_outer+num_colors_inner)), &
-                                      (/sum(offset_num_colors_outer(0:myrank-1))/), if_col)
+                                      (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
       end if
 
   case (IREGION_TRINFINITE)
@@ -543,10 +539,10 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
     if (num_interfaces > 0) then
       call h5_read_dataset_collect_hyperslab_in_group("my_neighbors", &
                                     my_neighbors_trinfinite(1:num_interfaces), &
-                                    (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
       call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                     nibool_interfaces_trinfinite(1:num_interfaces), &
-                                    (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
     end if
 
     allocate(ibool_interfaces_trinfinite(max_nibool_interfaces,num_interfaces), stat=ierr)
@@ -555,7 +551,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       ibool_interfaces_trinfinite(:,:) = 0
       call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                     ibool_interfaces_trinfinite(1:max_nibool_interfaces,1:num_interfaces), &
-                                    (/0,sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
     end if
 
     allocate(phase_ispec_inner_trinfinite(num_phase_ispec,2), stat=ierr)
@@ -564,7 +560,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       phase_ispec_inner_trinfinite(:,:) = 0
       call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                     phase_ispec_inner_trinfinite(1:num_phase_ispec,1:2), &
-                                    (/sum(offset_num_phase_ispec(0:myrank-1)),0/), if_col)
+                                    (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
     end if
 
     allocate(num_elem_colors_trinfinite(num_colors_outer+num_colors_inner), stat=ierr)
@@ -572,7 +568,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
     if (USE_MESH_COLORING_GPU) then
       call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                     num_elem_colors_trinfinite(1:(num_colors_outer+num_colors_inner)), &
-                                    (/sum(offset_num_colors_outer(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
     end if
 
   case (IREGION_INFINITE)
@@ -591,10 +587,10 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
     if (num_interfaces > 0) then
       call h5_read_dataset_collect_hyperslab_in_group("my_neighbors", &
                                     my_neighbors_infinite(1:num_interfaces), &
-                                    (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
       call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                     nibool_interfaces_infinite(1:num_interfaces), &
-                                    (/sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
     end if
 
     allocate(ibool_interfaces_infinite(max_nibool_interfaces,num_interfaces), stat=ierr)
@@ -603,7 +599,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       ibool_interfaces_infinite(:,:) = 0
       call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                     ibool_interfaces_infinite(1:max_nibool_interfaces,1:num_interfaces), &
-                                    (/0,sum(offset_num_interfaces(0:myrank-1))/), if_col)
+                                    (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
     end if
 
     allocate(phase_ispec_inner_infinite(num_phase_ispec,2), stat=ierr)
@@ -612,7 +608,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       phase_ispec_inner_infinite(:,:) = 0
       call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                     phase_ispec_inner_infinite(1:num_phase_ispec,1:2), &
-                                    (/sum(offset_num_phase_ispec(0:myrank-1)),0/), if_col)
+                                    (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
     end if
 
     allocate(num_elem_colors_infinite(num_colors_outer+num_colors_inner), stat=ierr)
@@ -620,7 +616,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
     if (USE_MESH_COLORING_GPU) then
       call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                     num_elem_colors_infinite(1:(num_colors_outer+num_colors_inner)), &
-                                    (/sum(offset_num_colors_outer(0:myrank-1))/), if_col)
+                                    (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
     end if
 
   case default
@@ -682,7 +678,6 @@ subroutine read_mesh_databases_coupling_hdf5()
 #ifdef USE_HDF5
 
   character(len=64) :: gname_region
-  logical :: if_col = .true.
 
   ! MPI variables
   integer :: info, comm
@@ -725,60 +720,60 @@ subroutine read_mesh_databases_coupling_hdf5()
 
     ! read actual number of elements
     ! nspec2D_xmin
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_crust_mantle, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_crust_mantle, (/myrank/), H5_COL)
     ! nspec2D_xmax
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_crust_mantle, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_crust_mantle, (/myrank/), H5_COL)
     ! nspec2D_ymin
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_crust_mantle, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_crust_mantle, (/myrank/), H5_COL)
     ! nspec2D_ymax
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_crust_mantle, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_crust_mantle, (/myrank/), H5_COL)
 
     ! read offset arrays (stored length)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), H5_COL)
 
     ! ibelm_xmin
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_crust_mantle, (/sum(offset_nspec2D_xmin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_crust_mantle, (/sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
     ! ibelm_xmax
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_crust_mantle, (/sum(offset_nspec2D_xmax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_crust_mantle, (/sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
     ! ibelm_ymin
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_crust_mantle, (/sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_crust_mantle, (/sum(offset_nspec2D_ymin(0:myrank-1))/), H5_COL)
     ! ibelm_ymax
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_crust_mantle, (/sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_crust_mantle, (/sum(offset_nspec2D_ymax(0:myrank-1))/), H5_COL)
     ! ibelm_top
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_crust_mantle, (/sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_crust_mantle, (/sum(offset_nspec2D_top(0:myrank-1))/), H5_COL)
     ! ibelm_bottom
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_crust_mantle, (/sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_crust_mantle, (/sum(offset_nspec2D_bottom(0:myrank-1))/), H5_COL)
 
     ! normal_xmin
-    call h5_read_dataset_collect_hyperslab_in_group("normal_xmin", normal_xmin_crust_mantle, (/0,0,0,sum(offset_nspec2D_xmin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_xmin", normal_xmin_crust_mantle, (/0,0,0,sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
     ! normal_xmax
-    call h5_read_dataset_collect_hyperslab_in_group("normal_xmax", normal_xmax_crust_mantle, (/0,0,0,sum(offset_nspec2D_xmax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_xmax", normal_xmax_crust_mantle, (/0,0,0,sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
     ! normal_ymin
-    call h5_read_dataset_collect_hyperslab_in_group("normal_ymin", normal_ymin_crust_mantle, (/0,0,0,sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_ymin", normal_ymin_crust_mantle, (/0,0,0,sum(offset_nspec2D_ymin(0:myrank-1))/), H5_COL)
     ! normal_ymax
-    call h5_read_dataset_collect_hyperslab_in_group("normal_ymax", normal_ymax_crust_mantle, (/0,0,0,sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_ymax", normal_ymax_crust_mantle, (/0,0,0,sum(offset_nspec2D_ymax(0:myrank-1))/), H5_COL)
     ! normal_top
-    call h5_read_dataset_collect_hyperslab_in_group("normal_top", normal_top_crust_mantle, (/0,0,0,sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_top", normal_top_crust_mantle, (/0,0,0,sum(offset_nspec2D_top(0:myrank-1))/), H5_COL)
     ! normal_bottom
-    call h5_read_dataset_collect_hyperslab_in_group("normal_bottom", normal_bottom_crust_mantle, (/0,0,0,sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_bottom", normal_bottom_crust_mantle, (/0,0,0,sum(offset_nspec2D_bottom(0:myrank-1))/), H5_COL)
 
     ! jacobian_xmin
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmin", jacobian2D_xmin_crust_mantle, (/0,0,sum(offset_nspec2D_xmin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmin", jacobian2D_xmin_crust_mantle, (/0,0,sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
     ! jacobian_xmax
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmax", jacobian2D_xmax_crust_mantle, (/0,0,sum(offset_nspec2D_xmax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmax", jacobian2D_xmax_crust_mantle, (/0,0,sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
     ! jacobian_ymin
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_ymin", jacobian2D_ymin_crust_mantle, (/0,0,sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_ymin", jacobian2D_ymin_crust_mantle, (/0,0,sum(offset_nspec2D_ymin(0:myrank-1))/), H5_COL)
     ! jacobian_ymax
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_ymax", jacobian2D_ymax_crust_mantle, (/0,0,sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_ymax", jacobian2D_ymax_crust_mantle, (/0,0,sum(offset_nspec2D_ymax(0:myrank-1))/), H5_COL)
     ! jacobian_top
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_top", jacobian2D_top_crust_mantle, (/0,0,sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_top", jacobian2D_top_crust_mantle, (/0,0,sum(offset_nspec2D_top(0:myrank-1))/), H5_COL)
     ! jacobian_bottom
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_bottom", jacobian2D_bottom_crust_mantle, (/0,0,sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_bottom", jacobian2D_bottom_crust_mantle, (/0,0,sum(offset_nspec2D_bottom(0:myrank-1))/), H5_COL)
 
     ! close group
     call h5_close_group()
@@ -791,60 +786,60 @@ subroutine read_mesh_databases_coupling_hdf5()
 
     ! read actual number of elements
     ! nspec2D_xmin
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_outer_core, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_outer_core, (/myrank/), H5_COL)
     ! nspec2D_xmax
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_outer_core, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_outer_core, (/myrank/), H5_COL)
     ! nspec2D_ymin
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_outer_core, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_outer_core, (/myrank/), H5_COL)
     ! nspec2D_ymax
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_outer_core, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_outer_core, (/myrank/), H5_COL)
 
     ! read offset arrays (stored length)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), H5_COL)
 
     ! ibelm_xmin
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_outer_core, (/sum(offset_nspec2D_xmin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_outer_core, (/sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
     ! ibelm_xmax
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_outer_core, (/sum(offset_nspec2D_xmax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_outer_core, (/sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
     ! ibelm_ymin
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_outer_core, (/sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_outer_core, (/sum(offset_nspec2D_ymin(0:myrank-1))/), H5_COL)
     ! ibelm_ymax
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_outer_core, (/sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_outer_core, (/sum(offset_nspec2D_ymax(0:myrank-1))/), H5_COL)
     ! ibelm_top
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_outer_core, (/sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_outer_core, (/sum(offset_nspec2D_top(0:myrank-1))/), H5_COL)
     ! ibelm_bottom
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_outer_core, (/sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_outer_core, (/sum(offset_nspec2D_bottom(0:myrank-1))/), H5_COL)
 
     ! normal_xmin
-    call h5_read_dataset_collect_hyperslab_in_group("normal_xmin", normal_xmin_outer_core, (/0,0,0,sum(offset_nspec2D_xmin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_xmin", normal_xmin_outer_core, (/0,0,0,sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
     ! normal_xmax
-    call h5_read_dataset_collect_hyperslab_in_group("normal_xmax", normal_xmax_outer_core, (/0,0,0,sum(offset_nspec2D_xmax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_xmax", normal_xmax_outer_core, (/0,0,0,sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
     ! normal_ymin
-    call h5_read_dataset_collect_hyperslab_in_group("normal_ymin", normal_ymin_outer_core, (/0,0,0,sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_ymin", normal_ymin_outer_core, (/0,0,0,sum(offset_nspec2D_ymin(0:myrank-1))/), H5_COL)
     ! normal_ymax
-    call h5_read_dataset_collect_hyperslab_in_group("normal_ymax", normal_ymax_outer_core, (/0,0,0,sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_ymax", normal_ymax_outer_core, (/0,0,0,sum(offset_nspec2D_ymax(0:myrank-1))/), H5_COL)
     ! normal_top
-    call h5_read_dataset_collect_hyperslab_in_group("normal_top", normal_top_outer_core, (/0,0,0,sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_top", normal_top_outer_core, (/0,0,0,sum(offset_nspec2D_top(0:myrank-1))/), H5_COL)
     ! normal_bot
-    call h5_read_dataset_collect_hyperslab_in_group("normal_bottom", normal_bottom_outer_core, (/0,0,0,sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("normal_bottom", normal_bottom_outer_core, (/0,0,0,sum(offset_nspec2D_bottom(0:myrank-1))/), H5_COL)
 
     ! jacobian_xmin
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmin", jacobian2D_xmin_outer_core, (/0,0,sum(offset_nspec2D_xmin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmin", jacobian2D_xmin_outer_core, (/0,0,sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
     ! jacobian_xmax
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmax", jacobian2D_xmax_outer_core, (/0,0,sum(offset_nspec2D_xmax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmax", jacobian2D_xmax_outer_core, (/0,0,sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
     ! jacobian_ymin
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_ymin", jacobian2D_ymin_outer_core, (/0,0,sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_ymin", jacobian2D_ymin_outer_core, (/0,0,sum(offset_nspec2D_ymin(0:myrank-1))/), H5_COL)
     ! jacobian_ymax
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_ymax", jacobian2D_ymax_outer_core, (/0,0,sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_ymax", jacobian2D_ymax_outer_core, (/0,0,sum(offset_nspec2D_ymax(0:myrank-1))/), H5_COL)
     ! jacobian_top
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_top", jacobian2D_top_outer_core, (/0,0,sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_top", jacobian2D_top_outer_core, (/0,0,sum(offset_nspec2D_top(0:myrank-1))/), H5_COL)
     ! jacobian_bottom
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_bottom", jacobian2D_bottom_outer_core, (/0,0,sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_bottom", jacobian2D_bottom_outer_core, (/0,0,sum(offset_nspec2D_bottom(0:myrank-1))/), H5_COL)
 
     ! close group
     call h5_close_group()
@@ -858,34 +853,34 @@ subroutine read_mesh_databases_coupling_hdf5()
 
     ! read actual number of elements
     ! nspec2D_xmin
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_inner_core, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_inner_core, (/myrank/), H5_COL)
     ! nspec2D_xmax
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_inner_core, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_inner_core, (/myrank/), H5_COL)
     ! nspec2D_ymin
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_inner_core, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_inner_core, (/myrank/), H5_COL)
     ! nspec2D_ymax
-    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_inner_core, (/myrank/), if_col)
+    call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_inner_core, (/myrank/), H5_COL)
 
     ! read offset arrays (stored length)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), if_col)
-    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), H5_COL)
+    call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), H5_COL)
 
     ! ibelm_xmin
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_inner_core, (/sum(offset_nspec2D_xmin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_inner_core, (/sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
     ! ibelm_xmax
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_inner_core, (/sum(offset_nspec2D_xmax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_inner_core, (/sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
     ! ibelm_ymin
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_inner_core, (/sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_inner_core, (/sum(offset_nspec2D_ymin(0:myrank-1))/), H5_COL)
     ! ibelm_ymax
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_inner_core, (/sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_inner_core, (/sum(offset_nspec2D_ymax(0:myrank-1))/), H5_COL)
     ! ibelm_top
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_inner_core, (/sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_inner_core, (/sum(offset_nspec2D_top(0:myrank-1))/), H5_COL)
     ! ibelm_bottom
-    call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_inner_core, (/sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_inner_core, (/sum(offset_nspec2D_bottom(0:myrank-1))/), H5_COL)
 
     ! close group
     call h5_close_group()
@@ -900,34 +895,34 @@ subroutine read_mesh_databases_coupling_hdf5()
 
         ! read actual number of elements
         ! nspec2D_xmin
-        call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_trinfinite, (/myrank/), if_col)
+        call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_trinfinite, (/myrank/), H5_COL)
         ! nspec2D_xmax
-        call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_trinfinite, (/myrank/), if_col)
+        call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_trinfinite, (/myrank/), H5_COL)
         ! nspec2D_ymin
-        call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_trinfinite, (/myrank/), if_col)
+        call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_trinfinite, (/myrank/), H5_COL)
         ! nspec2D_ymax
-        call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_trinfinite, (/myrank/), if_col)
+        call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_trinfinite, (/myrank/), H5_COL)
 
         ! read offset arrays (stored length)
-        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), if_col)
-        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), if_col)
-        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), if_col)
-        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), if_col)
-        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), if_col)
-        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), H5_COL)
+        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), H5_COL)
+        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), H5_COL)
+        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), H5_COL)
+        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), H5_COL)
+        call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), H5_COL)
 
         ! ibelm_xmin
-        call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_trinfinite, (/sum(offset_nspec2D_xmin(0:myrank-1))/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_trinfinite, (/sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
         ! ibelm_xmax
-        call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_trinfinite, (/sum(offset_nspec2D_xmax(0:myrank-1))/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_trinfinite, (/sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
         ! ibelm_ymin
-        call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_trinfinite, (/sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_trinfinite, (/sum(offset_nspec2D_ymin(0:myrank-1))/), H5_COL)
         ! ibelm_ymax
-        call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_trinfinite, (/sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_trinfinite, (/sum(offset_nspec2D_ymax(0:myrank-1))/), H5_COL)
         ! ibelm_top
-        call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_trinfinite, (/sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_trinfinite, (/sum(offset_nspec2D_top(0:myrank-1))/), H5_COL)
         ! ibelm_bottom
-        call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_trinfinite, (/sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
+        call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_trinfinite, (/sum(offset_nspec2D_bottom(0:myrank-1))/), H5_COL)
 
         ! close group
         call h5_close_group()
@@ -941,34 +936,34 @@ subroutine read_mesh_databases_coupling_hdf5()
 
       ! read actual number of elements
       ! nspec2D_xmin
-      call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_infinite, (/myrank/), if_col)
+      call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmin", nspec2D_xmin_infinite, (/myrank/), H5_COL)
       ! nspec2D_xmax
-      call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_infinite, (/myrank/), if_col)
+      call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_xmax", nspec2D_xmax_infinite, (/myrank/), H5_COL)
       ! nspec2D_ymin
-      call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_infinite, (/myrank/), if_col)
+      call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymin", nspec2D_ymin_infinite, (/myrank/), H5_COL)
       ! nspec2D_ymax
-      call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_infinite, (/myrank/), if_col)
+      call h5_read_dataset_scalar_collect_hyperslab_in_group("nspec2D_ymax", nspec2D_ymax_infinite, (/myrank/), H5_COL)
 
       ! read offset arrays (stored length)
-      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), if_col)
-      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), if_col)
-      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), if_col)
-      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), if_col)
-      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), if_col)
-      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmin", offset_nspec2D_xmin, (/0/), H5_COL)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_xmax", offset_nspec2D_xmax, (/0/), H5_COL)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymin", offset_nspec2D_ymin, (/0/), H5_COL)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_ymax", offset_nspec2D_ymax, (/0/), H5_COL)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_top", offset_nspec2D_top, (/0/), H5_COL)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_nspec2D_bottom", offset_nspec2D_bottom, (/0/), H5_COL)
 
       ! ibelm_xmin
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_infinite, (/sum(offset_nspec2D_xmin(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmin", ibelm_xmin_infinite, (/sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
       ! ibelm_xmax
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_infinite, (/sum(offset_nspec2D_xmax(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_xmax", ibelm_xmax_infinite, (/sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
       ! ibelm_ymin
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_infinite, (/sum(offset_nspec2D_ymin(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymin", ibelm_ymin_infinite, (/sum(offset_nspec2D_ymin(0:myrank-1))/), H5_COL)
       ! ibelm_ymax
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_infinite, (/sum(offset_nspec2D_ymax(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_ymax", ibelm_ymax_infinite, (/sum(offset_nspec2D_ymax(0:myrank-1))/), H5_COL)
       ! ibelm_top
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_infinite, (/sum(offset_nspec2D_top(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_top", ibelm_top_infinite, (/sum(offset_nspec2D_top(0:myrank-1))/), H5_COL)
       ! ibelm_bottom
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_infinite, (/sum(offset_nspec2D_bottom(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_bottom", ibelm_bottom_infinite, (/sum(offset_nspec2D_bottom(0:myrank-1))/), H5_COL)
 
       ! close group
       call h5_close_group()
@@ -989,11 +984,11 @@ subroutine read_mesh_databases_coupling_hdf5()
       call h5_open_group(gname_region)
 
       ! read NSPEC2D_MOHO
-      call h5_read_dataset_scalar_collect_hyperslab_in_group("NSPEC2D_MOHO", tmp_nspec2d_moho, (/myrank/), if_col)
+      call h5_read_dataset_scalar_collect_hyperslab_in_group("NSPEC2D_MOHO", tmp_nspec2d_moho, (/myrank/), H5_COL)
       ! read NSPEC2D_400
-      call h5_read_dataset_scalar_collect_hyperslab_in_group("NSPEC2D_400", tmp_nspec2d_400, (/myrank/), if_col)
+      call h5_read_dataset_scalar_collect_hyperslab_in_group("NSPEC2D_400", tmp_nspec2d_400, (/myrank/), H5_COL)
       ! read NSPEC2D_670
-      call h5_read_dataset_scalar_collect_hyperslab_in_group("NSPEC2D_670", tmp_nspec2d_670, (/myrank/), if_col)
+      call h5_read_dataset_scalar_collect_hyperslab_in_group("NSPEC2D_670", tmp_nspec2d_670, (/myrank/), H5_COL)
 
       ! checks setup
       if (tmp_nspec2d_moho /= NSPEC2D_MOHO .or. tmp_nspec2d_400 /= NSPEC2D_400 .or. tmp_nspec2d_670 /= NSPEC2D_670) then
@@ -1004,36 +999,36 @@ subroutine read_mesh_databases_coupling_hdf5()
 
       ! read the actual number of elements
       ! sub_NSPEC2D_MOHO_top
-      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_MOHO_top", offset_nspec2D_moho_top, (/0/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_MOHO_top", offset_nspec2D_moho_top, (/0/), H5_COL)
       ! sub_NSPEC2D_MOHO_bottom
-      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_MOHO_bottom", offset_nspec2D_moho_bottom, (/0/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_MOHO_bottom", offset_nspec2D_moho_bottom, (/0/), H5_COL)
       ! sub_NSPEC2D_400_top
-      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_400_top", offset_nspec2D_400_top, (/0/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_400_top", offset_nspec2D_400_top, (/0/), H5_COL)
       ! sub_NSPEC2D_400_bottom
-      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_400_bottom", offset_nspec2D_400_bottom, (/0/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_400_bottom", offset_nspec2D_400_bottom, (/0/), H5_COL)
       ! sub_NSPEC2D_670_top
-      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_670_top", offset_nspec2D_670_top, (/0/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_670_top", offset_nspec2D_670_top, (/0/), H5_COL)
       ! sub_NSPEC2D_670_bottom
-      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_670_bot", offset_nspec2D_670_bottom, (/0/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("sub_NSPEC2D_670_bot", offset_nspec2D_670_bottom, (/0/), H5_COL)
 
       ! ibelm_moho_top
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_moho_top", ibelm_moho_top, (/sum(offset_nspec2D_moho_top(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_moho_top", ibelm_moho_top, (/sum(offset_nspec2D_moho_top(0:myrank-1))/), H5_COL)
       ! ibelm_moho_bot
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_moho_bot", ibelm_moho_bot, (/sum(offset_nspec2D_moho_bottom(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_moho_bot", ibelm_moho_bot, (/sum(offset_nspec2D_moho_bottom(0:myrank-1))/), H5_COL)
       ! ibelm_400_top
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_400_top", ibelm_400_top, (/sum(offset_nspec2D_400_top(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_400_top", ibelm_400_top, (/sum(offset_nspec2D_400_top(0:myrank-1))/), H5_COL)
       ! ibelm_400_bot
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_400_bot", ibelm_400_bot, (/sum(offset_nspec2D_400_bottom(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_400_bot", ibelm_400_bot, (/sum(offset_nspec2D_400_bottom(0:myrank-1))/), H5_COL)
       ! ibelm_670_top
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_670_top", ibelm_670_top, (/sum(offset_nspec2D_670_top(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_670_top", ibelm_670_top, (/sum(offset_nspec2D_670_top(0:myrank-1))/), H5_COL)
       ! ibelm_670_bot
-      call h5_read_dataset_collect_hyperslab_in_group("ibelm_670_bot", ibelm_670_bot, (/sum(offset_nspec2D_670_bottom(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("ibelm_670_bot", ibelm_670_bot, (/sum(offset_nspec2D_670_bottom(0:myrank-1))/), H5_COL)
       ! normal_moho
-      call h5_read_dataset_collect_hyperslab_in_group("normal_moho", normal_moho, (/0,0,0,sum(offset_nspec2D_moho_top(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("normal_moho", normal_moho, (/0,0,0,sum(offset_nspec2D_moho_top(0:myrank-1))/), H5_COL)
       ! normal_400
-      call h5_read_dataset_collect_hyperslab_in_group("normal_400", normal_400, (/0,0,0,sum(offset_nspec2D_400_top(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("normal_400", normal_400, (/0,0,0,sum(offset_nspec2D_400_top(0:myrank-1))/), H5_COL)
       ! normal_670
-      call h5_read_dataset_collect_hyperslab_in_group("normal_670", normal_670, (/0,0,0,sum(offset_nspec2D_670_top(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("normal_670", normal_670, (/0,0,0,sum(offset_nspec2D_670_top(0:myrank-1))/), H5_COL)
 
       ! close group
       call h5_close_group()
@@ -1075,7 +1070,6 @@ subroutine read_mesh_databases_stacey_hdf5
   ! hdf5 variables
   integer :: comm, info, ier
   character(len=64) :: gname_region
-  logical :: if_col = .true. ! read in collective mode
 
 
   call world_get_comm(comm)
@@ -1098,7 +1092,7 @@ subroutine read_mesh_databases_stacey_hdf5
     call h5_open_group(gname_region)
 
     ! read the offset_num_abs_boundary_faces
-    call h5_read_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", offset_num_abs_boundary_faces, (/0/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", offset_num_abs_boundary_faces, (/0/), H5_COL)
     ! for this process
     num_abs_boundary_faces_crust_mantle = offset_num_abs_boundary_faces(myrank)
 
@@ -1117,15 +1111,15 @@ subroutine read_mesh_databases_stacey_hdf5
       if (ier /= 0) stop 'Error allocating array abs_boundary_ispec etc.'
 
       ! abs_boundary_ispec
-      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_ispec", abs_boundary_ispec_crust_mantle, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_ispec", abs_boundary_ispec_crust_mantle, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
       ! abs_boundary_npoin
-      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_npoin", abs_boundary_npoin_crust_mantle, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_npoin", abs_boundary_npoin_crust_mantle, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
       ! abs_boundary_ijk
-      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_ijk", abs_boundary_ijk_crust_mantle, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_ijk", abs_boundary_ijk_crust_mantle, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
       ! abs_boundary_jacobian2Dw
-      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", abs_boundary_jacobian2Dw_crust_mantle, (/0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", abs_boundary_jacobian2Dw_crust_mantle, (/0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
       ! abs_boundary_normal
-      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_normal", abs_boundary_normal_crust_mantle, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_normal", abs_boundary_normal_crust_mantle, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
 
     else ! dummy
       ! dummy arrays
@@ -1155,7 +1149,7 @@ subroutine read_mesh_databases_stacey_hdf5
     call h5_open_group(gname_region)
 
     ! read the offset_num_abs_boundary_faces
-    call h5_read_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", offset_num_abs_boundary_faces, (/0/), if_col)
+    call h5_read_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", offset_num_abs_boundary_faces, (/0/), H5_COL)
     ! for this process
     num_abs_boundary_faces_outer_core = offset_num_abs_boundary_faces(myrank)
 
@@ -1174,15 +1168,15 @@ subroutine read_mesh_databases_stacey_hdf5
       if (ier /= 0) stop 'Error allocating array abs_boundary_ispec etc.'
 
       ! abs_boundary_ispec
-      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_ispec", abs_boundary_ispec_outer_core, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_ispec", abs_boundary_ispec_outer_core, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
       ! abs_boundary_npoin
-      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_npoin", abs_boundary_npoin_outer_core, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_npoin", abs_boundary_npoin_outer_core, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
       ! abs_boundary_ijk
-      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_ijk", abs_boundary_ijk_outer_core, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_ijk", abs_boundary_ijk_outer_core, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
       ! abs_boundary_jacobian2Dw
-      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", abs_boundary_jacobian2Dw_outer_core, (/0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", abs_boundary_jacobian2Dw_outer_core, (/0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
       ! abs_boundary_normal
-      !call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_normal", abs_boundary_normal_outer_core, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), if_col)
+      !call h5_read_dataset_collect_hyperslab_in_group("abs_boundary_normal", abs_boundary_normal_outer_core, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
 
     else ! dummy
       ! dummy arrays
@@ -1228,6 +1222,7 @@ subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_
   use constants_solver
 
 #ifdef USE_HDF5
+  use shared_parameters, only: H5_COL
   use specfem_par, only: ATTENUATION_VAL,LOCAL_PATH
   use manager_hdf5
 #endif
@@ -1246,7 +1241,6 @@ subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_
   ! offset
   integer, dimension(0:NPROCTOT_VAL-1) :: offset_nelems
   ! hdf5 variables
-  logical :: if_col = .true. ! read in collective mode
   character(len=64) :: gname_region
   integer :: comm, info
   double precision, dimension(0:NPROCTOT_VAL-1) :: tmp_dp_arr
@@ -1271,7 +1265,7 @@ subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_
   ! open the group
   call h5_open_group(gname_region)
   ! read the offset_nelems
-  call h5_read_dataset_collect_hyperslab_in_group("offset_nelems", offset_nelems, (/0/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("offset_nelems", offset_nelems, (/0/), H5_COL)
   ! close group and file
   call h5_close_group()
   call h5_close_file_p()
@@ -1284,13 +1278,13 @@ subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_
   call h5_open_group(gname_region)
 
   ! tau_s
-  call h5_read_dataset_collect_hyperslab_in_group("tau_s_store", tau_s, (/myrank*N_SLS/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("tau_s_store", tau_s, (/myrank*N_SLS/), H5_COL)
   ! factor_common (tau_e_store)
-  call h5_read_dataset_collect_hyperslab_in_group("tau_e_store", factor_common, (/0,0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("tau_e_store", factor_common, (/0,0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! scale_factor (Qmu_store)
-  call h5_read_dataset_collect_hyperslab_in_group("Qmu_store", scale_factor, (/0,0,0,sum(offset_nelems(0:myrank-1))/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("Qmu_store", scale_factor, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
   ! f_c_source
-  call h5_read_dataset_collect_hyperslab_in_group("att_f_c_source", tmp_dp_arr, (/0/), if_col)
+  call h5_read_dataset_collect_hyperslab_in_group("att_f_c_source", tmp_dp_arr, (/0/), H5_COL)
   f_c_source = tmp_dp_arr(myrank)
 
   ! close group

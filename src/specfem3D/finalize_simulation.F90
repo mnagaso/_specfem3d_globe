@@ -299,6 +299,9 @@
   if (MOVIE_VOLUME) then
     deallocate(nu_3dmovie)
     deallocate(mask_3dmovie,muvstore_crust_mantle_3dmovie)
+    if (HDF5_ENABLED) then
+      call movie_volume_finalize_hdf5()
+    endif
   endif
 
   ! noise simulations

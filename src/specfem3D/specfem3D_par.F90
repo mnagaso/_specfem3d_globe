@@ -1531,7 +1531,6 @@ end module my_libxsmm
   use manager_hdf5
 
 
-  logical :: if_col = .true.
   integer :: info, comm
   character(len=MAX_STRING_LEN) :: file_name, group_name
 
@@ -1540,7 +1539,37 @@ end module my_libxsmm
   integer, dimension(:), allocatable :: offset_poin
 
   ! volume movie
+  ! output parameters
+  logical, parameter :: MOVIE_OUTPUT_DIV      = .true.     ! divergence
+  logical, parameter :: MOVIE_OUTPUT_CURL     = .true.     ! curl
+  logical, parameter :: MOVIE_OUTPUT_CURLNORM = .true.     ! Frobenius norm of curl
+  logical, parameter :: OUTPUT_CRUST_MANTLE   = .true.
+  logical, parameter :: OUTPUT_OUTER_CORE     = .true.
+  logical, parameter :: OUTPUT_INNER_CORE     = .true.
 
+  ! flags for check which region is output for movie
+  logical :: output_sv = .false. ! strain or vector output
+  logical :: output_cm = .false.
+  logical :: output_oc = .false.
+  logical :: output_ic = .false.
+
+  integer :: npoints_vol_mov_all_proc
+  integer :: npoints_vol_mov_all_proc_cm
+  integer :: npoints_vol_mov_all_proc_oc
+  integer :: npoints_vol_mov_all_proc_ic
+
+  integer :: nspec_vol_mov_all_proc
+  integer :: nspec_vol_mov_all_proc_cm
+  integer :: nspec_vol_mov_all_proc_oc
+  integer :: nspec_vol_mov_all_proc_ic
+
+  ! number of elements for visualization (nspec * (NGLLX-1) * (NGLLY-1) * (NGLLZ-1))
+  integer :: nspec_vol_mov_all_proc_cm_conn, nspec_vol_mov_all_proc_oc_conn, nspec_vol_mov_all_proc_ic_conn
+
+  integer, dimension(:), allocatable :: offset_poin_vol,         offset_nspec_vol
+  integer, dimension(:), allocatable :: offset_poin_vol_oc,      offset_nspec_vol_oc
+  integer, dimension(:), allocatable :: offset_poin_vol_ic,      offset_nspec_vol_ic
+  integer, dimension(:), allocatable :: offset_poin_vol_cm,     offset_nspec_vol_cm
 
   ! xdmf
   integer :: xdmf_surf = 30000

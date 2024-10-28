@@ -195,7 +195,7 @@
 
   if (HDF5_ENABLED) then
     call write_movie_volume_mesh_hdf5(nu_3dmovie,num_ibool_3dmovie,mask_3dmovie,mask_ibool_3dmovie, &
-                                      muvstore_crust_mantle_3dmovie,npoints_3dmovie)
+                                      muvstore_crust_mantle_3dmovie,npoints_3dmovie,nspecel_3dmovie)
   else
     call write_movie_volume_mesh(nu_3dmovie,num_ibool_3dmovie,mask_3dmovie,mask_ibool_3dmovie, &
                                             muvstore_crust_mantle_3dmovie,npoints_3dmovie)
