@@ -495,12 +495,15 @@
     ! we can go slightly outside the [1,1] segment since with finite elements
     ! the polynomial solution is defined everywhere
     ! can be useful for convergence of iterative scheme with distorted elements
-    if (xi > 1.10d0) xi = 1.10d0
-    if (xi < -1.10d0) xi = -1.10d0
-    if (eta > 1.10d0) eta = 1.10d0
-    if (eta < -1.10d0) eta = -1.10d0
-    if (gamma > 1.10d0) gamma = 1.10d0
-    if (gamma < -1.10d0) gamma = -1.10d0
+    !if (xi > 1.10d0) xi = 1.10d0
+    !if (xi < -1.10d0) xi = -1.10d0
+    if (abs(xi) > 1.10d0) xi = sign(1.10d0,xi)
+    !if (eta > 1.10d0) eta = 1.10d0
+    !if (eta < -1.10d0) eta = -1.10d0
+    if (abs(eta) > 1.10d0) eta = sign(1.10d0,eta)
+    !if (gamma > 1.10d0) gamma = 1.10d0
+    !if (gamma < -1.10d0) gamma = -1.10d0
+    if (abs(gamma) > 1.10d0) gamma = sign(1.10d0,gamma)
 
   ! end of non linear iterations
   enddo
@@ -552,6 +555,7 @@
   integer :: ix_initial_guess,iy_initial_guess,iz_initial_guess
   integer :: ispec,i,j,k,iglob
 
+  double precision :: dx,dy,dz
   double precision :: dist_squared
   double precision :: distmin_squared_guess
 
@@ -647,9 +651,10 @@
     iz_initial_guess = MIDZ
     iglob = ibool(MIDX,MIDY,MIDZ,ispec)
 
-    distmin_squared_guess = (x_target - dble(xstore(iglob)))*(x_target - dble(xstore(iglob))) &
-                          + (y_target - dble(ystore(iglob)))*(y_target - dble(ystore(iglob))) &
-                          + (z_target - dble(zstore(iglob)))*(z_target - dble(zstore(iglob)))
+    dx = x_target - dble(xstore(iglob))
+    dy = y_target - dble(ystore(iglob))
+    dz = z_target - dble(zstore(iglob))
+    distmin_squared_guess = dx*dx + dy*dy + dz*dz
 
     ! loop only on points inside the element
     ! exclude edges to ensure this point is not shared with other elements
@@ -657,9 +662,11 @@
       do j = 2,NGLLY-1
         do i = 2,NGLLX-1
           iglob = ibool(i,j,k,ispec)
-          dist_squared = (x_target - dble(xstore(iglob)))*(x_target - dble(xstore(iglob))) &
-                       + (y_target - dble(ystore(iglob)))*(y_target - dble(ystore(iglob))) &
-                       + (z_target - dble(zstore(iglob)))*(z_target - dble(zstore(iglob)))
+          dx = x_target - dble(xstore(iglob))
+          dy = y_target - dble(ystore(iglob))
+          dz = z_target - dble(zstore(iglob))
+          dist_squared = dx*dx + dy*dy + dz*dz
+
           !  keep this point if it is closer to the receiver
           !  we compare squared distances instead of distances themselves to significantly speed up calculations
           if (dist_squared < distmin_squared_guess) then
@@ -677,9 +684,10 @@
                                 ispec,ix_initial_guess,iy_initial_guess,iz_initial_guess,POINT_CAN_BE_BURIED)
 
     ! final distance to target
-    dist_squared = (x_target - x_n)*(x_target - x_n) &
-                 + (y_target - y_n)*(y_target - y_n) &
-                 + (z_target - z_n)*(z_target - z_n)
+    dx = x_target - x_n
+    dy = y_target - y_n
+    dz = z_target - z_n
+    dist_squared = dx*dx + dy*dy + dz*dz
 
     ! debug
     if (DEBUG) print *,'  neighbor ',ispec,i_n,ientry,'ispec = ',ispec_selected,sngl(xi_n),sngl(eta_n),sngl(gamma_n), &
@@ -700,7 +708,7 @@
     endif
 
     ! checks if position lies inside element (which usually means that located position is accurate)
-    if (abs(xi) < 1.099d0 .and. abs(eta) < 1.099d0 .and. abs(gamma) < 1.099d0) exit
+    if (abs(xi) <= 1.d0 .and. abs(eta) <= 1.d0 .and. abs(gamma) <= 1.d0) exit
 
   enddo ! num_neighbors
 
