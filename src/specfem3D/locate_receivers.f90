@@ -32,7 +32,7 @@
   subroutine locate_receivers(yr,jda,ho,mi,sec)
 
   use constants_solver, only: &
-    ELLIPTICITY_VAL,NCHUNKS_VAL,NPROCTOT_VAL,NDIM, &
+    ELLIPTICITY_VAL,NCHUNKS_VAL,NDIM, &
     MAX_LENGTH_STATION_NAME,MAX_LENGTH_NETWORK_NAME, &
     DISPLAY_DETAILS_STATIONS,nrec_SUBSET_MAX, &
     THRESHOLD_EXCLUDE_STATION, &
@@ -59,38 +59,28 @@
   double precision,intent(in) :: sec
 
   ! local parameters
-  integer :: iprocloop
-  integer :: irec,i
-  integer :: ier
+  integer :: irec,i,ier
 
-  integer, dimension(nrec) :: islice_selected_found,ispec_selected_found
-  double precision, dimension(nrec) :: xi_receiver_found,eta_receiver_found,gamma_receiver_found
-  double precision, dimension(3,3,nrec) :: nu_found
+  integer, allocatable, dimension(:) :: islice_selected_found,ispec_selected_found
+  double precision, allocatable, dimension(:) :: xi_receiver_found,eta_receiver_found,gamma_receiver_found
+  double precision, allocatable, dimension(:) :: stlat_found,stlon_found,stele_found,stbur_found,epidist_found
+  double precision, allocatable, dimension(:,:,:) :: nu_found
   integer :: nrec_found
 
   ! point locations
   double precision, allocatable, dimension(:,:) :: xyz_target
   double precision, allocatable, dimension(:,:) :: xyz_found
-
   double precision, allocatable, dimension(:,:) :: xyz_found_subset
-  double precision, allocatable, dimension(:,:,:) :: xyz_found_all
-
-  double precision, dimension(nrec) :: stlat_found,stlon_found,stele_found,stbur_found,epidist_found
-
   double precision, allocatable, dimension(:) :: epidist
 
   integer :: nrec_SUBSET_current_size
   integer :: irec_in_this_subset,irec_already_done
 
   integer, allocatable, dimension(:) :: ispec_selected_subset
-  integer, allocatable, dimension(:,:) :: ispec_selected_all
 
   double precision, dimension(:), allocatable :: final_distance
   double precision, allocatable, dimension(:) :: final_distance_subset
-  double precision, dimension(:,:), allocatable :: final_distance_all
-
   double precision, allocatable, dimension(:) :: xi_subset,eta_subset,gamma_subset
-  double precision, allocatable, dimension(:,:) :: xi_all,eta_all,gamma_all
 
   double precision :: lat,lon,radius,depth,r_target
 
@@ -143,10 +133,21 @@
 
   ! allocate memory for arrays using number of stations
   allocate(epidist(nrec), &
+           islice_selected_found(nrec),ispec_selected_found(nrec), &
+           xi_receiver_found(nrec),eta_receiver_found(nrec),gamma_receiver_found(nrec), &
+           stlat_found(nrec),stlon_found(nrec),stele_found(nrec),stbur_found(nrec),epidist_found(nrec), &
+           nu_found(3,3,nrec), &
            xyz_target(NDIM,nrec), &
            xyz_found(NDIM,nrec), &
            final_distance(nrec),stat=ier)
   if (ier /= 0) call exit_MPI(myrank,'Error allocating temporary receiver arrays')
+  epidist(:) = HUGEVAL
+  islice_selected_found(:) = 0; ispec_selected_found(:) = 0
+  xi_receiver_found(:) = 0.d0; eta_receiver_found(:) = 0.d0; gamma_receiver_found(:) = 0.d0
+  nu_found(:,:,:) = 0.d0
+  xyz_target(:,:) = 0.d0
+  xyz_found(:,:) = 0.d0
+  final_distance(:) = HUGEVAL
 
   ! read that STATIONS file on the main
   call read_receiver_locations()
@@ -352,31 +353,9 @@
              final_distance_subset(nrec_SUBSET_current_size),stat=ier)
     if (ier /= 0 ) call exit_MPI(myrank,'Error allocating temporary receiver arrays')
 
-    ! gather arrays
-    if (myrank == 0) then
-      ! only main process needs full arrays allocated
-      allocate(ispec_selected_all(nrec_SUBSET_current_size,0:NPROCTOT_VAL-1), &
-               xi_all(nrec_SUBSET_current_size,0:NPROCTOT_VAL-1), &
-               eta_all(nrec_SUBSET_current_size,0:NPROCTOT_VAL-1), &
-               gamma_all(nrec_SUBSET_current_size,0:NPROCTOT_VAL-1), &
-               xyz_found_all(NDIM,nrec_SUBSET_current_size,0:NPROCTOT_VAL-1), &
-               final_distance_all(nrec_SUBSET_current_size,0:NPROCTOT_VAL-1),stat=ier)
-      if (ier /= 0 ) call exit_MPI(myrank,'Error allocating temporary gather receiver arrays')
-    else
-      ! dummy arrays
-      allocate(ispec_selected_all(1,1), &
-               xi_all(1,1), &
-               eta_all(1,1), &
-               gamma_all(1,1), &
-               xyz_found_all(1,1,1), &
-               final_distance_all(1,1),stat=ier)
-      if (ier /= 0 ) call exit_MPI(myrank,'Error allocating temporary dummy receiver arrays')
-    endif
-
     ! initializes search results
     ispec_selected_subset(:) = 0
     final_distance_subset(:) = HUGEVAL
-    final_distance_all(:,:) = HUGEVAL
 
     ! find point locations
     ! loop over the stations within this subset
@@ -419,72 +398,20 @@
     enddo ! end of loop on all stations within current subset
 
     ! for MPI version, gather information from all the nodes
-    ispec_selected_all(:,:) = -1
-
-    call gather_all_i(ispec_selected_subset,nrec_SUBSET_current_size, &
-                      ispec_selected_all,nrec_SUBSET_current_size,NPROCTOT_VAL)
-
-    ! this is executed by main process only
-    if (myrank == 0) then
-      ! check that the gather operation went well
-      if (any(ispec_selected_all(:,:) == -1)) then
-        print *,'Error ispec all: procs = ',NPROCTOT_VAL,'receivers subset size = ',nrec_SUBSET_current_size
-        print *,ispec_selected_all(:,:)
-        call exit_MPI(myrank,'gather operation failed for receivers')
-      endif
-    endif
-
-    call gather_all_dp(xi_subset,nrec_SUBSET_current_size, &
-                       xi_all,nrec_SUBSET_current_size,NPROCTOT_VAL)
-    call gather_all_dp(eta_subset,nrec_SUBSET_current_size, &
-                       eta_all,nrec_SUBSET_current_size,NPROCTOT_VAL)
-    call gather_all_dp(gamma_subset,nrec_SUBSET_current_size, &
-                       gamma_all,nrec_SUBSET_current_size,NPROCTOT_VAL)
-    call gather_all_dp(final_distance_subset,nrec_SUBSET_current_size, &
-                       final_distance_all,nrec_SUBSET_current_size,NPROCTOT_VAL)
-    call gather_all_dp(xyz_found_subset,NDIM*nrec_SUBSET_current_size, &
-                       xyz_found_all,NDIM*nrec_SUBSET_current_size,NPROCTOT_VAL)
-
-    ! this is executed by main process only
-    if (myrank == 0) then
-
-      ! selects best location in all slices
-      ! MPI loop on all the results to determine the best slice
-      do irec_in_this_subset = 1,nrec_SUBSET_current_size
-
-        ! mapping from station number in current subset to real station number in all the subsets
-        irec = irec_in_this_subset + irec_already_done
-
-        ! loop on all the results to determine the best slice
-        distmin_not_squared = HUGEVAL
-        do iprocloop = 0,NPROCTOT_VAL-1
-          if (final_distance_all(irec_in_this_subset,iprocloop) < distmin_not_squared) then
-            ! stores this slice's info
-            distmin_not_squared = final_distance_all(irec_in_this_subset,iprocloop)
-            islice_selected_rec(irec) = iprocloop
-            ispec_selected_rec(irec) = ispec_selected_all(irec_in_this_subset,iprocloop)
-
-            xi_receiver(irec) = xi_all(irec_in_this_subset,iprocloop)
-            eta_receiver(irec) = eta_all(irec_in_this_subset,iprocloop)
-            gamma_receiver(irec) = gamma_all(irec_in_this_subset,iprocloop)
-
-            xyz_found(:,irec) = xyz_found_all(:,irec_in_this_subset,iprocloop)
-          endif
-        enddo
-        final_distance(irec) = distmin_not_squared
-        if (final_distance(irec) == HUGEVAL) call exit_MPI(myrank,'Error locating receiver')
-
-      enddo
-    endif ! end of section executed by main process only
+    call locate_MPI_slice(nrec_SUBSET_current_size,irec_already_done, &
+                          ispec_selected_subset, &
+                          xyz_found_subset, &
+                          xi_subset,eta_subset,gamma_subset, &
+                          final_distance_subset, &
+                          nrec,ispec_selected_rec,islice_selected_rec, &
+                          xyz_found, &
+                          xi_receiver,eta_receiver,gamma_receiver, &
+                          final_distance)
 
     deallocate(ispec_selected_subset)
-    deallocate(ispec_selected_all)
     deallocate(xi_subset,eta_subset,gamma_subset)
-    deallocate(xi_all,eta_all,gamma_all)
-    deallocate(final_distance_all)
     deallocate(final_distance_subset)
     deallocate(xyz_found_subset)
-    deallocate(xyz_found_all)
 
   enddo ! end of loop over all station subsets
 
@@ -658,8 +585,12 @@
   call bcast_all_dp(stbur,nrec)
   call bcast_all_dp(nu_rec,nrec*3*3)
 
-  ! deallocate arrays
+  ! deallocate temporary arrays
   deallocate(epidist)
+  deallocate(islice_selected_found,ispec_selected_found)
+  deallocate(xi_receiver_found,eta_receiver_found,gamma_receiver_found)
+  deallocate(stlat_found,stlon_found,stele_found,stbur_found,epidist_found)
+  deallocate(nu_found)
   deallocate(xyz_found)
   deallocate(final_distance)
 
