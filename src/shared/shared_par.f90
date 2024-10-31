@@ -65,7 +65,7 @@
 
   logical :: RECEIVERS_CAN_BE_BURIED
   logical :: OUTPUT_SEISMOS_ASCII_TEXT,OUTPUT_SEISMOS_SAC_ALPHANUM,OUTPUT_SEISMOS_SAC_BINARY, &
-             OUTPUT_SEISMOS_ASDF,OUTPUT_SEISMOS_3D_ARRAY, &
+             OUTPUT_SEISMOS_ASDF,OUTPUT_SEISMOS_3D_ARRAY,OUTPUT_SEISMOS_HDF5, &
              ROTATE_SEISMOGRAMS_RT,WRITE_SEISMOGRAMS_BY_MAIN, &
              SAVE_ALL_SEISMOS_IN_ONE_FILE,USE_BINARY_FOR_LARGE_FILE,READ_ADJSRC_ASDF
 
@@ -209,8 +209,8 @@
   double precision :: FILESYSTEM_IO_BANDWIDTH = 0.d0
 
   ! HDF5 file i/o
-  logical :: HDF5_ENABLED = .false.              ! for all databases i/o in hdf5
-  logical :: HDF5_FOR_MOVIES = .false.           ! for movies (shakemap, surface movies, volume movies)
+  logical :: HDF5_ENABLED    = .false. ! for all databases i/o in hdf5
+  logical :: HDF5_FOR_MOVIES = .false. ! for movies (shakemap, surface movies, volume movies)
 
   ! HDF5 IO server
   ! number of io dedicated nodes

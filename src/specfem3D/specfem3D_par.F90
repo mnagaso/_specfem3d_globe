@@ -403,6 +403,9 @@ module specfem_par
   ! process/partition name
   character(len=MAX_STRING_LEN) :: prname
 
+  ! hdf5 file name
+  character(len=MAX_STRING_LEN) :: hdf5_seismo_fname
+
   !-----------------------------------------------------------------
   ! MPI partitions
   !-----------------------------------------------------------------

@@ -39,7 +39,7 @@
     nlength_seismogram, &
     NTSTEP_BETWEEN_OUTPUT_SEISMOS,NTSTEP_BETWEEN_OUTPUT_SAMPLE, &
     do_save_seismograms, &
-    WRITE_SEISMOGRAMS_BY_MAIN,OUTPUT_SEISMOS_ASDF, &
+    WRITE_SEISMOGRAMS_BY_MAIN,OUTPUT_SEISMOS_ASDF, OUTPUT_SEISMOS_HDF5, &
     SAVE_SEISMOGRAMS_STRAIN, &
     moment_der,sloc_der,shdur_der,stshift_der, &
     scale_displ
@@ -252,6 +252,7 @@
     OUTPUT_SEISMOS_SAC_ALPHANUM,OUTPUT_SEISMOS_SAC_BINARY, &
     OUTPUT_SEISMOS_ASDF, &
     OUTPUT_SEISMOS_3D_ARRAY, &
+    OUTPUT_SEISMOS_HDF5, &
     SAVE_ALL_SEISMOS_IN_ONE_FILE,USE_BINARY_FOR_LARGE_FILE, &
     OUTPUT_FILES, &
     WRITE_SEISMOGRAMS_BY_MAIN, &
@@ -321,7 +322,7 @@
       ! write this seismogram
       ! note: ASDF data structure is given in module
       !       stores all traces into ASDF container in case
-      call write_one_seismogram(one_seismogram,irec,irec_local,.true.,component,istore)
+      call write_one_seismogram(one_seismogram,irec,irec_local,1,component,istore)
     enddo
 
     ! writes ASDF file output
@@ -390,11 +391,17 @@
     endif
   endif
 
-  ! ASCII / SAC format
-  if (OUTPUT_SEISMOS_ASCII_TEXT .or. OUTPUT_SEISMOS_SAC_ALPHANUM .or. OUTPUT_SEISMOS_SAC_BINARY) then
+  ! ASCII / SAC / HDF5 format
+  if (     OUTPUT_SEISMOS_ASCII_TEXT &
+      .or. OUTPUT_SEISMOS_SAC_ALPHANUM &
+      .or. OUTPUT_SEISMOS_SAC_BINARY &
+      .or. OUTPUT_SEISMOS_HDF5) then
 
     ! write out seismograms: all processes write their local seismograms themselves
     if (.not. WRITE_SEISMOGRAMS_BY_MAIN) then
+
+      ! HDF5 is not supported
+      if (OUTPUT_SEISMOS_HDF5) call exit_MPI(myrank,'WRITE_SEISMOGRAMS_BY_MAIN must be true for HDF5 format')
 
       ! all the processes write their local seismograms themselves
       if (SAVE_ALL_SEISMOS_IN_ONE_FILE .and. OUTPUT_SEISMOS_ASCII_TEXT) then
@@ -428,7 +435,7 @@
         ! write this seismogram
         ! note: ASDF data structure is given in module
         !       stores all traces into ASDF container in case
-        call write_one_seismogram(one_seismogram,irec,irec_local,.false.,component,istore)
+        call write_one_seismogram(one_seismogram,irec,irec_local,0,component,istore)
       enddo
 
       ! create one large file instead of one small file per station to avoid file system overload
@@ -506,7 +513,13 @@
               endif
 
               ! write this seismogram
-              call write_one_seismogram(one_seismogram,irec,irec_local,.false.,component,istore)
+              if (.not. OUTPUT_SEISMOS_HDF5) then
+                ! ASCII or SAC format
+                call write_one_seismogram(one_seismogram,irec,irec_local,0,component,istore)
+              else
+                ! HDF5 format
+                call write_one_seismogram(one_seismogram,irec,irec_local,2,component,istore)
+              endif
 
               ! counts seismos written
               total_seismos = total_seismos + 1
@@ -632,7 +645,7 @@ contains
 !-------------------------------------------------------------------------------------------------
 !
 
-  subroutine write_one_seismogram(one_seismogram,irec,irec_local,is_for_asdf,component,istore)
+  subroutine write_one_seismogram(one_seismogram,irec,irec_local,ftype_flag,component,istore)
 
   use constants_solver, only: MAX_STRING_LEN,CUSTOM_REAL,NDIM,DEGREES_TO_RADIANS, &
     MAX_LENGTH_STATION_NAME,MAX_LENGTH_NETWORK_NAME
@@ -652,7 +665,8 @@ contains
   implicit none
 
   integer,intent(in) :: irec,irec_local
-  logical,intent(in) :: is_for_asdf
+  integer,intent(in) :: ftype_flag
+  logical :: is_for_asdf,is_for_hdf5
   real(kind=CUSTOM_REAL), dimension(NDIM,nlength_seismogram),intent(in) :: one_seismogram
 
   integer,intent(in) :: istore
@@ -676,6 +690,23 @@ contains
 
   ! initializes
   seismogram_tmp(:,:) = 0.0_CUSTOM_REAL
+
+  ! check file type
+  if (ftype_flag == 0) then
+    ! ascii
+    is_for_asdf = .false.
+    is_for_hdf5 = .false.
+  else if (ftype_flag == 1) then
+    ! asdf
+    is_for_asdf = .true.
+    is_for_hdf5 = .false.
+  else if (ftype_flag == 2) then
+    ! hdf5
+    is_for_asdf = .false.
+    is_for_hdf5 = .true.
+  else
+    call exit_MPI(myrank,'wrong file type flag')
+  endif
 
   ! get band code
   call band_instrument_code(DT,bic)
@@ -804,6 +835,9 @@ contains
       if (OUTPUT_SEISMOS_ASDF) then
         call store_asdf_data(seismogram_tmp,irec_local,irec,chn,iorientation)
       endif
+    else if (is_for_hdf5) then
+      ! TODO: add HDF5 format
+      call write_output_hdf5(seismogram_tmp,irec_local,irec,chn,iorientation)
     else
       ! SAC output format
       if (OUTPUT_SEISMOS_SAC_ALPHANUM .or. OUTPUT_SEISMOS_SAC_BINARY ) then

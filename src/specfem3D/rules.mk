@@ -144,6 +144,7 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/write_movie_surface_hdf5.solverstatic.o \
 	$O/write_output_ASCII.solverstatic.o \
 	$O/write_output_SAC.solverstatic.o \
+	$O/write_output_HDF5.solverstatic.o \
 	$O/write_seismograms.solverstatic.o \
 	$(EMPTY_MACRO)
 
