@@ -73,6 +73,7 @@
   integer :: ispec,i,j,k,iglob
 
   double precision :: lat,lon
+  double precision :: dx,dy,dz
   double precision :: distmin_squared,dist_squared
 
   logical :: target_located
@@ -89,24 +90,21 @@
   ! looks for closer estimates in neighbor elements if needed
   logical,parameter :: DO_ADJACENT_SEARCH = .true.
 
-!debug: sync
-!  integer :: iproc
-
-!debug: sync
-!  do iproc = 0,NPROCTOT_VAL-1
-!    if (iproc == myrank) then
-!    print *,'iproc ',iproc; flush(6)
-
-  ! set distance to huge initial value
-  distmin_squared = HUGEVAL
-
-  ! initializes located target
+  ! initialize location
   ! if we have not located a target element, the receiver is not in this slice
   ! therefore use first element only for fictitious iterative search
   ispec_selected = 1
   ix_initial_guess = MIDX
   iy_initial_guess = MIDY
   iz_initial_guess = MIDZ
+
+  ! puts initial xi/eta/gamma outside of element
+  xi = 2.d0
+  eta = 2.d0
+  gamma = 2.d0
+
+  ! set distance to huge initial value
+  distmin_squared = HUGEVAL
 
   ! limits latitude to [-90.0,90.0]
   lat = lat_target
@@ -129,185 +127,218 @@
   ! debug
   !print *,'target located:',target_located,'lat',sngl(lat),sngl(lat_min),sngl(lat_max),'lon',sngl(lon),sngl(lon_min),sngl(lon_max)
 
-  if (target_located) then
-    ! point in this slice
-    if (DO_BRUTE_FORCE_SEARCH) then
-      ! loops over elements to find nearest location
-      ! searches closest GLL point
-      if (USE_DISTANCE_CRITERION) then
-        ! loops over all elements
-        do ispec = 1,nspec
-          ! exclude elements that are too far from target
-          dist_squared = (x_target - xyz_midpoints(1,ispec))*(x_target - xyz_midpoints(1,ispec)) &
-                       + (y_target - xyz_midpoints(2,ispec))*(y_target - xyz_midpoints(2,ispec)) &
-                       + (z_target - xyz_midpoints(3,ispec))*(z_target - xyz_midpoints(3,ispec))
-          !  we compare squared distances instead of distances themselves to significantly speed up calculations
-          if (dist_squared > typical_size_squared) cycle
+  ! checks if anything to do
+  if (.not. target_located) then
+    ! point not found in this slice
+    !
+    ! returns initial guess point
+    iglob = ibool(ix_initial_guess,iy_initial_guess,iz_initial_guess,ispec_selected)
+    x = dble(xstore(iglob))
+    y = dble(xstore(iglob))
+    z = dble(xstore(iglob))
 
-          ! loop only on points inside the element
-          ! exclude edges to ensure this point is not shared with other elements
-          do k = 2,NGLLZ-1
-            do j = 2,NGLLY-1
-              do i = 2,NGLLX-1
-                iglob = ibool(i,j,k,ispec)
-                dist_squared = (x_target - dble(xstore(iglob)))*(x_target - dble(xstore(iglob))) &
-                             + (y_target - dble(ystore(iglob)))*(y_target - dble(ystore(iglob))) &
-                             + (z_target - dble(zstore(iglob)))*(z_target - dble(zstore(iglob)))
+    ! compute final distance between asked and found (converted to km)
+    dx = x_target-x
+    dy = y_target-y
+    dz = z_target-z
+    distmin_not_squared = dsqrt(dx*dx + dy*dy + dz*dz) * R_PLANET_KM
 
-                !  keep this point if it is closer to the receiver
-                !  we compare squared distances instead of distances themselves to significantly speed up calculations
-                if (dist_squared < distmin_squared) then
-                  distmin_squared = dist_squared
-                  ispec_selected = ispec
-                  ix_initial_guess = i
-                  iy_initial_guess = j
-                  iz_initial_guess = k
-                endif
+    ! all done
+    return
+  endif
 
-              enddo
+  ! point in this slice
+  if (DO_BRUTE_FORCE_SEARCH) then
+    ! loops over elements to find nearest location
+    ! searches closest GLL point
+    if (USE_DISTANCE_CRITERION) then
+      ! loops over all elements
+      do ispec = 1,nspec
+        ! exclude elements that are too far from target
+        dx = x_target - xyz_midpoints(1,ispec)
+        dy = y_target - xyz_midpoints(2,ispec)
+        dz = z_target - xyz_midpoints(3,ispec)
+        dist_squared = dx*dx + dy*dy + dz*dz
+
+        !  we compare squared distances instead of distances themselves to significantly speed up calculations
+        if (dist_squared > typical_size_squared) cycle
+
+        ! loop only on points inside the element
+        ! exclude edges to ensure this point is not shared with other elements
+        do k = 2,NGLLZ-1
+          do j = 2,NGLLY-1
+            do i = 2,NGLLX-1
+              iglob = ibool(i,j,k,ispec)
+
+              dx = x_target - dble(xstore(iglob))
+              dy = y_target - dble(ystore(iglob))
+              dz = z_target - dble(zstore(iglob))
+              dist_squared = dx*dx + dy*dy + dz*dz
+
+              !  keep this point if it is closer to the receiver
+              !  we compare squared distances instead of distances themselves to significantly speed up calculations
+              if (dist_squared < distmin_squared) then
+                distmin_squared = dist_squared
+                ispec_selected = ispec
+                ix_initial_guess = i
+                iy_initial_guess = j
+                iz_initial_guess = k
+              endif
+
             enddo
           enddo
-
-        ! end of loop on all the spectral elements in current slice
         enddo
-      else
-        ! searches through all elements
-        do ispec = 1,nspec
-          ! loop only on points inside the element
-          ! exclude edges to ensure this point is not shared with other elements
-          do k = 2,NGLLZ-1
-            do j = 2,NGLLY-1
-              do i = 2,NGLLX-1
-                iglob = ibool(i,j,k,ispec)
-                dist_squared = (x_target - dble(xstore(iglob)))*(x_target - dble(xstore(iglob))) &
-                             + (y_target - dble(ystore(iglob)))*(y_target - dble(ystore(iglob))) &
-                             + (z_target - dble(zstore(iglob)))*(z_target - dble(zstore(iglob)))
 
-                !  keep this point if it is closer to the receiver
-                !  we compare squared distances instead of distances themselves to significantly speed up calculations
-                if (dist_squared < distmin_squared) then
-                  distmin_squared = dist_squared
-                  ispec_selected = ispec
-                  ix_initial_guess = i
-                  iy_initial_guess = j
-                  iz_initial_guess = k
-                  target_located = .true.
-                endif
-              enddo
-            enddo
-          enddo
-        ! end of loop on all the spectral elements in current slice
-        enddo
-      endif ! USE_DISTANCE_CRITERION
-
-      ! to get a good starting point for the iterative refinement,
-      ! updates final guess for closest GLL point in the best selected element
-
-      ! note: assumes that before we used looping range from [2, NGLL - 1]
-      ! top/bottom surfaces
-      do k = 1,NGLLZ,NGLLZ-1
-        do j = 1,NGLLY
-          do i = 1,NGLLX
-            iglob = ibool(i,j,k,ispec_selected)
-            dist_squared = (x_target - dble(xstore(iglob)))*(x_target - dble(xstore(iglob))) &
-                         + (y_target - dble(ystore(iglob)))*(y_target - dble(ystore(iglob))) &
-                         + (z_target - dble(zstore(iglob)))*(z_target - dble(zstore(iglob)))
-            ! take this point if it is closer to the receiver
-            !  we compare squared distances instead of distances themselves to significantly speed up calculations
-            if (dist_squared < distmin_squared) then
-              distmin_squared = dist_squared
-              ix_initial_guess = i
-              iy_initial_guess = j
-              iz_initial_guess = k
-            endif
-          enddo
-        enddo
+      ! end of loop on all the spectral elements in current slice
       enddo
-      ! front/back surfaces
-      do k = 1,NGLLZ
-        do j = 1,NGLLY,NGLLY-1
-          do i = 1,NGLLX
-            iglob = ibool(i,j,k,ispec_selected)
-            dist_squared = (x_target - dble(xstore(iglob)))*(x_target - dble(xstore(iglob))) &
-                         + (y_target - dble(ystore(iglob)))*(y_target - dble(ystore(iglob))) &
-                         + (z_target - dble(zstore(iglob)))*(z_target - dble(zstore(iglob)))
-            ! take this point if it is closer to the receiver
-            !  we compare squared distances instead of distances themselves to significantly speed up calculations
-            if (dist_squared < distmin_squared) then
-              distmin_squared = dist_squared
-              ix_initial_guess = i
-              iy_initial_guess = j
-              iz_initial_guess = k
-            endif
-          enddo
-        enddo
-      enddo
-      ! left/right surfaces
-      do k = 1,NGLLZ
-        do j = 1,NGLLY
-          do i = 1,NGLLX,NGLLX-1
-            iglob = ibool(i,j,k,ispec_selected)
-            dist_squared = (x_target - dble(xstore(iglob)))*(x_target - dble(xstore(iglob))) &
-                         + (y_target - dble(ystore(iglob)))*(y_target - dble(ystore(iglob))) &
-                         + (z_target - dble(zstore(iglob)))*(z_target - dble(zstore(iglob)))
-            ! take this point if it is closer to the receiver
-            !  we compare squared distances instead of distances themselves to significantly speed up calculations
-            if (dist_squared < distmin_squared) then
-              distmin_squared = dist_squared
-              ix_initial_guess = i
-              iy_initial_guess = j
-              iz_initial_guess = k
-            endif
-          enddo
-        enddo
-      enddo
-
     else
-      ! kdtree search
-      xyz_target(1) = x_target
-      xyz_target(2) = y_target
-      xyz_target(3) = z_target
+      ! searches through all elements
+      do ispec = 1,nspec
+        ! loop only on points inside the element
+        ! exclude edges to ensure this point is not shared with other elements
+        do k = 2,NGLLZ-1
+          do j = 2,NGLLY-1
+            do i = 2,NGLLX-1
+              iglob = ibool(i,j,k,ispec)
 
-      ! finds closest point (inside GLL points) in this chunk
-      call kdtree_find_nearest_neighbor(xyz_target,inode_min,dist_min)
+              dx = x_target - dble(xstore(iglob))
+              dy = y_target - dble(ystore(iglob))
+              dz = z_target - dble(zstore(iglob))
+              dist_squared = dx*dx + dy*dy + dz*dz
 
-      ! debug
-      !print *,'kd-tree found location :',inode_min
-
-      ! sets element
-      ispec_selected = inode_min
-
-      ! loops over GLL points in this element to get (i,j,k) for initial guess
-      do k = 2,NGLLZ-1
-        do j = 2,NGLLY-1
-          do i = 2,NGLLX-1
-            iglob = ibool(i,j,k,ispec_selected)
-            dist_squared = (x_target - dble(xstore(iglob)))*(x_target - dble(xstore(iglob))) &
-                         + (y_target - dble(ystore(iglob)))*(y_target - dble(ystore(iglob))) &
-                         + (z_target - dble(zstore(iglob)))*(z_target - dble(zstore(iglob)))
-            ! take this point if it is closer to the receiver
-            !  we compare squared distances instead of distances themselves to significantly speed up calculations
-            if (dist_squared < distmin_squared) then
-              distmin_squared = dist_squared
-              ix_initial_guess = i
-              iy_initial_guess = j
-              iz_initial_guess = k
-            endif
+              !  keep this point if it is closer to the receiver
+              !  we compare squared distances instead of distances themselves to significantly speed up calculations
+              if (dist_squared < distmin_squared) then
+                distmin_squared = dist_squared
+                ispec_selected = ispec
+                ix_initial_guess = i
+                iy_initial_guess = j
+                iz_initial_guess = k
+                target_located = .true.
+              endif
+            enddo
           enddo
         enddo
+      ! end of loop on all the spectral elements in current slice
       enddo
-    endif ! DO_BRUTE_FORCE_SEARCH
+    endif ! USE_DISTANCE_CRITERION
 
-    !debug
-    !print *,'initial guess ',ix_initial_guess,iy_initial_guess,iz_initial_guess,ispec_selected
+    ! to get a good starting point for the iterative refinement,
+    ! updates final guess for closest GLL point in the best selected element
 
-  endif ! target_located
+    ! note: assumes that before we used looping range from [2, NGLL - 1]
+    ! top/bottom surfaces
+    do k = 1,NGLLZ,NGLLZ-1
+      do j = 1,NGLLY
+        do i = 1,NGLLX
+          iglob = ibool(i,j,k,ispec_selected)
 
+          dx = x_target - dble(xstore(iglob))
+          dy = y_target - dble(ystore(iglob))
+          dz = z_target - dble(zstore(iglob))
+          dist_squared = dx*dx + dy*dy + dz*dz
+
+          ! take this point if it is closer to the receiver
+          !  we compare squared distances instead of distances themselves to significantly speed up calculations
+          if (dist_squared < distmin_squared) then
+            distmin_squared = dist_squared
+            ix_initial_guess = i
+            iy_initial_guess = j
+            iz_initial_guess = k
+          endif
+        enddo
+      enddo
+    enddo
+    ! front/back surfaces
+    do k = 1,NGLLZ
+      do j = 1,NGLLY,NGLLY-1
+        do i = 1,NGLLX
+          iglob = ibool(i,j,k,ispec_selected)
+
+          dx = x_target - dble(xstore(iglob))
+          dy = y_target - dble(ystore(iglob))
+          dz = z_target - dble(zstore(iglob))
+          dist_squared = dx*dx + dy*dy + dz*dz
+
+          ! take this point if it is closer to the receiver
+          !  we compare squared distances instead of distances themselves to significantly speed up calculations
+          if (dist_squared < distmin_squared) then
+            distmin_squared = dist_squared
+            ix_initial_guess = i
+            iy_initial_guess = j
+            iz_initial_guess = k
+          endif
+        enddo
+      enddo
+    enddo
+    ! left/right surfaces
+    do k = 1,NGLLZ
+      do j = 1,NGLLY
+        do i = 1,NGLLX,NGLLX-1
+          iglob = ibool(i,j,k,ispec_selected)
+
+          dx = x_target - dble(xstore(iglob))
+          dy = y_target - dble(ystore(iglob))
+          dz = z_target - dble(zstore(iglob))
+          dist_squared = dx*dx + dy*dy + dz*dz
+
+          ! take this point if it is closer to the receiver
+          !  we compare squared distances instead of distances themselves to significantly speed up calculations
+          if (dist_squared < distmin_squared) then
+            distmin_squared = dist_squared
+            ix_initial_guess = i
+            iy_initial_guess = j
+            iz_initial_guess = k
+          endif
+        enddo
+      enddo
+    enddo
+
+  else
+    ! kdtree search
+    xyz_target(1) = x_target
+    xyz_target(2) = y_target
+    xyz_target(3) = z_target
+
+    ! finds closest point (inside GLL points) in this chunk
+    call kdtree_find_nearest_neighbor(xyz_target,inode_min,dist_min)
+
+    ! debug
+    !print *,'kd-tree found location :',inode_min
+
+    ! sets element
+    ispec_selected = inode_min
+
+    ! loops over GLL points in this element to get (i,j,k) for initial guess
+    do k = 2,NGLLZ-1
+      do j = 2,NGLLY-1
+        do i = 2,NGLLX-1
+          iglob = ibool(i,j,k,ispec_selected)
+
+          dx = x_target - dble(xstore(iglob))
+          dy = y_target - dble(ystore(iglob))
+          dz = z_target - dble(zstore(iglob))
+          dist_squared = dx*dx + dy*dy + dz*dz
+
+          ! take this point if it is closer to the receiver
+          !  we compare squared distances instead of distances themselves to significantly speed up calculations
+          if (dist_squared < distmin_squared) then
+            distmin_squared = dist_squared
+            ix_initial_guess = i
+            iy_initial_guess = j
+            iz_initial_guess = k
+          endif
+        enddo
+      enddo
+    enddo
+  endif ! DO_BRUTE_FORCE_SEARCH
+
+  !debug
+  !print *,'initial guess ',ix_initial_guess,iy_initial_guess,iz_initial_guess,ispec_selected
 
   ! ****************************************
   ! find the best (xi,eta,gamma)
   ! ****************************************
-  if (target_located) then
 
 !deprecated, but might be useful if one wishes to get an exact GLL point location:
 !
@@ -335,43 +366,25 @@
 !                (z_target-xyz_found_subset(3,isource_in_this_subset))**2)*R_PLANET/1000.d0
 !      endif
 
-    ! gets xi/eta/gamma and corresponding x/y/z coordinates
-    call find_local_coordinates(x_target,y_target,z_target,xi,eta,gamma,x,y,z, &
-                                ispec_selected,ix_initial_guess,iy_initial_guess,iz_initial_guess, &
-                                POINT_CAN_BE_BURIED)
+  ! gets xi/eta/gamma and corresponding x/y/z coordinates
+  call find_local_coordinates(x_target,y_target,z_target,xi,eta,gamma,x,y,z, &
+                              ispec_selected,ix_initial_guess,iy_initial_guess,iz_initial_guess, &
+                              POINT_CAN_BE_BURIED)
 
-    ! loops over neighbors and try to find better location
-    if (DO_ADJACENT_SEARCH) then
-      ! checks if position lies on an element boundary
-      if (abs(xi) > 1.099d0 .or. abs(eta) > 1.099d0 .or. abs(gamma) > 1.099d0) then
-        ! searches for better position in neighboring elements
-        call find_best_neighbor(x_target,y_target,z_target,xi,eta,gamma,x,y,z,ispec_selected,distmin_squared,POINT_CAN_BE_BURIED)
-      endif
-    endif ! DO_ADJACENT_SEARCH
-
-  else
-    ! point not found in this slice
-    !
-    ! returns initial guess point
-    xi = 0.d0
-    eta = 0.d0
-    gamma = 0.d0
-
-    iglob = ibool(ix_initial_guess,iy_initial_guess,iz_initial_guess,ispec_selected)
-    x = dble(xstore(iglob))
-    y = dble(xstore(iglob))
-    z = dble(xstore(iglob))
-  endif
+  ! loops over neighbors and try to find better location
+  if (DO_ADJACENT_SEARCH) then
+    ! checks if position lies on an element boundary
+    if (abs(xi) > 1.099d0 .or. abs(eta) > 1.099d0 .or. abs(gamma) > 1.099d0) then
+      ! searches for better position in neighboring elements
+      call find_best_neighbor(x_target,y_target,z_target,xi,eta,gamma,x,y,z,ispec_selected,distmin_squared,POINT_CAN_BE_BURIED)
+    endif
+  endif ! DO_ADJACENT_SEARCH
 
   ! compute final distance between asked and found (converted to km)
-  distmin_not_squared = dsqrt((x_target-x)*(x_target-x) + &
-                              (y_target-y)*(y_target-y) + &
-                              (z_target-z)*(z_target-z))*R_PLANET_KM
-
-!debug: sync
-!  endif ! iproc
-!  call synchronize_all()
-!  enddo
+  dx = x_target-x
+  dy = y_target-y
+  dz = z_target-z
+  distmin_not_squared = dsqrt(dx*dx + dy*dy + dz*dz) * R_PLANET_KM
 
   end subroutine locate_point
 
@@ -716,3 +729,195 @@
   if (DEBUG) print *,'neighbors: final ',ispec_selected,xi,eta,gamma,'distance',sqrt(distmin_squared)*R_PLANET_KM
 
   end subroutine find_best_neighbor
+
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+  subroutine locate_MPI_slice(npoints_subset,ipoin_already_done, &
+                              ispec_selected_subset, &
+                              xyz_found_subset, &
+                              xi_subset,eta_subset,gamma_subset, &
+                              final_distance_subset, &
+                              npoints_total, ispec_selected, islice_selected, &
+                              xyz_found, &
+                              xi_point, eta_point, gamma_point, &
+                              final_distance)
+
+! locate MPI slice which contains the point and bcast to all
+! (locates subset of points in all slices)
+
+  use constants, only: HUGEVAL,NDIM
+  use specfem_par, only: NPROCTOT_VAL,myrank
+
+  integer, intent(in) :: npoints_subset,ipoin_already_done
+  integer, dimension(npoints_subset), intent(in)  :: ispec_selected_subset
+  double precision, dimension(NDIM,npoints_subset), intent(in) :: xyz_found_subset
+  double precision, dimension(npoints_subset), intent(in) :: xi_subset, eta_subset, gamma_subset
+  double precision, dimension(npoints_subset), intent(in) :: final_distance_subset
+
+  integer, intent(in) :: npoints_total
+  integer, dimension(npoints_total), intent(inout)  :: ispec_selected, islice_selected
+  double precision, dimension(NDIM,npoints_total), intent(inout)  :: xyz_found
+  double precision, dimension(npoints_total), intent(inout)  :: xi_point, eta_point, gamma_point
+  double precision, dimension(npoints_total), intent(inout)  :: final_distance
+
+  ! local parameters
+  integer :: ipoin,ipoin_in_this_subset,iproc
+  double precision :: distmin
+
+  ! gather arrays
+  integer, dimension(npoints_subset,0:NPROCTOT_VAL-1) :: ispec_selected_all
+  double precision, dimension(npoints_subset,0:NPROCTOT_VAL-1) :: xi_all,eta_all,gamma_all
+  double precision, dimension(NDIM,npoints_subset,0:NPROCTOT_VAL-1) :: xyz_found_all
+  double precision, dimension(npoints_subset,0:NPROCTOT_VAL-1) :: final_distance_all
+
+  double precision :: xi,eta,gamma
+
+  ! point inside element
+  logical :: found_point_inside
+
+  ! prefer slice with point location inside element rather than just selecting slice with closest location
+  logical, parameter :: DO_PREFER_INSIDE_ELEMENT = .true.
+
+  !debug
+  !integer,dimension(1) :: iproc_min
+
+  ! initializes with dummy values
+  ispec_selected_all(:,:) = -1
+
+  xi_all(:,:) = 0.d0
+  eta_all(:,:) = 0.d0
+  gamma_all(:,:) = 0.d0
+  xyz_found_all(:,:,:) = 0.d0
+
+  final_distance_all(:,:) = HUGEVAL
+
+  ! gather all (on main process)
+  call gather_all_i(ispec_selected_subset,npoints_subset,ispec_selected_all,npoints_subset,NPROCTOT_VAL)
+
+  ! this is executed by main process only
+  if (myrank == 0) then
+    ! check that the gather operation went well
+    if (any(ispec_selected_all(:,:) == -1)) then
+      print *,'Error ispec all: procs = ',NPROCTOT_VAL,' subset size = ',npoints_subset
+      print *,ispec_selected_all(:,:)
+      call exit_MPI(myrank,'gather operation failed for point locations')
+    endif
+  endif
+
+  call gather_all_dp(xyz_found_subset,NDIM*npoints_subset,xyz_found_all,NDIM*npoints_subset,NPROCTOT_VAL)
+
+  call gather_all_dp(xi_subset,npoints_subset,xi_all,npoints_subset,NPROCTOT_VAL)
+  call gather_all_dp(eta_subset,npoints_subset,eta_all,npoints_subset,NPROCTOT_VAL)
+  call gather_all_dp(gamma_subset,npoints_subset,gamma_all,npoints_subset,NPROCTOT_VAL)
+
+  call gather_all_dp(final_distance_subset,npoints_subset,final_distance_all,npoints_subset,NPROCTOT_VAL)
+
+  ! find the slice and element to put the source
+  if (myrank == 0) then
+
+    ! we prefer slices with point locations inside an element over slices with a closer point distance
+    ! but a point location outside the (best) element
+    if (DO_PREFER_INSIDE_ELEMENT) then
+
+      ! loops over subset
+      do ipoin_in_this_subset = 1,npoints_subset
+        ! mapping from station/source number in current subset to real station/source number in all the subsets
+        ipoin = ipoin_in_this_subset + ipoin_already_done
+
+        ! checks first if we have a close point inside an element
+        found_point_inside = .false.
+        distmin = HUGEVAL
+        do iproc = 0,NPROCTOT_VAL-1
+          ! point position
+          xi = xi_all(ipoin_in_this_subset,iproc)
+          eta = eta_all(ipoin_in_this_subset,iproc)
+          gamma = gamma_all(ipoin_in_this_subset,iproc)
+
+          ! points inside an element have xi/eta/gamma <= 1.0
+          if (abs(xi) <= 1.d0 .and. abs(eta) <= 1.d0 .and. abs(gamma) <= 1.d0) then
+            ! takes point if closer
+            if (final_distance_all(ipoin_in_this_subset,iproc) < distmin) then
+              found_point_inside = .true.
+
+              xi_point(ipoin)    = xi
+              eta_point(ipoin)   = eta
+              gamma_point(ipoin) = gamma
+
+              distmin =  final_distance_all(ipoin_in_this_subset,iproc)
+
+              islice_selected(ipoin) = iproc
+              ispec_selected(ipoin) = ispec_selected_all(ipoin_in_this_subset,iproc)
+
+              xyz_found(:,ipoin) = xyz_found_all(:,ipoin_in_this_subset,iproc)
+            endif
+          endif
+        enddo
+
+        ! if we haven't found a close point inside an element, then look for just the closest possible
+        if (.not. found_point_inside) then
+          do iproc = 0,NPROCTOT_VAL-1
+            if (final_distance_all(ipoin_in_this_subset,iproc) < distmin) then
+              distmin =  final_distance_all(ipoin_in_this_subset,iproc)
+
+              islice_selected(ipoin) = iproc
+              ispec_selected(ipoin) = ispec_selected_all(ipoin_in_this_subset,iproc)
+
+              xi_point(ipoin)    = xi_all(ipoin_in_this_subset,iproc)
+              eta_point(ipoin)   = eta_all(ipoin_in_this_subset,iproc)
+              gamma_point(ipoin) = gamma_all(ipoin_in_this_subset,iproc)
+
+              xyz_found(:,ipoin) = xyz_found_all(:,ipoin_in_this_subset,iproc)
+            endif
+          enddo
+        endif
+
+        final_distance(ipoin) = distmin
+        if (final_distance(ipoin) == HUGEVAL) call exit_MPI(myrank,'Error locating receiver')
+
+        !debug
+        !iproc_min = minloc(final_distance_all(ipoin_in_this_subset,:)) - 1 ! -1 to start procs at 0
+        !print *,'debug: locate MPI point',ipoin,ipoin_in_this_subset,'dist',final_distance_all(ipoin_in_this_subset,:), &
+        !  'iproc min',iproc_min(1), &
+        !  'xi min',xi_all(ipoin_in_this_subset,iproc_min(1)), &
+        !           eta_all(ipoin_in_this_subset,iproc_min(1)), &
+        !           gamma_all(ipoin_in_this_subset,iproc_min(1)), &
+        !  'iproc found',islice_selected(ipoin),'dist found',final_distance(ipoin), &
+        !  'xi found',xi_point(ipoin),eta_point(ipoin),gamma_point(ipoin)
+      enddo
+
+    else
+      ! old version takes closest point
+
+      ! loops over subset
+      do ipoin_in_this_subset = 1,npoints_subset
+
+        ! mapping from station/source number in current subset to real station/source number in all the subsets
+        ipoin = ipoin_in_this_subset + ipoin_already_done
+
+        distmin = HUGEVAL
+        do iproc = 0,NPROCTOT_VAL-1
+          if (final_distance_all(ipoin_in_this_subset,iproc) < distmin) then
+            distmin =  final_distance_all(ipoin_in_this_subset,iproc)
+
+            islice_selected(ipoin) = iproc
+            ispec_selected(ipoin) = ispec_selected_all(ipoin_in_this_subset,iproc)
+
+            xi_point(ipoin)    = xi_all(ipoin_in_this_subset,iproc)
+            eta_point(ipoin)   = eta_all(ipoin_in_this_subset,iproc)
+            gamma_point(ipoin) = gamma_all(ipoin_in_this_subset,iproc)
+
+            xyz_found(:,ipoin) = xyz_found_all(:,ipoin_in_this_subset,iproc)
+          endif
+        enddo
+        final_distance(ipoin) = distmin
+        if (final_distance(ipoin) == HUGEVAL) call exit_MPI(myrank,'Error locating receiver')
+      enddo
+
+    endif
+
+  endif ! end of section executed by main process only
+
+  end subroutine locate_MPI_slice
