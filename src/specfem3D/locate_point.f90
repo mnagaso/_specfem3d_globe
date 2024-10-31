@@ -534,7 +534,9 @@
 !-------------------------------------------------------------------------------------------------
 !
 
-  subroutine find_best_neighbor(x_target,y_target,z_target,xi,eta,gamma,x,y,z,ispec_selected,distmin_squared,POINT_CAN_BE_BURIED)
+  subroutine find_best_neighbor(x_target,y_target,z_target, &
+                                xi_found,eta_found,gamma_found,x_found,y_found,z_found, &
+                                ispec_selected,final_distmin_squared,POINT_CAN_BE_BURIED)
 
   use constants_solver, only: &
     NGLLX,NGLLY,NGLLZ,MIDX,MIDY,MIDZ
@@ -557,11 +559,11 @@
   implicit none
 
   double precision,intent(in) :: x_target,y_target,z_target
-  double precision,intent(inout) :: xi,eta,gamma
-  double precision,intent(inout) :: x,y,z
+  double precision,intent(inout) :: xi_found,eta_found,gamma_found
+  double precision,intent(inout) :: x_found,y_found,z_found
 
   integer,intent(inout) :: ispec_selected
-  double precision,intent(inout) :: distmin_squared
+  double precision,intent(inout) :: final_distmin_squared
   logical,intent(in) :: POINT_CAN_BE_BURIED
 
   ! local parameters
@@ -582,17 +584,25 @@
 
   integer :: ii,jj,i_n,ientry,ispec_ref
   logical :: do_neighbor
+  logical :: is_better_location
+
+  ! for close points
+  double precision, parameter :: TOL_POINT_DISTANCE = 1.d-10
+  ! for close points relative to each other
+  double precision, parameter :: TOL_RELATIVE_POINT_DISTANCE = 1.d-15
 
   ! verbose output
   logical,parameter :: DEBUG = .false.
 
   ! best distance to target .. so far
-  distmin_squared = (x_target - x)*(x_target - x) &
-                  + (y_target - y)*(y_target - y) &
-                  + (z_target - z)*(z_target - z)
+  dx = x_target - x_found
+  dy = y_target - y_found
+  dz = z_target - z_found
+  final_distmin_squared = dx*dx + dy*dy + dz*dz
 
   !debug
-  if (DEBUG) print *,'neighbors: best guess ',ispec_selected,xi,eta,gamma,'distance',sngl(sqrt(distmin_squared)*R_PLANET_KM)
+  if (DEBUG) print *,'neighbors: best guess ',ispec_selected,xi_found,eta_found,gamma_found, &
+                     'distance',sngl(sqrt(final_distmin_squared)*R_PLANET_KM)
 
   ! fill neighbors arrays
   !
@@ -704,29 +714,69 @@
 
     ! debug
     if (DEBUG) print *,'  neighbor ',ispec,i_n,ientry,'ispec = ',ispec_selected,sngl(xi_n),sngl(eta_n),sngl(gamma_n), &
-                       'distance',sngl(sqrt(dist_squared)*R_PLANET_KM),sngl(sqrt(distmin_squared)*R_PLANET_KM)
+                       'distance',sngl(sqrt(dist_squared)*R_PLANET_KM),sngl(sqrt(final_distmin_squared)*R_PLANET_KM)
 
-    ! takes this point if it is closer to the receiver
+    ! flag to determine if taking new position
+    is_better_location = .false.
+
+    ! if we found a close point
+    if (dist_squared < TOL_POINT_DISTANCE) then
+      ! checks if position within element
+      if (abs(xi_n) <= 1.d0 .and. abs(eta_n) <= 1.d0 .and. abs(gamma_n) <= 1.d0) then
+        ! takes position if old position has xi/eta/gamma outside of element
+        if (abs(xi_found) > 1.d0 .or. abs(eta_found) > 1.d0 .or. abs(gamma_found) > 1.d0) then
+          ! old position is out of element, new inside an element; let's take the new one
+          is_better_location = .true.
+        endif
+      endif
+    endif
+
+    ! if we have found an element that gives a shorter distance
     ! (we compare squared distances instead of distances themselves to significantly speed up calculations)
-    if (dist_squared < distmin_squared) then
-      distmin_squared = dist_squared
+    if (dist_squared < final_distmin_squared) then
+      ! check if location is better in case almost similar distances
+      ! since we allow xi/eta/gamma to go a bit outside of the element range [-1.01,1.01],
+      ! we keep the element where xi/eta/gamma is still within element
+      !
+      ! note: this can avoid problems when points on interfaces, say between acoustic/elastic, have been choosen.
+      !       the point search takes whatever element comes last with a best position, even if the point
+      !       has been located slightly away from the element. thus, we try to check if the previous location
+      !       was accurate enough with coordinates still within an element.
+      is_better_location = .true.
+      if (abs(dist_squared - final_distmin_squared) < TOL_RELATIVE_POINT_DISTANCE) then
+        if (abs(xi_n) > 1.d0 .or. abs(eta_n) > 1.d0 .or. abs(gamma_n) > 1.d0) then
+          if (abs(xi_found) > 1.d0 .or. abs(eta_found) > 1.d0 .or. abs(gamma_found) > 1.d0) then
+            ! old position is also out of element, let's take the new one
+            is_better_location = .true.
+          else
+            ! old position is still within element and new distance has only little improved, so keep old one
+            is_better_location = .false.
+          endif
+        endif
+      endif
+    endif
+
+    ! takes this point if it is better
+    if (is_better_location) then
+      final_distmin_squared = dist_squared
       ! uses this as new location
       ispec_selected = ispec
-      xi = xi_n
-      eta = eta_n
-      gamma = gamma_n
-      x = x_n
-      y = y_n
-      z = z_n
+      xi_found = xi_n
+      eta_found = eta_n
+      gamma_found = gamma_n
+      x_found = x_n
+      y_found = y_n
+      z_found = z_n
     endif
 
     ! checks if position lies inside element (which usually means that located position is accurate)
-    if (abs(xi) <= 1.d0 .and. abs(eta) <= 1.d0 .and. abs(gamma) <= 1.d0) exit
+    if (abs(xi_found) <= 1.d0 .and. abs(eta_found) <= 1.d0 .and. abs(gamma_found) <= 1.d0) exit
 
   enddo ! num_neighbors
 
   !debug
-  if (DEBUG) print *,'neighbors: final ',ispec_selected,xi,eta,gamma,'distance',sqrt(distmin_squared)*R_PLANET_KM
+  if (DEBUG) print *,'neighbors: final ',ispec_selected,xi_found,eta_found,gamma_found, &
+                     'distance',sqrt(final_distmin_squared)*R_PLANET_KM
 
   end subroutine find_best_neighbor
 
