@@ -806,7 +806,13 @@
 
   ! Berkeley stf
   if (STF_IS_UCB_HEAVISIDE) then
-    t0 = 0.d0
+    if (USE_OLD_VERSION_FORMAT) then
+      ! sets t0 to zero for force sources only
+      if (USE_FORCE_POINT_SOURCE) t0 = 0.d0
+    else
+      ! sets t0 to zero for any source type
+      t0 = 0.d0
+    endif
   endif
 
   ! checks if user set USER_T0 to fix simulation start time
