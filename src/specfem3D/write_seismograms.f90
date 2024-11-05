@@ -39,7 +39,7 @@
     nlength_seismogram, &
     NTSTEP_BETWEEN_OUTPUT_SEISMOS,NTSTEP_BETWEEN_OUTPUT_SAMPLE, &
     do_save_seismograms, &
-    WRITE_SEISMOGRAMS_BY_MAIN,OUTPUT_SEISMOS_ASDF, OUTPUT_SEISMOS_HDF5, &
+    WRITE_SEISMOGRAMS_BY_MAIN,OUTPUT_SEISMOS_ASDF, &
     SAVE_SEISMOGRAMS_STRAIN, &
     moment_der,sloc_der,shdur_der,stshift_der, &
     scale_displ

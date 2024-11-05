@@ -169,88 +169,89 @@
   subroutine write_output_hdf5(seismogram_tmp_in, irec_local, irec, chn, iorientation)
 
   use specfem_par, only: &
-    seismo_current, nrec ,&
     nlength_seismogram, &
-    ROTATE_SEISMOGRAMS_RT, NTSTEP_BETWEEN_OUTPUT_SAMPLE, &
-    CUSTOM_REAL, hdf5_seismo_fname, &
-    WRITE_SEISMOGRAMS_BY_MAIN, ROTATE_SEISMOGRAMS_RT, myrank
-
-  use shared_parameters, only: &
-    NSTEP, OUTPUT_SEISMOS_HDF5
+    CUSTOM_REAL
 
 #ifdef USE_HDF5
+  use specfem_par, only: &
+    myrank, seismo_current, nrec, &
+    ROTATE_SEISMOGRAMS_RT, NTSTEP_BETWEEN_OUTPUT_SAMPLE, &
+    WRITE_SEISMOGRAMS_BY_MAIN, hdf5_seismo_fname, &
+  use shared_parameters, only: &
+    NSTEP, OUTPUT_SEISMOS_HDF5
   use manager_hdf5
 #endif
 
-    implicit none
+  implicit none
 
-    ! input/output variables
-    character(len=4),intent(in) :: chn
-    integer,intent(in) :: irec_local, irec, iorientation
-    real(kind=CUSTOM_REAL),dimension(5,nlength_seismogram),intent(in) :: seismogram_tmp_in
-
-    real(kind=CUSTOM_REAL), dimension(nlength_seismogram,1) :: seismogram_tmp
-    logical, save :: is_initialized = .false.
-    integer :: i, ier, nlength_total_seismogram
-    logical :: if_dataset_exists
+  ! input/output variables
+  character(len=4),intent(in) :: chn
+  integer,intent(in) :: irec_local, irec, iorientation
+  real(kind=CUSTOM_REAL),dimension(5,nlength_seismogram),intent(in) :: seismogram_tmp_in
 
 #ifdef USE_HDF5
 
+  real(kind=CUSTOM_REAL), dimension(nlength_seismogram,1) :: seismogram_tmp
+  logical, save :: is_initialized = .false.
+  integer :: i, ier, nlength_total_seismogram
+  logical :: if_dataset_exists
+
+
   ! check if anything to do
-    if (.not. OUTPUT_SEISMOS_HDF5) return
+  if (.not. OUTPUT_SEISMOS_HDF5) return
 
-    ! safety check
-    if (.not. WRITE_SEISMOGRAMS_BY_MAIN) &
-      stop 'Error: WRITE_SEIMSMOGRAMS_BY_MAIN must be true to use HDF5 seismogram output'
+  ! safety check
+  if (.not. WRITE_SEISMOGRAMS_BY_MAIN) &
+    stop 'Error: WRITE_SEIMSMOGRAMS_BY_MAIN must be true to use HDF5 seismogram output'
 
-    ! total length of the seismogram
-    nlength_total_seismogram = NSTEP / NTSTEP_BETWEEN_OUTPUT_SAMPLE
-    print*, 'nlength_total_seismogram = ', nlength_total_seismogram
-    print*, 'NSTEP = ', NSTEP
-    print*, 'NTSTEP_BETWEEN_OUTPUT_SAMPLE = ', NTSTEP_BETWEEN_OUTPUT_SAMPLE
-    print*, 'nrec = ', nrec
-    print*, 'irec = ', irec
-    print*, 'seismo_current = ', seismo_current
-    print*, 'shape(seismogram_tmp) = ', shape(seismogram_tmp)
-    print*, 'shape(seismogram_tmp(iorientation,1:seismo_current)) = ', shape(seismogram_tmp(iorientation,1:seismo_current))
-    ! convert  array with shape (seimo_current) to (nlength_total_seismogram, 1)
-    do i = 1, seismo_current
-      seismogram_tmp(i,1) = seismogram_tmp_in(iorientation,i)
-    end do
+  ! total length of the seismogram
+  nlength_total_seismogram = NSTEP / NTSTEP_BETWEEN_OUTPUT_SAMPLE
+  print*, 'nlength_total_seismogram = ', nlength_total_seismogram
+  print*, 'NSTEP = ', NSTEP
+  print*, 'NTSTEP_BETWEEN_OUTPUT_SAMPLE = ', NTSTEP_BETWEEN_OUTPUT_SAMPLE
+  print*, 'nrec = ', nrec
+  print*, 'irec = ', irec
+  print*, 'seismo_current = ', seismo_current
+  print*, 'shape(seismogram_tmp) = ', shape(seismogram_tmp)
+  print*, 'shape(seismogram_tmp(iorientation,1:seismo_current)) = ', shape(seismogram_tmp(iorientation,1:seismo_current))
+  ! convert  array with shape (seimo_current) to (nlength_total_seismogram, 1)
+  do i = 1, seismo_current
+    seismogram_tmp(i,1) = seismogram_tmp_in(iorientation,i)
+  end do
 
 
 
-    ! initialize
-    if (.not. is_initialized) then
-      call write_hdf5_seismogram_init(nlength_total_seismogram)
-      is_initialized = .true.
-    endif
+  ! initialize
+  if (.not. is_initialized) then
+    call write_hdf5_seismogram_init(nlength_total_seismogram)
+    is_initialized = .true.
+  endif
 
-    ! only main process writes out
-    if (myrank /= 0) return
+  ! only main process writes out
+  if (myrank /= 0) return
 
-    ! write the seismograms
-    call h5_open_file(hdf5_seismo_fname)
+  ! write the seismograms
+  call h5_open_file(hdf5_seismo_fname)
 
-    ! check if the target dataset components are already created
-    call h5_check_dataset_exists(trim(chn),if_dataset_exists)
+  ! check if the target dataset components are already created
+  call h5_check_dataset_exists(trim(chn),if_dataset_exists)
 
-    ! if the dataset does not exist, create it
-    if (.not. if_dataset_exists) then
-      call h5_create_dataset_gen(trim(chn),(/nlength_total_seismogram, nrec/), 2, CUSTOM_REAL)
-    endif
+  ! if the dataset does not exist, create it
+  if (.not. if_dataset_exists) then
+    call h5_create_dataset_gen(trim(chn),(/nlength_total_seismogram, nrec/), 2, CUSTOM_REAL)
+  endif
 
-    ! write the seismogram
-    call h5_write_dataset_collect_hyperslab(trim(chn), seismogram_tmp(1:seismo_current, :), (/0,irec-1/), .false.)
+  ! write the seismogram
+  call h5_write_dataset_collect_hyperslab(trim(chn), seismogram_tmp(1:seismo_current, :), (/0,irec-1/), .false.)
 
-    ! close the file
-    call h5_close_file()
+  ! close the file
+  call h5_close_file()
 
 #else
 
-    write(*,*) 'Error: HDF5 support not enabled in this version of Specfem3D_Globe'
-    write(*,*) 'Please recompile with the --with-hdf5 option'
-    stop
+  write(*,*) 'Error: HDF5 support not enabled in this version of Specfem3D_Globe'
+  write(*,*) 'Please recompile with the --with-hdf5 option'
+  stop
 
 #endif
 

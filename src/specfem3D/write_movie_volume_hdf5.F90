@@ -134,11 +134,11 @@
                                           muvstore_crust_mantle_3dmovie,npoints_3dmovie,nelems_3dmovie_in)
 
   use specfem_par
+
+#ifdef USE_HDF5
   use specfem_par_crustmantle, only: ibool_crust_mantle,rstore_crust_mantle
   use specfem_par_outercore, only: ibool_outer_core,rstore_outer_core
   use specfem_par_innercore, only: ibool_inner_core,rstore_inner_core
-
-#ifdef USE_HDF5
   use specfem_par_movie_hdf5
 #endif
 
@@ -548,11 +548,10 @@
                                         epsilondev_xz_crust_mantle,epsilondev_yz_crust_mantle)
 
   use constants_solver
+#ifdef USE_HDF5
   use shared_parameters, only: OUTPUT_FILES,MOVIE_VOLUME_TYPE,MOVIE_COARSE,H5_COL
   use specfem_par, only: it
   use specfem_par_movie, only: npoints_3dmovie,muvstore_crust_mantle_3dmovie,mask_3dmovie,nu_3dmovie
-
-#ifdef USE_HDF5
   use specfem_par_movie_hdf5
 #endif
 
@@ -720,13 +719,12 @@ subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_
 ! outputs divergence and curl: MOVIE_VOLUME_TYPE == 4
 
   use constants_solver
+
+#ifdef USE_HDF5
   use shared_parameters, only: OUTPUT_FILES,H5_COL
   use specfem_par, only: it
   use specfem_par_crustmantle, only: ibool_crust_mantle
   use specfem_par_innercore, only: ibool_inner_core
-  !use specfem_par_outercore, only: ibool_outer_core
-
-#ifdef USE_HDF5
   use specfem_par_movie_hdf5
 #endif
 
@@ -911,10 +909,9 @@ subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_
 ! outputs displacement/velocity: MOVIE_VOLUME_TYPE == 5 / 6
 
   use constants_solver
+#ifdef USE_HDF5
   use shared_parameters, only: OUTPUT_FILES,MOVIE_VOLUME_TYPE,MOVIE_COARSE,H5_COL
   use specfem_par, only: it
-
-#ifdef USE_HDF5
   use specfem_par_movie_hdf5
 #endif
 
@@ -1048,10 +1045,10 @@ subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_
 ! outputs norm of displacement: MOVIE_VOLUME_TYPE == 7
 
   use constants_solver
-  use shared_parameters, only: OUTPUT_FILES,H5_COL
-  use specfem_par, only: it, scale_displ
 
 #ifdef USE_HDF5
+  use shared_parameters, only: OUTPUT_FILES,H5_COL
+  use specfem_par, only: it, scale_displ
   use specfem_par_movie_hdf5
 #endif
 
@@ -1200,10 +1197,10 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
 ! outputs norm of velocity: MOVIE_VOLUME_TYPE == 8
 
   use constants_solver
-  use shared_parameters, only: OUTPUT_FILES,H5_COL
-  use specfem_par, only: it, scale_veloc
 
 #ifdef USE_HDF5
+  use shared_parameters, only: OUTPUT_FILES,H5_COL
+  use specfem_par, only: it, scale_veloc
   use specfem_par_movie_hdf5
 #endif
 
@@ -1352,10 +1349,10 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
 ! outputs norm of acceleration: MOVIE_VOLUME_TYPE == 1
 
   use constants_solver
-  use shared_parameters, only: OUTPUT_FILES,H5_COL
-  use specfem_par, only: it, scale_t_inv,scale_veloc
 
 #ifdef USE_HDF5
+  use shared_parameters, only: OUTPUT_FILES,H5_COL
+  use specfem_par, only: it, scale_t_inv,scale_veloc
   use specfem_par_movie_hdf5
 #endif
 
