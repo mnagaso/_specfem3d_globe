@@ -42,6 +42,9 @@
   double precision :: tCPU
   double precision, external :: wtime
 
+  ! checks if anything to do
+  if (.not. IO_compute_task) return
+
   ! get MPI starting time
   time_start = wtime()
 

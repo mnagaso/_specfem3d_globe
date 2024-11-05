@@ -35,6 +35,7 @@
   use specfem_par_outercore
   use specfem_par_noise
   use specfem_par_movie
+  use io_server_hdf5
 
   implicit none
 
@@ -63,6 +64,23 @@
 
   ! checks
   if (.not. UNDO_ATTENUATION) return
+
+  if (HDF5_IO_NODES > 0) then
+    ! start io server
+    if (IO_storage_task) then
+      call do_io_start_idle()
+    else
+      ! compute node passes necessary info to io node
+      call pass_info_to_io()
+    endif
+    ! checks if anything to do
+    if (.not. IO_compute_task) then
+      ! i/o server synchronization
+      call synchronize_inter()
+      ! all done
+      return
+    endif
+  endif
 
   ! checks with undo_attenuation
   if (UNDO_ATTENUATION) then
@@ -650,5 +668,9 @@
     print *,'Error time increments: it_end = ',it_end,' and last it = ',it,' do not match!'
     call exit_MPI(myrank,'Error invalid time increment ending')
   endif
+
+  ! hdf5 i/o server
+  ! i/o server synchronization
+  if (HDF5_IO_NODES > 0) call synchronize_inter()
 
   end subroutine iterate_time_undoatt

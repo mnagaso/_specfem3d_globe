@@ -35,6 +35,9 @@
 
   use manager_adios
 
+  ! hdf5, i/o server
+  use io_server_hdf5, only: finalize_io_server
+
 #ifdef USE_XSMM
   use my_libxsmm
 #endif
@@ -43,6 +46,15 @@
 
   ! synchronize all processes, waits until all processes have written their seismograms
   call synchronize_all()
+
+  ! hdf5 i/o server
+  ! checks if anything to do
+  if (.not. IO_compute_task) then
+    ! finalizes MPI subgroup for intercommunication
+    if (HDF5_IO_NODES > 0) call finalize_io_server() !!!!!!! stack synchronize_inter in here
+    ! all done
+    return
+  endif
 
   ! user output
   if (myrank == 0) then
@@ -119,7 +131,11 @@
   ! synchronizes all the processes to make sure everybody has finished
   call synchronize_all()
 
-  end subroutine finalize_simulation
+  ! hdf5 i/o server
+  ! finalizes MPI subgroup for intercommunication
+  if (HDF5_IO_NODES > 0) call finalize_io_server()
+
+end subroutine finalize_simulation
 
 !
 !-------------------------------------------------------------------------------------------------

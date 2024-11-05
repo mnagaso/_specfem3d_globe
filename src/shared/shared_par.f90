@@ -210,7 +210,7 @@
 
   ! HDF5 file i/o
   logical :: HDF5_ENABLED    = .false. ! for all databases i/o in hdf5
-  logical :: HDF5_FOR_MOVIES = .false. ! for movies (shakemap, surface movies, volume movies)
+  logical :: HDF5_FOR_MOVIES = .false. ! for movies (shakemap, surface movies, volume movies) ! TODO: HDF5 not used
 
   ! HDF5 IO server
   ! number of io dedicated nodes

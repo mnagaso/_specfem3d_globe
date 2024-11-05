@@ -30,6 +30,7 @@
   use specfem_par
   use specfem_par_movie
   use manager_adios
+  use io_server_hdf5
 
   implicit none
 
@@ -103,7 +104,7 @@
   call broadcast_computed_parameters()
 
   ! check that the code is running with the requested nb of processes
-  if (sizeprocs /= NPROCTOT) then
+  if (sizeprocs /= NPROCTOT+HDF5_IO_NODES) then
     if (myrank == 0) print *,'Error wrong number of MPI processes ',sizeprocs,' should be ',NPROCTOT,', please check...'
     call exit_MPI(myrank,'wrong number of MPI processes in the initialization of SPECFEM')
   endif
@@ -117,6 +118,17 @@
 
   ! synchronizes processes
   call synchronize_all()
+
+    ! hdf5 i/o server
+  ! HDF5 separate nodes for i/o server
+  if (HDF5_IO_NODES > 0) call initialize_io_server()
+  ! checks if anything to do
+  if (.not. IO_compute_task) then
+    ! i/o server synchronization
+    if (HDF5_IO_NODES > 0) call synchronize_inter()
+    ! all done
+    return
+  endif
 
   if (myrank == 0) then
 
@@ -354,6 +366,9 @@
 
   ! synchronizes processes
   call synchronize_all()
+
+  ! io server synchronization
+  if (HDF5_IO_NODES > 0) call synchronize_inter()
 
   end subroutine initialize_simulation
 

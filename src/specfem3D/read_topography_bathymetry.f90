@@ -41,6 +41,9 @@
   double precision, external :: wtime
   character(len=MAX_STRING_LEN) :: topo_path
 
+  ! checks if anything to do
+  if (.not. IO_compute_task) return
+
   ! get MPI starting time
   time_start = wtime()
 

@@ -219,7 +219,7 @@
               print *,'Error ',iproc,'neighbor ',ineighbor,' points =',ipoints
               print *,'  ineighbor has points = ',test_interfaces_nibool(j,ineighbor)
               print *
-              call exit_mpi(myrank,'Error ineighbor points differ')
+              call exit_mpi(myrank,'Error ineighbor points differ') !!!!!!!! only with NEX480
             endif
             exit
           endif

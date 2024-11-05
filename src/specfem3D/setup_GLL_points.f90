@@ -35,6 +35,9 @@
   integer :: i,j,k,ier
   integer, dimension(:),allocatable :: ichunk_slice,iproc_xi_slice,iproc_eta_slice
 
+  ! checks if anything to do
+  if (.not. IO_compute_task) return
+
   ! set up GLL points, weights and derivation matrices
   call define_derivation_matrices(xigll,yigll,zigll,wxgll,wygll,wzgll, &
                                   hprime_xx,hprime_yy,hprime_zz, &

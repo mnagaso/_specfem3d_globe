@@ -86,6 +86,7 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/compute_strain_att.solverstatic.o \
 	$O/finalize_simulation.solverstatic.o \
 	$O/get_attenuation.solverstatic.o \
+	$O/hdf5_io_server.solverstatic.o \
 	$O/initialize_simulation.solverstatic.o \
 	$O/iterate_time.solverstatic.o \
 	$O/iterate_time_undoatt.solverstatic.o \
@@ -151,6 +152,7 @@ specfem3D_SOLVER_OBJECTS += \
 specfem3D_MODULES = \
 	$(FC_MODDIR)/asdf_data.$(FC_MODEXT) \
 	$(FC_MODDIR)/constants_solver.$(FC_MODEXT) \
+	$(FC_MODDIR)/io_server_hdf5.$(FC_MODEXT) \
 	$(FC_MODDIR)/manager_adios.$(FC_MODEXT) \
 	$(FC_MODDIR)/mod_element.$(FC_MODEXT) \
 	$(FC_MODDIR)/mod_element_att.$(FC_MODEXT) \
@@ -455,7 +457,6 @@ $O/SIEM_solver_mpi.solverstatic.o: $O/SIEM_math_library.shared.o
 $O/SIEM_solver_petsc.solverstatic.o: $O/SIEM_math_library.shared.o
 $O/SIEM_compute_seismograms.solverstatic.o: $O/SIEM_math_library.shared.o
 
-
 ###
 ### specfem3D - optimized flags and dependence on values from mesher here
 ###
@@ -512,12 +513,3 @@ $O/%.visualc.o: $S/%.c ${SETUP}/config.h
 ###
 $O/%.checknetcdf.o: $S/%.f90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o
 	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(NETCDF_INCLUDE) -c -o $@ $<
-
-###
-### HDF5
-###
-#$O/%.spec_hdf5_module.o: $S/%.F90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
-#	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<
-#
-#$O/%.spec_hdf5_module.o: $S/%.f90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
-#	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<

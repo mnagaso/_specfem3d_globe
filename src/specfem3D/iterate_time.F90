@@ -34,6 +34,7 @@
   use specfem_par_innercore
   use specfem_par_outercore
   use specfem_par_movie
+  use io_server_hdf5
 
   implicit none
 
@@ -42,6 +43,24 @@
 
   ! for EXACT_UNDOING_TO_DISK
   integer :: ispec,iglob,i,j,k
+
+  ! hdf5 i/o server
+  if (HDF5_IO_NODES > 0) then
+    if (IO_storage_task) then
+      call do_io_start_idle()
+    else
+      ! compute node passes necessary info to io node
+      call pass_info_to_io()
+    endif
+
+    ! check if anything to do
+    if (.not. IO_compute_task) then
+      call synchronize_inter()
+      ! all done
+      return
+    endif
+  endif
+
 
   ! energy curve outputs
   if (OUTPUT_ENERGY) call it_open_energy_curve_file()
@@ -268,6 +287,9 @@
 
 !----  close energy file
   if (OUTPUT_ENERGY .and. myrank == 0) close(IOUT_ENERGY)
+
+  ! hdf5 i/o server
+  if (HDF5_IO_NODES > 0) call synchronize_inter()
 
   end subroutine iterate_time
 

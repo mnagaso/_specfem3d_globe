@@ -559,7 +559,7 @@
     do j = 1,npoin-1
       if (ibool_neighbors(j,iinterface) == ibool_neighbors(j+1,iinterface)) then
         if (IREGION == IREGION_INNER_CORE .and. INCLUDE_CENTRAL_CUBE) then
-          ! missing points might have been counted more than once
+          ! missing points might have been counted more than once !!!!!!!!!!! NEX480 happens on fugaku and 15x15 procs
           if (ibool_neighbors(j,iinterface) > 0) then
             print *,'warning MPI interface rank:',myrank
             print *,'  interface: ',my_neighbors(iinterface),'point: ',j,'of',npoin,'iglob=',ibool_neighbors(j,iinterface)

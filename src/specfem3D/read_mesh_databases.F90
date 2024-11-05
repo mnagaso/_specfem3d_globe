@@ -45,6 +45,9 @@
   logical,parameter :: SYNC_READING = .true.
 #endif
 
+  ! checks if anything to do
+  if (.not. IO_compute_task) return
+
   ! user output
   if (myrank == 0) then
     write(IMAIN,*) 'mesh databases:'

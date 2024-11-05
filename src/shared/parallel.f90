@@ -1938,6 +1938,22 @@ end module my_mpi
 !-------------------------------------------------------------------------------------------------
 !
 
+  subroutine world_set_comm(comm)
+
+  use my_mpi
+
+  implicit none
+
+  integer,intent(in) :: comm
+
+  my_local_mpi_comm_world = comm
+
+  end subroutine world_set_comm
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
   subroutine world_get_comm_self(comm)
 
   use my_mpi
@@ -2110,3 +2126,145 @@ end module my_mpi
 
   end subroutine world_unsplit
 
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+  subroutine world_get_processor_name(name,size)
+
+    use my_mpi
+    use constants, only: MAX_STRING_LEN
+
+    implicit none
+
+    character(len=MAX_STRING_LEN),intent(out) :: name
+    integer,intent(out) :: size
+
+    integer :: ier
+
+    call MPI_GET_PROCESSOR_NAME(name,size,ier)
+
+  end subroutine world_get_processor_name
+
+!-------------------------------------------------------------------------------------------------
+!
+! inter-communication group
+!
+!-------------------------------------------------------------------------------------------------
+
+
+  subroutine world_set_comm_inter(comm)
+
+    use my_mpi
+
+    implicit none
+
+    integer,intent(in) :: comm
+
+    my_local_mpi_comm_inter = comm
+
+  end subroutine world_set_comm_inter
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+
+  subroutine synchronize_inter()
+
+    use my_mpi
+
+    implicit none
+
+    integer :: ier
+
+    ! synchronizes MPI processes
+    call MPI_BARRIER(my_local_mpi_comm_inter,ier)
+    if (ier /= 0) stop 'Error synchronize MPI inter processes'
+
+  end subroutine synchronize_inter
+
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+  subroutine world_comm_free_inter()
+
+    use my_mpi
+
+    implicit none
+
+    ! local parameters
+    integer :: ier
+
+    call MPI_Comm_free(my_local_mpi_comm_inter,ier)
+    if (ier /= 0) stop 'Error freeing MPI inter communicator'
+
+  end subroutine world_comm_free_inter
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+  subroutine world_comm_split(comm, key, rank, split_comm)
+
+    use my_mpi
+
+    implicit none
+    integer, intent(in) :: comm, key, rank
+    integer, intent(inout) :: split_comm
+
+    integer :: ier
+
+    ! usually the call is like 'mpi_comm_split(comm, color, key, newcomm, ier)'
+    ! so the argument names are a bit confusing, but the order is correct,
+    ! first comm, then color==key, then key==rank, then newcomm==split_comm
+
+    call MPI_COMM_SPLIT(comm, key, rank, split_comm, ier)
+
+  end subroutine world_comm_split
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+  subroutine world_create_intercomm(local_comm, local_leader, group_comm, remote_leader, tag, inter_comm)
+
+    use my_mpi
+
+    implicit none
+    integer, intent(in) :: local_comm, local_leader, group_comm, remote_leader, tag
+    integer, intent(inout) :: inter_comm
+
+    integer :: ier
+
+    call MPI_Intercomm_create(local_comm, local_leader, group_comm, remote_leader, tag, inter_comm, ier)
+
+    end subroutine world_create_intercomm
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+  subroutine gather_all_all_single_ch(sendbuf, recvbuf, NPROC, dim1)
+
+    use my_mpi
+
+    implicit none
+
+    integer, intent(in) :: dim1 ! character length
+    integer, intent(in) :: NPROC
+    character(len=dim1), intent(in) :: sendbuf
+    character(len=dim1), dimension(0:NPROC-1), intent(inout) :: recvbuf
+
+    integer :: ier
+
+    call MPI_ALLGATHER(sendbuf,dim1,MPI_CHARACTER, &
+                       recvbuf,dim1,MPI_CHARACTER, &
+                       my_local_mpi_comm_world,ier)
+
+  end subroutine gather_all_all_single_ch
+
+!
+!-------------------------------------------------------------------------------------------------
+!

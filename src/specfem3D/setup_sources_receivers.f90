@@ -29,11 +29,15 @@
 
   use specfem_par, only: myrank,IMAIN,NSOURCES,NSTEP, &
     TOPOGRAPHY,ibathy_topo, &
-    USE_DISTANCE_CRITERION,xyz_midpoints,xadj,adjncy
+    USE_DISTANCE_CRITERION,xyz_midpoints,xadj,adjncy, &
+    IO_compute_task
 
   use kdtree_search, only: kdtree_delete,kdtree_nodes_location,kdtree_nodes_index
 
   implicit none
+
+  ! checks if anything to do
+  if (.not. IO_compute_task) return
 
   ! setup for point search
   call setup_point_search_arrays()
