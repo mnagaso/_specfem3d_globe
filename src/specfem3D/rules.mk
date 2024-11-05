@@ -512,12 +512,3 @@ $O/%.visualc.o: $S/%.c ${SETUP}/config.h
 ###
 $O/%.checknetcdf.o: $S/%.f90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o
 	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(NETCDF_INCLUDE) -c -o $@ $<
-
-###
-### HDF5
-###
-#$O/%.spec_hdf5_module.o: $S/%.F90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
-#	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<
-#
-#$O/%.spec_hdf5_module.o: $S/%.f90 $O/shared_par.shared_module.o $O/specfem3D_par.solverstatic_module.o $O/hdf5_manager.shared_hdf5_module.o
-#	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(HDF5_INCLUDE) -c -o $@ $<

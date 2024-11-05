@@ -409,10 +409,3 @@ $O/%.check_adios.o: $S/%.F90 $O/shared_par.shared_module.o $O/meshfem3D_par.chec
 $O/%.checknetcdf.o: $S/%.f90 $O/shared_par.shared_module.o $O/meshfem3D_par.check_module.o
 	${FCCOMPILE_CHECK} ${FCFLAGS_f90} $(NETCDF_INCLUDE) -c -o $@ $<
 
-## HDF5 file i/o
-
-#$O/%.mesh_hdf5.o: $S/%.F90 $O/shared_par.shared_module.o $O/meshfem3D_par.check_module.o $O/hdf5_manager.shared_hdf5_module.o
-#	${FCCOMPILE_CHECK} ${FCFLAGS_f90} -c -o $@ $<
-#
-#$O/%.mesh_hdf5.o: $S/%.f90 $O/shared_par.shared_module.o $O/meshfem3D_par.check_module.o $O/hdf5_manager.shared_hdf5_module.o
-#	${FCCOMPILE_CHECK} ${FCFLAGS_f90}  -c -o $@ $<
