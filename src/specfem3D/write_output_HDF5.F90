@@ -176,7 +176,7 @@
   use specfem_par, only: &
     myrank, seismo_current, nrec, &
     ROTATE_SEISMOGRAMS_RT, NTSTEP_BETWEEN_OUTPUT_SAMPLE, &
-    WRITE_SEISMOGRAMS_BY_MAIN, hdf5_seismo_fname, &
+    WRITE_SEISMOGRAMS_BY_MAIN, hdf5_seismo_fname
   use shared_parameters, only: &
     NSTEP, OUTPUT_SEISMOS_HDF5
   use manager_hdf5

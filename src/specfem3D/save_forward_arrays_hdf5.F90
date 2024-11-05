@@ -101,11 +101,16 @@ subroutine save_intermediate_forward_arrays_hdf5()
     call h5_create_dataset_gen('displ_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('veloc_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('accel_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xx_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_yy_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xy_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xz_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_yz_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xx_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_yy_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xy_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xz_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_yz_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
     call h5_create_dataset_gen('epsilondev_xx_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
     call h5_create_dataset_gen('epsilondev_yy_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
     call h5_create_dataset_gen('epsilondev_xy_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
@@ -156,33 +161,55 @@ subroutine save_intermediate_forward_arrays_hdf5()
   call h5_write_dataset_collect_hyperslab('displ_inner_core', displ_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab('veloc_inner_core', veloc_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab('accel_inner_core', accel_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xx_crust_mantle', epsilondev_xx_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yy_crust_mantle', epsilondev_yy_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xy_crust_mantle', epsilondev_xy_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xz_crust_mantle', epsilondev_xz_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', epsilondev_yz_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xx_inner_core', epsilondev_xx_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yy_inner_core', epsilondev_yy_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xy_inner_core', epsilondev_xy_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xz_inner_core', epsilondev_xz_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yz_inner_core', epsilondev_yz_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xx_crust_mantle', epsilondev_xx_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yy_crust_mantle', epsilondev_yy_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xy_crust_mantle', epsilondev_xy_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xz_crust_mantle', epsilondev_xz_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', epsilondev_yz_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xx_inner_core', epsilondev_xx_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yy_inner_core', epsilondev_yy_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xy_inner_core', epsilondev_xy_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xz_inner_core', epsilondev_xz_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yz_inner_core', epsilondev_yz_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
 
   if (ROTATION_VAL) then
-    call h5_write_dataset_collect_hyperslab('A_array_rotation', A_array_rotation, (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('B_array_rotation', B_array_rotation, (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('A_array_rotation', A_array_rotation, &
+                                            (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('B_array_rotation', B_array_rotation, &
+                                            (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
   endif
 
   if (ATTENUATION_VAL) then
-    call h5_write_dataset_collect_hyperslab('R_xx_crust_mantle', R_xx_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yy_crust_mantle', R_yy_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xy_crust_mantle', R_xy_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xz_crust_mantle', R_xz_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yz_crust_mantle', R_yz_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xx_inner_core', R_xx_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yy_inner_core', R_yy_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xy_inner_core', R_xy_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xz_inner_core', R_xz_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yz_inner_core', R_yz_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xx_crust_mantle', R_xx_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yy_crust_mantle', R_yy_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xy_crust_mantle', R_xy_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xz_crust_mantle', R_xz_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yz_crust_mantle', R_yz_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xx_inner_core', R_xx_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yy_inner_core', R_yy_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xy_inner_core', R_xy_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xz_inner_core', R_xz_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yz_inner_core', R_yz_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
   endif ! ATTENUATION_VAL
 
   if (FULL_GRAVITY_VAL) then
@@ -280,16 +307,26 @@ subroutine save_forward_arrays_hdf5()
     call h5_create_dataset_gen('displ_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('veloc_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('accel_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xx_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_yy_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xy_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xz_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_yz_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xx_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_yy_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xy_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xz_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_yz_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xx_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_yy_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xy_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xz_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_yz_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xx_inner_core', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_yy_inner_core', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xy_inner_core', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xz_inner_core', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_yz_inner_core', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
 
     if (ROTATION_VAL) then
       call h5_create_dataset_gen('A_array_rotation', (/NGLLX, NGLLY, NGLLZ, sum(offset_nspec_oc_rot)/), 4, CUSTOM_REAL)
@@ -336,31 +373,53 @@ subroutine save_forward_arrays_hdf5()
   call h5_write_dataset_collect_hyperslab('displ_inner_core', displ_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab('veloc_inner_core', veloc_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab('accel_inner_core', accel_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xx_crust_mantle', epsilondev_xx_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yy_crust_mantle', epsilondev_yy_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xy_crust_mantle', epsilondev_xy_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xz_crust_mantle', epsilondev_xz_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', epsilondev_yz_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xx_inner_core', epsilondev_xx_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yy_inner_core', epsilondev_yy_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xy_inner_core', epsilondev_xy_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xz_inner_core', epsilondev_xz_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yz_inner_core', epsilondev_yz_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xx_crust_mantle', epsilondev_xx_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yy_crust_mantle', epsilondev_yy_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xy_crust_mantle', epsilondev_xy_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xz_crust_mantle', epsilondev_xz_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', epsilondev_yz_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xx_inner_core', epsilondev_xx_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yy_inner_core', epsilondev_yy_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xy_inner_core', epsilondev_xy_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xz_inner_core', epsilondev_xz_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yz_inner_core', epsilondev_yz_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
   if (ROTATION_VAL) then
-    call h5_write_dataset_collect_hyperslab('A_array_rotation', A_array_rotation, (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('B_array_rotation', B_array_rotation, (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('A_array_rotation', A_array_rotation, &
+                                            (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('B_array_rotation', B_array_rotation, &
+                                            (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
   endif
   if (ATTENUATION_VAL) then
-    call h5_write_dataset_collect_hyperslab('R_xx_crust_mantle', R_xx_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yy_crust_mantle', R_yy_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xy_crust_mantle', R_xy_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xz_crust_mantle', R_xz_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yz_crust_mantle', R_yz_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xx_inner_core', R_xx_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yy_inner_core', R_yy_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xy_inner_core', R_xy_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xz_inner_core', R_xz_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yz_inner_core', R_yz_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xx_crust_mantle', R_xx_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yy_crust_mantle', R_yy_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xy_crust_mantle', R_xy_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xz_crust_mantle', R_xz_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yz_crust_mantle', R_yz_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xx_inner_core', R_xx_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yy_inner_core', R_yy_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xy_inner_core', R_xy_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xz_inner_core', R_xz_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yz_inner_core', R_yz_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
   endif ! ATTENUATION_VAL
 
   if (FULL_GRAVITY_VAL) then
@@ -461,11 +520,16 @@ subroutine save_forward_arrays_undoatt_hdf5()
     call h5_create_dataset_gen('displ_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('veloc_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
     call h5_create_dataset_gen('accel_inner_core', (/NDIM, sum(offset_nglob_ic)/), 2, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xx_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_yy_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xy_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_xz_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
-    call h5_create_dataset_gen('epsilondev_yz_crust_mantle', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xx_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_yy_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xy_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_xz_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
+    call h5_create_dataset_gen('epsilondev_yz_crust_mantle', &
+                               (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_mc_str_or_att)/), 4, CUSTOM_REAL)
     call h5_create_dataset_gen('epsilondev_xx_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
     call h5_create_dataset_gen('epsilondev_yy_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
     call h5_create_dataset_gen('epsilondev_xy_inner_core', (/NGLLX, NGLLY, NGLLZ, sum(offset_nglob_ic_str_or_att)/), 4, CUSTOM_REAL)
@@ -516,33 +580,55 @@ subroutine save_forward_arrays_undoatt_hdf5()
   call h5_write_dataset_collect_hyperslab('displ_inner_core', displ_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab('veloc_inner_core', veloc_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab('accel_inner_core', accel_inner_core, (/0, sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xx_crust_mantle', epsilondev_xx_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yy_crust_mantle', epsilondev_yy_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xy_crust_mantle', epsilondev_xy_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xz_crust_mantle', epsilondev_xz_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', epsilondev_yz_crust_mantle, (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xx_inner_core', epsilondev_xx_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yy_inner_core', epsilondev_yy_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xy_inner_core', epsilondev_xy_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_xz_inner_core', epsilondev_xz_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('epsilondev_yz_inner_core', epsilondev_yz_inner_core, (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xx_crust_mantle', epsilondev_xx_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yy_crust_mantle', epsilondev_yy_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xy_crust_mantle', epsilondev_xy_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xz_crust_mantle', epsilondev_xz_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', epsilondev_yz_crust_mantle, &
+                                          (/0, 0, 0, sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xx_inner_core', epsilondev_xx_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yy_inner_core', epsilondev_yy_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xy_inner_core', epsilondev_xy_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_xz_inner_core', epsilondev_xz_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('epsilondev_yz_inner_core', epsilondev_yz_inner_core, &
+                                          (/0, 0, 0, sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
 
   if (ROTATION_VAL) then
-    call h5_write_dataset_collect_hyperslab('A_array_rotation', A_array_rotation, (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('B_array_rotation', B_array_rotation, (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('A_array_rotation', A_array_rotation, &
+                                            (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('B_array_rotation', B_array_rotation, &
+                                            (/0, 0, 0, sum(offset_nspec_oc_rot(0:myrank-1))/), H5_COL)
   endif
 
   if (ATTENUATION_VAL) then
-    call h5_write_dataset_collect_hyperslab('R_xx_crust_mantle', R_xx_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yy_crust_mantle', R_yy_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xy_crust_mantle', R_xy_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xz_crust_mantle', R_xz_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yz_crust_mantle', R_yz_crust_mantle, (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xx_inner_core', R_xx_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yy_inner_core', R_yy_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xy_inner_core', R_xy_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_xz_inner_core', R_xz_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('R_yz_inner_core', R_yz_inner_core, (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xx_crust_mantle', R_xx_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yy_crust_mantle', R_yy_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xy_crust_mantle', R_xy_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xz_crust_mantle', R_xz_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yz_crust_mantle', R_yz_crust_mantle, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xx_inner_core', R_xx_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yy_inner_core', R_yy_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xy_inner_core', R_xy_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_xz_inner_core', R_xz_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('R_yz_inner_core', R_yz_inner_core, &
+                                            (/0, 0, 0, 0, sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
   endif ! ATTENUATION_VAL
 
   if (FULL_GRAVITY_VAL) then
@@ -751,27 +837,33 @@ subroutine save_forward_model_at_shifted_frequency_hdf5(factor_scale_relaxed_cru
       temp_store(:,:,:,:) = sqrt((kappavstore_crust_mantle(:,:,:,:) &
                             + FOUR_THIRDS * muv_shifted(:,:,:,:))/rhostore_crust_mantle(:,:,:,:)) &
                             * scaleval1
-      call h5_write_dataset_collect_hyperslab_in_group('vpv_shifted', temp_store, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('vpv_shifted', temp_store, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       ! vph
       temp_store(:,:,:,:) = sqrt((kappahstore_crust_mantle(:,:,:,:) &
                             + FOUR_THIRDS * muh_shifted(:,:,:,:))/rhostore_crust_mantle(:,:,:,:)) &
                             * scaleval1
-      call h5_write_dataset_collect_hyperslab_in_group('vph_shifted', temp_store, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('vph_shifted', temp_store, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       ! vsv
       temp_store(:,:,:,:) = sqrt( muv_shifted(:,:,:,:)/rhostore_crust_mantle(:,:,:,:) )*scaleval1
-      call h5_write_dataset_collect_hyperslab_in_group('vsv_shifted', temp_store, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('vsv_shifted', temp_store, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       ! vsh
       temp_store(:,:,:,:) = sqrt( muh_shifted(:,:,:,:)/rhostore_crust_mantle(:,:,:,:) )*scaleval1
-      call h5_write_dataset_collect_hyperslab_in_group('vsh_shifted', temp_store, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('vsh_shifted', temp_store, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
     else ! isotropic
       ! vp
       temp_store(:,:,:,:) = sqrt((kappavstore_crust_mantle(:,:,:,:) &
                             + FOUR_THIRDS * muv_shifted(:,:,:,:))/rhostore_crust_mantle(:,:,:,:)) &
                             * scaleval1
-      call h5_write_dataset_collect_hyperslab_in_group('vp_shifted', temp_store, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('vp_shifted', temp_store, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       ! vs
       temp_store(:,:,:,:) = sqrt( muv_shifted(:,:,:,:)/rhostore_crust_mantle(:,:,:,:) )*scaleval1
-      call h5_write_dataset_collect_hyperslab_in_group('vs_shifted', temp_store, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('vs_shifted', temp_store, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
     endif
 
@@ -825,10 +917,12 @@ subroutine save_forward_model_at_shifted_frequency_hdf5(factor_scale_relaxed_cru
       temp_store(:,:,:,:) = sqrt((kappavstore_inner_core(:,:,:,:) &
                             + FOUR_THIRDS * muv_shifted(:,:,:,:))/rhostore_inner_core(:,:,:,:)) &
                             * scaleval1
-      call h5_write_dataset_collect_hyperslab_in_group('vp_shifted', temp_store, (/0, 0, 0, sum(offset_nspec_ic(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('vp_shifted', temp_store, &
+                                                       (/0, 0, 0, sum(offset_nspec_ic(0:myrank-1))/), H5_COL)
       ! vs
       temp_store(:,:,:,:) = sqrt( muv_shifted(:,:,:,:)/rhostore_inner_core(:,:,:,:) )*scaleval1
-      call h5_write_dataset_collect_hyperslab_in_group('vs_shifted', temp_store, (/0, 0, 0, sum(offset_nspec_ic(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('vs_shifted', temp_store, &
+                                                       (/0, 0, 0, sum(offset_nspec_ic(0:myrank-1))/), H5_COL)
     endif
 
     deallocate(temp_store,muv_shifted)
@@ -857,13 +951,17 @@ subroutine save_forward_model_at_shifted_frequency_hdf5(factor_scale_relaxed_cru
       call h5_open_group(group_name)
 
       ! muv_relaxed
-      call h5_write_dataset_collect_hyperslab_in_group('muv_relaxed', muvstore_crust_mantle*scaleval1, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('muv_relaxed', muvstore_crust_mantle*scaleval1, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       ! muh_relaxed
-      call h5_write_dataset_collect_hyperslab_in_group('muh_relaxed', muhstore_crust_mantle*scaleval1, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('muh_relaxed', muhstore_crust_mantle*scaleval1, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       ! kappav_relaxed
-      call h5_write_dataset_collect_hyperslab_in_group('kappav_relaxed', kappavstore_crust_mantle*scaleval1, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('kappav_relaxed', kappavstore_crust_mantle*scaleval1, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       ! kappah_relaxed
-      call h5_write_dataset_collect_hyperslab_in_group('kappah_relaxed', kappahstore_crust_mantle*scaleval1, (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group('kappah_relaxed', kappahstore_crust_mantle*scaleval1, &
+                                                       (/0, 0, 0, sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
       ! close group
       call h5_close_group()
