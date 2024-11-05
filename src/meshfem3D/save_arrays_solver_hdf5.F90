@@ -783,9 +783,9 @@ end subroutine save_arrays_boundary_hdf5
                                   num_colors_outer,num_colors_inner, &
                                   num_elem_colors)
   use constants
-  use shared_parameters, only: H5_COL
 
 #ifdef USE_HDF5
+  use shared_parameters, only: H5_COL
   use meshfem_par, only: &
     NPROCTOT
   use manager_hdf5
