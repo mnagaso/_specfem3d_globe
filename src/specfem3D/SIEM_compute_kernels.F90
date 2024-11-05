@@ -675,6 +675,12 @@
     endif
   endif
 
+  if (HDF5_ENABLED) then
+    if (myrank == 0) then
+      print *,'Full gravity kernels: option HDF5_ENABLED not implemented yet, saving them as binary files'
+    endif
+  endif
+
   ! scaling factors
   ! kernel unit [ s / km^3 ]
   scale_kl = real(scale_t * scale_displ_inv * 1.d9,kind=CUSTOM_REAL)

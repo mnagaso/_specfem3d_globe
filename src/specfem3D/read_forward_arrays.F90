@@ -57,6 +57,8 @@
 
     if (ADIOS_FOR_FORWARD_ARRAYS) then
       call read_intermediate_forward_arrays_adios()
+    else if (HDF5_ENABLED) then
+      call read_intermediate_forward_arrays_hdf5()
     else
       write(outputname,"('dump_all_arrays',i6.6)") myrank
       outputname = trim(LOCAL_TMP_PATH) // '/' // outputname(1:len_trim(outputname))
@@ -166,6 +168,8 @@
   ! reads in file data
   if (ADIOS_FOR_FORWARD_ARRAYS) then
     call read_forward_arrays_adios()
+  else if (HDF5_ENABLED) then
+    call read_forward_arrays_hdf5()
   else
     write(outputname,'(a,i6.6,a)') 'proc',myrank,'_save_forward_arrays.bin'
     outputname = trim(LOCAL_TMP_PATH) // '/' // outputname(1:len_trim(outputname))
@@ -316,6 +320,8 @@
 
   if (ADIOS_FOR_UNDO_ATTENUATION) then
     call read_forward_arrays_undoatt_adios(iteration_on_subset_tmp)
+  else if (HDF5_ENABLED) then
+    call read_forward_arrays_undoatt_hdf5(iteration_on_subset_tmp)
   else
     ! reads in saved wavefield
     write(outputname,'(a,i6.6,a,i6.6,a)') 'proc',myrank,'_save_frame_at',iteration_on_subset_tmp,'.bin'

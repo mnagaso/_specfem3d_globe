@@ -448,6 +448,8 @@
     if (ADIOS_FOR_SOLVER_MESHFILES) then
       ! adios file output
       call save_forward_model_at_shifted_frequency_adios(factor_scale_relaxed_crust_mantle,factor_scale_relaxed_inner_core)
+    else if (HDF5_ENABLED) then
+      call save_forward_model_at_shifted_frequency_hdf5(factor_scale_relaxed_crust_mantle,factor_scale_relaxed_inner_core)
     else
       ! outputs model files in binary format
       call save_forward_model_at_shifted_frequency(factor_scale_relaxed_crust_mantle,factor_scale_relaxed_inner_core)

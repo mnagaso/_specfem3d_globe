@@ -57,6 +57,7 @@ shared_OBJECTS = \
 	$O/get_model_parameters.shared.o \
 	$O/get_timestep_and_layers.shared.o \
 	$O/gll_library.shared.o \
+	$O/hdf5_manager.shared_hdf5_module.o \
 	$O/heap_sort.shared.o \
 	$O/hex_nodes.shared.o \
 	$O/init_openmp.shared.o \
@@ -148,6 +149,9 @@ shared_MODULES += $(adios_shared_MODULES)
 else
 shared_OBJECTS += $(adios_shared_STUBS)
 endif
+
+## HDF5 file i/o
+
 
 ##
 ## ASDF
@@ -278,6 +282,19 @@ $O/%.shared_asdf.o: $S/%.f90
 
 $O/%.cc.o: $S/%.c ${SETUP}/config.h
 	${CC} -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
+
+## HDF5
+$O/%.shared_hdf5_module.o: $S/%.f90 $O/shared_par.shared_module.o
+	${FCCOMPILE_CHECK} ${FCFLAGS_f90} -c -o $@ $<
+
+$O/%.shared_hdf5_module.o: $S/%.F90 $O/shared_par.shared_module.o
+	${FCCOMPILE_CHECK} ${FCFLAGS_f90} -c -o $@ $<
+
+$O/%.shared_hdf5.o: $S/%.f90 $O/hdf5_manager.shared_hdf5_module.o
+	${FCCOMPILE_CHECK} ${FCFLAGS_f90} -c -o $@ $<
+
+$O/%.shared_hdf5.o: $S/%.F90 $O/hdf5_manager.shared_hdf5_module.o
+	${FCCOMPILE_CHECK} ${FCFLAGS_f90} -c -o $@ $<
 
 ## c++ files
 $O/%.shared.o: $S/%.cpp ${SETUP}/config.h

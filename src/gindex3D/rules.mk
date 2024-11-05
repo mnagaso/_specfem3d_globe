@@ -48,6 +48,7 @@ gindex3D_SHARED_OBJECTS = \
 	$O/bcast_mesh_databases.solverstatic.o \
 	$O/locate_regular_points.solverstatic.o \
 	$O/read_arrays_solver.solverstatic.o \
+	$O/read_arrays_solver_hdf5.solverstatic.o \
 	$O/read_mesh_parameters.solverstatic.o \
 	$O/read_mesh_databases.solverstatic.o \
 	$O/specfem3D_par.solverstatic_module.o \
@@ -68,6 +69,7 @@ gindex3D_SHARED_OBJECTS += \
 	$O/get_model_parameters.shared.o \
 	$O/get_timestep_and_layers.shared.o \
 	$O/hex_nodes.shared.o \
+	$O/hdf5_manager.shared_hdf5_module.o \
 	$O/memory_eval.shared.o \
 	$O/parallel.sharedmpi.o \
 	$O/param_reader.cc.o \

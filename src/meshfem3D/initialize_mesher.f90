@@ -119,6 +119,7 @@
   use meshfem_models_par
 
   use manager_adios
+  use manager_hdf5
 
   implicit none
 
@@ -133,6 +134,11 @@
   ! ADIOS
   if (ADIOS_ENABLED) then
     call initialize_adios()
+  endif
+
+  ! HDF5
+  if (HDF5_ENABLED) then
+    call h5_initialize()
   endif
 
   ! gravity integrals

@@ -37,6 +37,8 @@
   ! local parameters
   integer :: ispec2D,i,j,npoin
 
+  if (HDF5_ENABLED) return
+
   ! gets number of points on surface mesh
   npoin = 0
   do ispec2D = 1, NSPEC_TOP ! NSPEC2D_TOP(IREGION_CRUST_MANTLE)

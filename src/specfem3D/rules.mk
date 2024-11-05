@@ -110,7 +110,9 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/print_stf_file.solverstatic.o \
 	$O/read_adjoint_sources.solverstatic.o \
 	$O/read_arrays_solver.solverstatic.o \
+	$O/read_arrays_solver_hdf5.solverstatic.o \
 	$O/read_forward_arrays.solverstatic.o \
+	$O/read_forward_arrays_hdf5.solverstatic.o \
 	$O/read_mesh_parameters.solverstatic.o \
 	$O/read_mesh_databases.solverstatic.o \
 	$O/read_topography_bathymetry.solverstatic.o \
@@ -125,7 +127,9 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/SIEM_solver_mpi.solverstatic.o \
 	$O/SIEM_solver_petsc.solverstatic.o \
 	$O/save_forward_arrays.solverstatic.o \
+	$O/save_forward_arrays_hdf5.solverstatic.o \
 	$O/save_kernels.solverstatic.o \
+	$O/save_kernels_hdf5.solverstatic.o \
 	$O/save_regular_kernels.solverstatic.o \
 	$O/setup_GLL_points.solverstatic.o \
 	$O/setup_sources_receivers.solverstatic.o \
@@ -135,9 +139,12 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/update_displacement_Newmark.solverstatic.o \
 	$O/write_movie_output.solverstatic.o \
 	$O/write_movie_volume.solverstatic.o \
+	$O/write_movie_volume_hdf5.solverstatic.o \
 	$O/write_movie_surface.solverstatic.o \
+	$O/write_movie_surface_hdf5.solverstatic.o \
 	$O/write_output_ASCII.solverstatic.o \
 	$O/write_output_SAC.solverstatic.o \
+	$O/write_output_HDF5.solverstatic.o \
 	$O/write_seismograms.solverstatic.o \
 	$(EMPTY_MACRO)
 
@@ -186,6 +193,7 @@ specfem3D_SHARED_OBJECTS = \
 	$O/gll_library.shared.o \
 	$O/heap_sort.shared.o \
 	$O/hex_nodes.shared.o \
+	$O/hdf5_manager.shared_hdf5_module.o \
 	$O/init_openmp.shared.o \
 	$O/intgrl.shared.o \
 	$O/lagrange_poly.shared.o \
@@ -353,6 +361,17 @@ ifeq ($(PETSC),yes)
 	specfem3D_MODULES += $(FC_MODDIR)/siem_solver_petsc.$(FC_MODEXT)
 endif
 
+
+##
+## HDF5
+##
+
+ifeq ($(HDF5),yes)
+specfem3D_MODULES += \
+	$(FC_MODDIR)/specfem_par_movie_hdf5.$(FC_MODEXT) \
+	$(EMPTY_MACRO)
+endif
+
 #######################################
 
 ####
@@ -435,6 +454,7 @@ $O/SIEM_solve.solverstatic.o: $O/SIEM_math_library.shared.o $O/SIEM_poisson.solv
 $O/SIEM_solver_mpi.solverstatic.o: $O/SIEM_math_library.shared.o
 $O/SIEM_solver_petsc.solverstatic.o: $O/SIEM_math_library.shared.o
 $O/SIEM_compute_seismograms.solverstatic.o: $O/SIEM_math_library.shared.o
+
 
 ###
 ### specfem3D - optimized flags and dependence on values from mesher here

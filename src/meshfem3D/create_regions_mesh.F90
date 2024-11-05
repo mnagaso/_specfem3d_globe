@@ -51,7 +51,8 @@
     SAVE_BOUNDARY_MESH,SAVE_MESHFILES_AVS_DX_FORMAT
 
   use shared_parameters, only: &
-    R_CENTRAL_CUBE,RICB,RCMB,RINF
+    R_CENTRAL_CUBE,RICB,RCMB,RINF, &
+    HDF5_ENABLED
 
   use meshfem_par, only: &
     myrank,nspec,nglob,iregion_code, &
@@ -460,6 +461,9 @@
         call save_arrays_solver_adios(idoubling,ibool,xstore,ystore,zstore, &
                                       NSPEC2DMAX_XMIN_XMAX, NSPEC2DMAX_YMIN_YMAX, &
                                       NSPEC2D_TOP,NSPEC2D_BOTTOM)
+      else if (HDF5_ENABLED) then
+        call save_arrays_solver_hdf5(idoubling,ibool,xstore,ystore,zstore, &
+                                     NSPEC2D_TOP,NSPEC2D_BOTTOM)
       else
         call save_arrays_solver(idoubling,ibool,xstore,ystore,zstore, &
                                 NSPEC2D_TOP,NSPEC2D_BOTTOM)
@@ -480,6 +484,8 @@
         ! saves boundary file
         if (ADIOS_FOR_ARRAYS_SOLVER) then
           call save_arrays_boundary_adios()
+        else if (HDF5_ENABLED) then
+          call save_arrays_boundary_hdf5()
         else
           call save_arrays_boundary()
         endif
@@ -501,6 +507,8 @@
         if (ADIOS_FOR_SOLVER_MESHFILES) then
           ! adios file output
           call save_model_meshfiles_adios()
+        else if (HDF5_ENABLED) then
+          call save_model_meshfiles_hdf5()
         else
           ! outputs model files in binary format
           call save_model_meshfiles()

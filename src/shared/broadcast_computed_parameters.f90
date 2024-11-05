@@ -34,10 +34,10 @@
 
   ! local parameters
   ! broadcast parameter arrays
-  integer, parameter :: nparam_i = 50
+  integer, parameter :: nparam_i = 51
   integer, dimension(nparam_i) :: bcast_integer
 
-  integer, parameter :: nparam_l = 74
+  integer, parameter :: nparam_l = 77
   logical, dimension(nparam_l) :: bcast_logical
 
   integer, parameter :: nparam_dp = 42
@@ -77,7 +77,8 @@
             GPU_RUNTIME,NUMBER_OF_SIMULTANEOUS_RUNS, &
             MODEL_GLL_TYPE,USER_NSTEP, &
             NSTEP_STEADY_STATE,NTSTEP_BETWEEN_OUTPUT_SAMPLE, &
-            POISSON_SOLVER /)
+            POISSON_SOLVER, &
+            HDF5_IO_NODES /)
 
     bcast_logical = (/ &
             TRANSVERSE_ISOTROPY,ANISOTROPIC_3D_MANTLE,ANISOTROPIC_INNER_CORE, &
@@ -111,7 +112,8 @@
             OUTPUT_SEISMOS_3D_ARRAY, &
             REGIONAL_MESH_CUTOFF,REGIONAL_MESH_ADD_2ND_DOUBLING, &
             EMC_MODEL, &
-            FULL_GRAVITY /)
+            FULL_GRAVITY, &
+            HDF5_ENABLED, HDF5_FOR_MOVIES, OUTPUT_SEISMOS_HDF5 /)
 
     bcast_double_precision = (/ &
             DT, &
@@ -284,6 +286,7 @@
     NSTEP_STEADY_STATE = bcast_integer(48)
     NTSTEP_BETWEEN_OUTPUT_SAMPLE = bcast_integer(49)
     POISSON_SOLVER = bcast_integer(50)
+    HDF5_IO_NODES = bcast_integer(51)
 
     ! logicals
     TRANSVERSE_ISOTROPY = bcast_logical(1)
@@ -360,6 +363,9 @@
     REGIONAL_MESH_ADD_2ND_DOUBLING = bcast_logical(72)
     EMC_MODEL = bcast_logical(73)
     FULL_GRAVITY = bcast_logical(74)
+    HDF5_ENABLED = bcast_logical(75)
+    HDF5_FOR_MOVIES = bcast_logical(76)
+    OUTPUT_SEISMOS_HDF5 = bcast_logical(77)
 
     ! double precisions
     DT = bcast_double_precision(1)

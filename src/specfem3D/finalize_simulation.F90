@@ -292,10 +292,16 @@
   if (MOVIE_SURFACE) then
     deallocate(store_val_ux,store_val_uy,store_val_uz)
     deallocate(store_val_ux_all,store_val_uy_all,store_val_uz_all)
+    if (HDF5_ENABLED) then
+      call movie_surface_finalize_hdf5()
+    endif
   endif
   if (MOVIE_VOLUME) then
     deallocate(nu_3dmovie)
     deallocate(mask_3dmovie,muvstore_crust_mantle_3dmovie)
+    if (HDF5_ENABLED) then
+      call movie_volume_finalize_hdf5()
+    endif
   endif
 
   ! noise simulations

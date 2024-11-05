@@ -1298,6 +1298,13 @@
                                     bulk_c_kl_crust_mantle,bulk_beta_kl_crust_mantle, &
                                     bulk_betav_kl_crust_mantle,bulk_betah_kl_crust_mantle, &
                                     Gc_prime_kl_crust_mantle, Gs_prime_kl_crust_mantle)
+  else if (HDF5_ENABLED) then
+    call write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mantle, &
+                                   betav_kl_crust_mantle,betah_kl_crust_mantle, &
+                                   eta_kl_crust_mantle, &
+                                   bulk_c_kl_crust_mantle,bulk_beta_kl_crust_mantle, &
+                                   bulk_betav_kl_crust_mantle,bulk_betah_kl_crust_mantle, &
+                                   Gc_prime_kl_crust_mantle, Gs_prime_kl_crust_mantle)
   else
     ! binary file output
     call create_name_database(prname,myrank,IREGION_CRUST_MANTLE,LOCAL_TMP_PATH)
@@ -1647,6 +1654,9 @@
   if (ADIOS_FOR_KERNELS) then
     call write_kernels_cm_iso_adios(mu_kl_crust_mantle, kappa_kl_crust_mantle, rhonotprime_kl_crust_mantle, &
                                     bulk_c_kl_crust_mantle,bulk_beta_kl_crust_mantle)
+  else if (HDF5_ENABLED) then
+    call write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, rhonotprime_kl_crust_mantle, &
+                                    bulk_c_kl_crust_mantle,bulk_beta_kl_crust_mantle)
   else
 
     call create_name_database(prname,myrank,IREGION_CRUST_MANTLE,LOCAL_TMP_PATH)
@@ -1742,6 +1752,8 @@
   ! writes out kernels to file
   if (ADIOS_FOR_KERNELS) then
     call write_kernels_oc_adios()
+  else if (HDF5_ENABLED) then
+    call write_kernels_oc_hdf5()
   else
     call create_name_database(prname,myrank,IREGION_OUTER_CORE,LOCAL_TMP_PATH)
 
@@ -1751,7 +1763,6 @@
     open(unit=IOUT,file=trim(prname)//'alpha_kernel.bin',status='unknown',form='unformatted',action='write')
     write(IOUT) alpha_kl_outer_core
     close(IOUT)
-
   endif
 
   end subroutine save_kernels_outer_core
@@ -1814,6 +1825,8 @@
   ! writes out kernels to file
   if (ADIOS_FOR_KERNELS) then
     call write_kernels_ic_adios()
+  else if (HDF5_ENABLED) then
+    call write_kernels_ic_hdf5()
   else
     call create_name_database(prname,myrank,IREGION_INNER_CORE,LOCAL_TMP_PATH)
 
@@ -1862,6 +1875,8 @@
   ! writes out kernels to file
   if (ADIOS_FOR_KERNELS) then
     call write_kernels_boundary_kl_adios()
+  else if (HDF5_ENABLED) then
+    call write_kernels_boundary_kl_hdf5()
   else
     call create_name_database(prname,myrank,IREGION_CRUST_MANTLE,LOCAL_TMP_PATH)
 
@@ -1944,6 +1959,9 @@
   ! writes out kernels to file
   if (ADIOS_FOR_KERNELS) then
     call write_kernels_source_derivatives_adios()
+  !else if (HDF5_ENABLED) then
+  !  ! TODO ADD HDF5
+  !  call write_kernels_source_derivatives_hdf5()
   else
     ! kernel file output
     do irec_local = 1, nrec_local
@@ -2001,6 +2019,8 @@
   ! writes out kernels to file
   if (ADIOS_FOR_KERNELS) then
     call write_kernels_Hessian_adios()
+  else if (HDF5_ENABLED) then
+    call write_kernels_Hessian_hdf5()
   else
     ! stores into file
     call create_name_database(prname,myrank,IREGION_CRUST_MANTLE,LOCAL_TMP_PATH)

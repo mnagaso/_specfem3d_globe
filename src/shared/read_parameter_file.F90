@@ -245,8 +245,10 @@
   call read_value_logical(OUTPUT_SEISMOS_SAC_BINARY, 'OUTPUT_SEISMOS_SAC_BINARY', ier)
   if (ier /= 0) stop 'an error occurred while reading the parameter file: OUTPUT_SEISMOS_SAC_BINARY'
   call read_value_logical(OUTPUT_SEISMOS_ASDF, 'OUTPUT_SEISMOS_ASDF', ier)
-  if (ier /= 0) stop 'an error occurred while reading the parameter file: OUTPUT_ASDF'
+  if (ier /= 0) stop 'an error occurred while reading the parameter file: OUTPUT_HDF5'
   call read_value_logical(OUTPUT_SEISMOS_3D_ARRAY, 'OUTPUT_SEISMOS_3D_ARRAY', ier)
+  if (ier /= 0) stop 'an error occurred while reading the parameter file: OUTPUT_ASDF'
+  call read_value_logical(OUTPUT_SEISMOS_HDF5, 'OUTPUT_SEISMOS_HDF5', ier)
   if (ier /= 0) stop 'an error occurred while reading the parameter file: OUTPUT_3D_ARRAY'
   call read_value_logical(ROTATE_SEISMOGRAMS_RT, 'ROTATE_SEISMOGRAMS_RT', ier)
   if (ier /= 0) stop 'an error occurred while reading the parameter file: ROTATE_SEISMOGRAMS_RT'
@@ -376,6 +378,17 @@
     call read_value_double_precision(FILESYSTEM_IO_BANDWIDTH, 'FILESYSTEM_IO_BANDWIDTH', ier); ier = 0
   endif
 
+  ! HDF5 file I/O
+  ! (optional) hdf5 database io flag
+  call read_value_logical(HDF5_ENABLED, 'HDF5_ENABLED', ier); ier = 0
+  ! HDF file I/O server
+  if (HDF5_ENABLED) then
+    ! (optional) movie outputs
+    call read_value_logical(HDF5_FOR_MOVIES, 'HDF5_FOR_MOVIES', ier); ier = 0
+    ! (optional) number of io dedicated nodes
+    call read_value_integer(HDF5_IO_NODES, 'HDF5_IO_NODES', ier); ier = 0
+  endif
+
   ! closes parameter file
   call close_parameter_file()
 
@@ -406,6 +419,21 @@
     print *,'**************'
     print *
     stop 'an error occurred while reading the parameter file: PETSC solver is selected but code not built with PETSc support'
+  endif
+#endif
+
+  ! checks HDF5 compilation support
+#if !defined(USE_HDF5)
+  if (HDF5_ENABLED) then
+    print *
+    print *,'**************'
+    print *,'**************'
+    print *,'HDF5 is enabled in parameter file but the code was not compiled with HDF5'
+    print *,'See --with-hdf5 configure options.'
+    print *,'**************'
+    print *,'**************'
+    print *
+    stop 'an error occurred while reading the parameter file: HDF5 is enabled but code not built with HDF5'
   endif
 #endif
 
