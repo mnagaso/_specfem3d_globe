@@ -161,16 +161,16 @@
         ! output the Time Integral of Strain, or \mu*TIS
         if (HDF5_ENABLED) then
           call write_movie_volume_strains_hdf5(NSPEC_CRUST_MANTLE_3DMOVIE, &
-                                               Ieps_trace_over_3_crust_mantle, &
-                                               NSPEC_CRUST_MANTLE_3DMOVIE, &
-                                               Iepsilondev_xx_crust_mantle,Iepsilondev_yy_crust_mantle,Iepsilondev_xy_crust_mantle, &
-                                               Iepsilondev_xz_crust_mantle,Iepsilondev_yz_crust_mantle)
+                    Ieps_trace_over_3_crust_mantle, &
+                    NSPEC_CRUST_MANTLE_3DMOVIE, &
+                    Iepsilondev_xx_crust_mantle,Iepsilondev_yy_crust_mantle,Iepsilondev_xy_crust_mantle, &
+                    Iepsilondev_xz_crust_mantle,Iepsilondev_yz_crust_mantle)
         else
           call  write_movie_volume_strains(NSPEC_CRUST_MANTLE_3DMOVIE, &
-                                           Ieps_trace_over_3_crust_mantle, &
-                                           NSPEC_CRUST_MANTLE_3DMOVIE, &
-                                           Iepsilondev_xx_crust_mantle,Iepsilondev_yy_crust_mantle,Iepsilondev_xy_crust_mantle, &
-                                           Iepsilondev_xz_crust_mantle,Iepsilondev_yz_crust_mantle)
+                     Ieps_trace_over_3_crust_mantle, &
+                     NSPEC_CRUST_MANTLE_3DMOVIE, &
+                     Iepsilondev_xx_crust_mantle,Iepsilondev_yy_crust_mantle,Iepsilondev_xy_crust_mantle, &
+                     Iepsilondev_xz_crust_mantle,Iepsilondev_yz_crust_mantle)
         endif
 
       case (4)
