@@ -563,19 +563,20 @@ jobs:
 
     - name: Install packages
       env:
-        TEST: with-hdf5
+        HDF5: true
       run: ./.github/scripts/run_install.sh
       shell: bash
 
     - name: Run build
       env:
-        TESTFLAGS: --with-hdf5 HDF5_INC=/usr/include/hdf5/openmpi/ HDF5_LIBS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi
+        TESTFLAGS: # no extra flags
+        HDF5: true
       run: ./.github/scripts/run_build.sh
       shell: bash
 
     - name: Run test
       env:
-        TEST: with-hdf5
         TESTDIR: EXAMPLES/regional_Greece_small
+        HDF5: true
       run: ./.github/scripts/run_tests.sh
       shell: bash

@@ -66,9 +66,9 @@ if [ "${FULL_GRAVITY}" == "true" ]; then
 fi
 
 # hdf5 i/o example
-if [[ "${TEST}" == *"with-hdf5"* ]]; then
+if [ "${HDF5}" == "true" ]; then
   echo
-  echo "test run: ${TEST}"
+  echo "HDF5 enabled test run"
   echo
   sed -i "s:^HDF5_ENABLED .*:HDF5_ENABLED    = .true.:" DATA/Par_file
   #sed -i "s:^HDF5_FOR_MOVIES .*:HDF5_FOR_MOVIES    = .true.:" DATA/Par_file
