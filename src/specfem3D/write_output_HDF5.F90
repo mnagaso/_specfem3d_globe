@@ -27,25 +27,31 @@
 
 
   subroutine split_string(input_string, delimiter, part1, part2)
-      implicit none
-      character(len=*), intent(in) :: input_string
-      character(len=*), intent(in) :: delimiter
-      character(len=*), intent(out) :: part1
-      character(len=*), intent(out) :: part2
-      integer :: delim_pos
 
-      ! Find the position of the delimiter
-      delim_pos = index(input_string, delimiter)
+  implicit none
+  character(len=*), intent(in) :: input_string
+  character(len=*), intent(in) :: delimiter
+  character(len=*), intent(out) :: part1
+  character(len=*), intent(out) :: part2
+  integer :: delim_pos
 
-      ! Split the string at the delimiter
-      if (delim_pos > 0) then
-          part1 = input_string(1:delim_pos-1)
-          part2 = input_string(delim_pos+1:)
-      else
-          part1 = input_string
-          part2 = ''
-      end if
+  ! Find the position of the delimiter
+  delim_pos = index(input_string, delimiter)
+
+  ! Split the string at the delimiter
+  if (delim_pos > 0) then
+      part1 = input_string(1:delim_pos-1)
+      part2 = input_string(delim_pos+1:)
+  else
+      part1 = input_string
+      part2 = ''
+  endif
+
   end subroutine split_string
+
+!
+!-------------------------------------------------------------------------------------------------
+!
 
 #ifdef USE_HDF5
 
@@ -65,7 +71,7 @@
   ! local parameters
   integer :: i,irec,ier
   integer, intent(in) :: nlength_total_seismogram
-  integer :: nrec_total
+
   real(kind=CUSTOM_REAL), dimension(:), allocatable :: time_array
   real(kind=CUSTOM_REAL), dimension(:), allocatable :: rec_dists ! store the distances
   character(len=MAX_LENGTH_STATION_NAME), dimension(:), allocatable :: stations
@@ -110,8 +116,8 @@
     else
       ! adjoint simulation: backward/reconstructed wavefields
       time_array(i) = real( dble((NSTEP-i)*NTSTEP_BETWEEN_OUTPUT_SAMPLE) * DT - t0, kind=CUSTOM_REAL)
-    end if
-  end do
+    endif
+  enddo
 
   ! write the time dataset
   call h5_write_dataset_no_group('time',time_array)
@@ -129,12 +135,12 @@
        status='unknown',action='read',iostat=ier)
   if (ier /= 0) then
     stop 'Error: write_hdf5_seismogram_init: error opening output_list_stations.txt'
-  end if
+  endif
 
   ! skip the header (3 lines)
   do i = 1,n_header_lines
     read(IOUT,*)
-  end do
+  enddo
 
   ! read the station information
   ! each line includes: network.station dummy dummy dist dummy
@@ -146,7 +152,7 @@
     if (ier /= 0) stop 'Error: write_hdf5_seismogram_init: error reading output_list_stations.txt'
     read(line, *) tmpstr, dummy, dummy, rec_dists(irec), dummy
     call split_string(trim(tmpstr), '.', networks(irec), stations(irec))
-  end do
+  enddo
 
   close(IOUT)
 
@@ -163,8 +169,11 @@
 
   end subroutine write_hdf5_seismogram_init
 
-
 #endif
+
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine write_output_hdf5(seismogram_tmp_in, irec_local, irec, chn, iorientation)
 
@@ -175,7 +184,7 @@
 #ifdef USE_HDF5
   use specfem_par, only: &
     myrank, seismo_current, nrec, &
-    ROTATE_SEISMOGRAMS_RT, NTSTEP_BETWEEN_OUTPUT_SAMPLE, &
+    NTSTEP_BETWEEN_OUTPUT_SAMPLE, &
     WRITE_SEISMOGRAMS_BY_MAIN, hdf5_seismo_fname
   use shared_parameters, only: &
     NSTEP, OUTPUT_SEISMOS_HDF5
@@ -193,9 +202,8 @@
 
   real(kind=CUSTOM_REAL), dimension(nlength_seismogram,1) :: seismogram_tmp
   logical, save :: is_initialized = .false.
-  integer :: i, ier, nlength_total_seismogram
+  integer :: i, nlength_total_seismogram
   logical :: if_dataset_exists
-
 
   ! check if anything to do
   if (.not. OUTPUT_SEISMOS_HDF5) return
@@ -206,20 +214,25 @@
 
   ! total length of the seismogram
   nlength_total_seismogram = NSTEP / NTSTEP_BETWEEN_OUTPUT_SAMPLE
-  print*, 'nlength_total_seismogram = ', nlength_total_seismogram
-  print*, 'NSTEP = ', NSTEP
-  print*, 'NTSTEP_BETWEEN_OUTPUT_SAMPLE = ', NTSTEP_BETWEEN_OUTPUT_SAMPLE
-  print*, 'nrec = ', nrec
-  print*, 'irec = ', irec
-  print*, 'seismo_current = ', seismo_current
-  print*, 'shape(seismogram_tmp) = ', shape(seismogram_tmp)
-  print*, 'shape(seismogram_tmp(iorientation,1:seismo_current)) = ', shape(seismogram_tmp(iorientation,1:seismo_current))
+
+  ! debug
+  if (myrank == 0) then
+    print *, '*** HDF5 seismogram outputs: station irec = ',irec,'***'
+    print *, '    nlength_total_seismogram = ', nlength_total_seismogram
+    print *, '    NSTEP = ', NSTEP
+    print *, '    NTSTEP_BETWEEN_OUTPUT_SAMPLE = ', NTSTEP_BETWEEN_OUTPUT_SAMPLE
+    print *, '    nrec = ', nrec
+    print *, '    irec = ', irec, 'irec_local = ', irec_local
+    print *, '    seismo_current = ', seismo_current
+    print *, '    shape(seismogram_tmp) = ', shape(seismogram_tmp)
+    print *, '    shape(seismogram_tmp(iorientation,1:seismo_current)) = ', shape(seismogram_tmp(iorientation,1:seismo_current))
+    print *
+  endif
+
   ! convert  array with shape (seimo_current) to (nlength_total_seismogram, 1)
   do i = 1, seismo_current
     seismogram_tmp(i,1) = seismogram_tmp_in(iorientation,i)
-  end do
-
-
+  enddo
 
   ! initialize
   if (.not. is_initialized) then
@@ -248,6 +261,17 @@
   call h5_close_file()
 
 #else
+  ! no HDF5 support
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = iorientation
+  idummy = len_trim(chn)
+
+  idummy = irec
+  idummy = irec_local
+  idummy = size(seismogram_tmp_in,kind=4)
 
   write(*,*) 'Error: HDF5 support not enabled in this version of Specfem3D_Globe'
   write(*,*) 'Please recompile with the --with-hdf5 option'

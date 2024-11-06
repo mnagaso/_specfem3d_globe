@@ -25,7 +25,8 @@
 !
 !=====================================================================
 
-subroutine write_kernels_strength_noise_hdf5()
+
+  subroutine write_kernels_strength_noise_hdf5()
 
   use specfem_par
   use specfem_par_crustmantle
@@ -85,10 +86,13 @@ subroutine write_kernels_strength_noise_hdf5()
 
 #endif
 
-end subroutine write_kernels_strength_noise_hdf5
+  end subroutine write_kernels_strength_noise_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mantle, &
+  subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mantle, &
                                    betav_kl_crust_mantle,betah_kl_crust_mantle, &
                                    eta_kl_crust_mantle, &
                                    bulk_c_kl_crust_mantle,bulk_beta_kl_crust_mantle, &
@@ -317,6 +321,22 @@ subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mant
   call h5_close_file_p()
 
 #else
+  ! no HDF5 support
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(alphav_kl_crust_mantle,kind=4)
+  idummy = size(alphah_kl_crust_mantle,kind=4)
+  idummy = size(betav_kl_crust_mantle,kind=4)
+  idummy = size(betah_kl_crust_mantle,kind=4)
+  idummy = size(eta_kl_crust_mantle,kind=4)
+  idummy = size(bulk_c_kl_crust_mantle,kind=4)
+  idummy = size(bulk_beta_kl_crust_mantle,kind=4)
+  idummy = size(bulk_betav_kl_crust_mantle,kind=4)
+  idummy = size(bulk_betah_kl_crust_mantle,kind=4)
+  idummy = size(Gc_prime_kl_crust_mantle,kind=4)
+  idummy = size(Gs_prime_kl_crust_mantle,kind=4)
 
   print *,'Error: HDF5 not enabled in this version of the code'
   print *, 'Please recompile with the HDF5 option enabled with the configure flag --with-hdf5'
@@ -324,10 +344,13 @@ subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mant
 
 #endif
 
-end subroutine write_kernels_cm_ani_hdf5
+  end subroutine write_kernels_cm_ani_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, rhonotprime_kl_crust_mantle, &
+  subroutine write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, rhonotprime_kl_crust_mantle, &
                                     bulk_c_kl_crust_mantle,bulk_beta_kl_crust_mantle)
 
   use specfem_par
@@ -414,6 +437,16 @@ subroutine write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, 
   call h5_close_file_p()
 
 #else
+  ! no HDF5 support
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(mu_kl_crust_mantle,kind=4)
+  idummy = size(kappa_kl_crust_mantle,kind=4)
+  idummy = size(rhonotprime_kl_crust_mantle,kind=4)
+  idummy = size(bulk_c_kl_crust_mantle,kind=4)
+  idummy = size(bulk_beta_kl_crust_mantle,kind=4)
 
   print *,'Error: HDF5 not enabled in this version of the code'
   print *, 'Please recompile with the HDF5 option enabled with the configure flag --with-hdf5'
@@ -421,10 +454,13 @@ subroutine write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, 
 
 #endif
 
-end subroutine write_kernels_cm_iso_hdf5
+  end subroutine write_kernels_cm_iso_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_oc_hdf5()
+  subroutine write_kernels_oc_hdf5()
 
   use specfem_par
   use specfem_par_outercore
@@ -486,10 +522,13 @@ subroutine write_kernels_oc_hdf5()
 
 #endif
 
-end subroutine write_kernels_oc_hdf5
+  end subroutine write_kernels_oc_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_ic_hdf5()
+  subroutine write_kernels_ic_hdf5()
 
   use specfem_par
   use specfem_par_innercore
@@ -554,10 +593,13 @@ subroutine write_kernels_ic_hdf5()
 
 #endif
 
-end subroutine write_kernels_ic_hdf5
+  end subroutine write_kernels_ic_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_boundary_kl_hdf5()
+  subroutine write_kernels_boundary_kl_hdf5()
 
   use specfem_par
   use specfem_par_crustmantle
@@ -640,10 +682,13 @@ subroutine write_kernels_boundary_kl_hdf5()
 
 #endif
 
-end subroutine write_kernels_boundary_kl_hdf5
+  end subroutine write_kernels_boundary_kl_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_Hessian_hdf5()
+  subroutine write_kernels_Hessian_hdf5()
 
   use specfem_par
   use specfem_par_crustmantle
@@ -711,4 +756,5 @@ subroutine write_kernels_Hessian_hdf5()
 
 #endif
 
-end subroutine write_kernels_Hessian_hdf5
+  end subroutine write_kernels_Hessian_hdf5
+

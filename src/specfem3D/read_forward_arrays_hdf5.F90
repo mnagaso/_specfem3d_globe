@@ -111,15 +111,15 @@
                                          (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
   call h5_read_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', epsilondev_yz_crust_mantle, &
                                          (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_xx_inner_core',   epsilondev_xx_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_xx_inner_core',   epsilondev_xx_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_yy_inner_core',   epsilondev_yy_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_yy_inner_core',   epsilondev_yy_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_xy_inner_core',   epsilondev_xy_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_xy_inner_core',   epsilondev_xy_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_xz_inner_core',   epsilondev_xz_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_xz_inner_core',   epsilondev_xz_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_yz_inner_core',   epsilondev_yz_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_yz_inner_core',   epsilondev_yz_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
 
   if (ROTATION_VAL) then
@@ -140,15 +140,15 @@
                                            (/0,0,0,0,sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
     call h5_read_dataset_collect_hyperslab('R_yz_crust_mantle', R_yz_crust_mantle, &
                                            (/0,0,0,0,sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_xx_inner_core',   R_xx_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_xx_inner_core',   R_xx_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_yy_inner_core',   R_yy_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_yy_inner_core',   R_yy_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_xy_inner_core',   R_xy_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_xy_inner_core',   R_xy_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_xz_inner_core',   R_xz_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_xz_inner_core',   R_xz_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_yz_inner_core',   R_yz_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_yz_inner_core',   R_yz_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
   endif
 
@@ -169,6 +169,9 @@
 
   end subroutine read_intermediate_forward_arrays_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine read_forward_arrays_hdf5()
 
@@ -257,15 +260,15 @@
                                          (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
   call h5_read_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', b_epsilondev_yz_crust_mantle, &
                                          (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_xx_inner_core',   b_epsilondev_xx_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_xx_inner_core',   b_epsilondev_xx_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_yy_inner_core',   b_epsilondev_yy_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_yy_inner_core',   b_epsilondev_yy_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_xy_inner_core',   b_epsilondev_xy_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_xy_inner_core',   b_epsilondev_xy_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_xz_inner_core',   b_epsilondev_xz_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_xz_inner_core',   b_epsilondev_xz_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_yz_inner_core',   b_epsilondev_yz_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_yz_inner_core',   b_epsilondev_yz_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
 
   if (ROTATION_VAL) then
@@ -286,15 +289,15 @@
                                            (/0,0,0,0,sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
     call h5_read_dataset_collect_hyperslab('R_yz_crust_mantle', b_R_yz_crust_mantle, &
                                            (/0,0,0,0,sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_xx_inner_core',   b_R_xx_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_xx_inner_core',   b_R_xx_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_yy_inner_core',   b_R_yy_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_yy_inner_core',   b_R_yy_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_xy_inner_core',   b_R_xy_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_xy_inner_core',   b_R_xy_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_xz_inner_core',   b_R_xz_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_xz_inner_core',   b_R_xz_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_yz_inner_core',   b_R_yz_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_yz_inner_core',   b_R_yz_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
   endif
 
@@ -325,6 +328,10 @@
 #endif
 
   end subroutine read_forward_arrays_hdf5
+
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine read_forward_arrays_undoatt_hdf5(iteration_on_subset_tmp)
 
@@ -418,15 +425,15 @@
                                          (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
   call h5_read_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', b_epsilondev_yz_crust_mantle, &
                                          (/0,0,0,sum(offset_nglob_mc_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_xx_inner_core',   b_epsilondev_xx_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_xx_inner_core',   b_epsilondev_xx_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_yy_inner_core',   b_epsilondev_yy_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_yy_inner_core',   b_epsilondev_yy_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_xy_inner_core',   b_epsilondev_xy_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_xy_inner_core',   b_epsilondev_xy_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_xz_inner_core',   b_epsilondev_xz_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_xz_inner_core',   b_epsilondev_xz_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
-  call h5_read_dataset_collect_hyperslab('epsilondev_yz_inner_core',   b_epsilondev_yz_inner_core,   &
+  call h5_read_dataset_collect_hyperslab('epsilondev_yz_inner_core',   b_epsilondev_yz_inner_core, &
                                          (/0,0,0,sum(offset_nglob_ic_str_or_att(0:myrank-1))/), H5_COL)
 
   if (ROTATION_VAL) then
@@ -447,15 +454,15 @@
                                            (/0,0,0,0,sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
     call h5_read_dataset_collect_hyperslab('R_yz_crust_mantle', b_R_yz_crust_mantle, &
                                            (/0,0,0,0,sum(offset_nspec_cm_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_xx_inner_core',   b_R_xx_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_xx_inner_core',   b_R_xx_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_yy_inner_core',   b_R_yy_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_yy_inner_core',   b_R_yy_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_xy_inner_core',   b_R_xy_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_xy_inner_core',   b_R_xy_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_xz_inner_core',   b_R_xz_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_xz_inner_core',   b_R_xz_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
-    call h5_read_dataset_collect_hyperslab('R_yz_inner_core',   b_R_yz_inner_core,   &
+    call h5_read_dataset_collect_hyperslab('R_yz_inner_core',   b_R_yz_inner_core, &
                                            (/0,0,0,0,sum(offset_nspec_ic_att(0:myrank-1))/), H5_COL)
   endif
 
@@ -480,6 +487,13 @@
   call h5_close_file_p()
 
 #else
+  ! no HDF5 support
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = iteration_on_subset_tmp
+
   print *,'Error: HDF5 not enabled in this version of the code'
   print *, 'Please recompile with the HDF5 option enabled with the configure flag --with-hdf5'
   call exit_mpi(myrank,'Error: HDF5 not enabled in this version of the code')

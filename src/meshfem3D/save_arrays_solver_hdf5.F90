@@ -1,3 +1,31 @@
+!=====================================================================
+!
+!                       S p e c f e m 3 D  G l o b e
+!                       ----------------------------
+!
+!     Main historical authors: Dimitri Komatitsch and Jeroen Tromp
+!                        Princeton University, USA
+!                and CNRS / University of Marseille, France
+!                 (there are currently many more authors!)
+! (c) Princeton University and CNRS / University of Marseille, April 2014
+!
+! This program is free software; you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation; either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License along
+! with this program; if not, write to the Free Software Foundation, Inc.,
+! 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+!
+!=====================================================================
+
+
   subroutine save_arrays_solver_hdf5(idoubling,ibool,xstore,ystore,zstore, &
                                      NSPEC2D_TOP,NSPEC2D_BOTTOM)
 
@@ -36,8 +64,6 @@
     ispec_is_tiso, &
     tau_s_store,tau_e_store,Qmu_store, &
     nglob_oceans, nglob_xy
-
-
 
   use manager_hdf5
 #endif
@@ -125,7 +151,7 @@
   !
   if (myrank == 0) then
     ! create and open solver_data.h5
-    name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/'//'solver_data.h5'
+    name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH)) // '/' // 'solver_data.h5'
     if (iregion_code == 1) then
       call h5_create_file(name_database_hdf5)
     else
@@ -608,6 +634,16 @@
 #else
   ! no HDF5 compilation
 
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(idoubling,kind=4)
+  idummy = size(ibool,kind=4)
+  idummy = size(xstore,kind=4)
+  idummy = size(ystore,kind=4)
+  idummy = size(zstore,kind=4)
+  idummy = max(NSPEC2D_TOP,NSPEC2D_BOTTOM)
+
   ! user output
   print *
   print *, "Error: HDF5 routine save_databases_hdf5() called without HDF5 Support."
@@ -617,7 +653,7 @@
 
 #endif
 
-end subroutine save_arrays_solver_hdf5
+  end subroutine save_arrays_solver_hdf5
 
 !
 !-----------------------------------------------------------------------
@@ -671,9 +707,6 @@ end subroutine save_arrays_solver_hdf5
 
   ! processor dependent group names
   character(len=64) :: gname_region
-
-  ! process rank
-  myrank = myrank
 
   ! first check the number of surface elements are the same for Moho, 400, 670
   if (.not. SUPPRESS_CRUSTAL_MESH .and. HONOR_1D_SPHERICAL_MOHO) then
@@ -794,7 +827,7 @@ end subroutine save_arrays_solver_hdf5
   stop 'Error HDF5 save_databases_hdf5(): called without compilation support'
 #endif
 
-end subroutine save_arrays_boundary_hdf5
+  end subroutine save_arrays_boundary_hdf5
 
 !
 !-------------------------------------------------------------------------------------------------
@@ -852,8 +885,6 @@ end subroutine save_arrays_boundary_hdf5
   integer, dimension(0:NPROCTOT-1) :: offset_num_phase_ispec
   integer, dimension(0:NPROCTOT-1) :: offset_num_colors_outer
   integer, dimension(0:NPROCTOT-1) :: offset_num_colors_inner
-
-  myrank = myrank
 
   ! gather the offsets
   call gather_all_all_singlei(num_interfaces, offset_num_interfaces, NPROCTOT)
@@ -990,13 +1021,29 @@ end subroutine save_arrays_boundary_hdf5
 
 #else
   ! no HDF5 compilation
-  print* , "Error: HDF5 routine save_MPI_arrays_hdf5() called without HDF5 Support."
-  print* , "To enable HDF5 support, reconfigure with --with-hdf5 flag."
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = iregion_code
+  idummy = len_trim(LOCAL_PATH)
+  idummy = size(ibool_interfaces,kind=4)
+  idummy = size(my_neighbors,kind=4)
+  idummy = size(nibool_interfaces,kind=4)
+  idummy = max(nspec_inner,nspec_outer)
+  idummy = size(num_elem_colors)
+  idummy = size(phase_ispec_inner)
+
+  print * , "Error: HDF5 routine save_MPI_arrays_hdf5() called without HDF5 Support."
+  print * , "To enable HDF5 support, reconfigure with --with-hdf5 flag."
   stop 'Error HDF5 save_MPI_arrays_hdf5(): called without compilation support'
 #endif
 
   end subroutine save_MPI_arrays_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine get_absorb_stacey_boundary_hdf5(iregion, num_abs_boundary_faces, &
                                          abs_boundary_ispec,abs_boundary_npoin, &
@@ -1139,15 +1186,21 @@ end subroutine save_arrays_boundary_hdf5
   call h5_close_file_p()
 
 #else
-    ! no HDF5 compilation
-    print* , "Error: HDF5 routine get_absorb_stacey_boundary_hdf5() called without HDF5 Support."
-    print* , "To enable HDF5 support, reconfigure with --with-hdf5 flag."
-    stop 'Error HDF5 get_absorb_stacey_boundary_hdf5(): called without compilation support'
+  ! no HDF5 compilation
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = iregion
+  idummy = size(abs_boundary_ispec,kind=4)
+  idummy = size(abs_boundary_npoin)
+  idummy = size(abs_boundary_ijk)
+  idummy = size(abs_boundary_normal,kind=4)
+  idummy = size(abs_boundary_jacobian2dw,kind=4)
+
+  print * , "Error: HDF5 routine get_absorb_stacey_boundary_hdf5() called without HDF5 Support."
+  print * , "To enable HDF5 support, reconfigure with --with-hdf5 flag."
+  stop 'Error HDF5 get_absorb_stacey_boundary_hdf5(): called without compilation support'
 #endif
 
-
-
-
-
-
-    end subroutine get_absorb_stacey_boundary_hdf5
+  end subroutine get_absorb_stacey_boundary_hdf5
