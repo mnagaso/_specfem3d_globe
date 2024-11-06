@@ -69,7 +69,7 @@ echo
 ${adios[@]} \
 ${netcdf[@]} \
 ${petsc[@]} \
-FC=gfortran MPIFC=mpif90 CC=gcc "${TESTFLAGS}"
+FC=gfortran MPIFC=mpif90 CC=gcc ${TESTFLAGS}
 
 # checks
 if [[ $? -ne 0 ]]; then echo "configuration failed:"; cat config.log; echo ""; echo "exiting..."; exit 1; fi
