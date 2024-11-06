@@ -23,7 +23,7 @@ echo
 # bash function for checking seismogram output with reference solutions
 my_test(){
   echo "testing seismograms:"
-  ln -s $WORKDIR/utils/compare_seismogram_correlations.py
+  ln -s $WORKDIR/utils/scripts/compare_seismogram_correlations.py
   ./compare_seismogram_correlations.py REF_SEIS/ OUTPUT_FILES/
   if [[ $? -ne 0 ]]; then exit 1; fi
   ./compare_seismogram_correlations.py REF_SEIS/ OUTPUT_FILES/ | grep min/max | cut -d \| -f 3 | awk '{print "correlation:",$1; if ($1 < 0.999 ){print $1,"failed"; exit 1;}else{ print $1,"good"; exit 0;}}'
@@ -63,6 +63,18 @@ if [ "${FULL_GRAVITY}" == "true" ]; then
   fi
   # set NSTEP for short checks only
   echo "NSTEP = 2" >> DATA/Par_file
+fi
+
+# hdf5 i/o example
+if [[ "${TEST}" == *"with-hdf5"* ]]; then
+  echo
+  echo "test run: ${TEST}"
+  echo
+  sed -i "s:^HDF5_ENABLED .*:HDF5_ENABLED    = .true.:" DATA/Par_file
+  #sed -i "s:^HDF5_FOR_MOVIES .*:HDF5_FOR_MOVIES    = .true.:" DATA/Par_file
+  #sed -i "s:^HDF5_IO_NODES .*:HDF5_IO_NODES    = 1:" DATA/Par_file
+  # replaces run script
+  #cp -v run_this_example_HDF5_IO_server.sh run_this_example.sh
 fi
 
 # adios
