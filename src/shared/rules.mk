@@ -93,6 +93,7 @@ shared_OBJECTS = \
 shared_MODULES = \
 	$(FC_MODDIR)/constants.$(FC_MODEXT) \
 	$(FC_MODDIR)/manager_adios.$(FC_MODEXT) \
+	$(FC_MODDIR)/manager_hdf5.$(FC_MODEXT) \
 	$(FC_MODDIR)/model_prem_par.$(FC_MODEXT) \
 	$(FC_MODDIR)/model_sohl_par.$(FC_MODEXT) \
 	$(FC_MODDIR)/model_mars_1d_par.$(FC_MODEXT) \

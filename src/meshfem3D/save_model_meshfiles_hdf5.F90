@@ -241,10 +241,10 @@
           do j = 1,NGLLY
             do i = 1,NGLLX
               temp_store(i,j,k,ispec) = Qmu_store(1,1,1,ispec)
-            end do
-          end do
-        end do
-      end do
+            enddo
+          enddo
+        enddo
+      enddo
     endif
 
     ! Qmu
@@ -273,5 +273,4 @@
 
 #endif
 
-
-end subroutine save_model_meshfiles_hdf5
+  end subroutine save_model_meshfiles_hdf5

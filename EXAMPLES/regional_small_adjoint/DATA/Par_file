@@ -433,6 +433,5 @@ ADIOS_FOR_UNDO_ATTENUATION      = .true.
 
 # HDF5 Database I/O
 # (note the flags for HDF5 and ADIOS are mutually exclusive, only one can be used)
-HDF5_ENABLED                    = .true.
-HDF5_IO_NODES                   = 0   # HDF5 IO server with number of IO dedicated procs
+HDF5_ENABLED                    = .false.
 

@@ -552,3 +552,31 @@ jobs:
         RUN_KERNEL: true
       run: ./.github/scripts/run_tests.sh
       shell: bash
+
+  linuxTest_11:
+    name: Test run example 11 - regional_Greece_small hdf5 i/o
+    runs-on: ubuntu-latest
+    needs: [linuxCheck]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install packages
+      env:
+        HDF5: true
+      run: ./.github/scripts/run_install.sh
+      shell: bash
+
+    - name: Run build
+      env:
+        TESTFLAGS: # no extra flags
+        HDF5: true
+      run: ./.github/scripts/run_build.sh
+      shell: bash
+
+    - name: Run test
+      env:
+        TESTDIR: EXAMPLES/regional_Greece_small
+        HDF5: true
+      run: ./.github/scripts/run_tests.sh
+      shell: bash

@@ -18,6 +18,25 @@ sudo apt-get install -yq --no-install-recommends gfortran g++ openmpi-bin libope
 if [[ $? -ne 0 ]]; then exit 1; fi
 echo
 
+# parallel hdf5
+if [ "${HDF5}" == "true" ]; then
+  echo
+  echo "HDF5 installation:"
+  echo
+  sudo apt-get install -yq --no-install-recommends libhdf5-mpi-dev
+  ## checks installation paths
+  #echo
+  #dpkg -L libhdf5-mpi-dev
+  #echo
+  #dpkg -L libhdf5-openmpi-dev
+  #echo
+  #echo "hdf5 module paths:"
+  #find /usr/ -iname 'hdf5.mod'
+  #echo "hdf5 library paths:"
+  #find /usr/ -iname 'libhdf5hl_fortran*'
+  #echo
+fi
+
 ## NetCDF
 if [ "${NETCDF}" == "true" ]; then
   echo

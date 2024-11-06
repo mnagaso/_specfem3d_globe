@@ -1,3 +1,31 @@
+!=====================================================================
+!
+!                       S p e c f e m 3 D  G l o b e
+!                       ----------------------------
+!
+!     Main historical authors: Dimitri Komatitsch and Jeroen Tromp
+!                        Princeton University, USA
+!                and CNRS / University of Marseille, France
+!                 (there are currently many more authors!)
+! (c) Princeton University and CNRS / University of Marseille, April 2014
+!
+! This program is free software; you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation; either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License along
+! with this program; if not, write to the Free Software Foundation, Inc.,
+! 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+!
+!=====================================================================
+
+
   subroutine save_arrays_solver_hdf5(idoubling,ibool,xstore,ystore,zstore, &
                                      NSPEC2D_TOP,NSPEC2D_BOTTOM)
 
@@ -36,8 +64,6 @@
     ispec_is_tiso, &
     tau_s_store,tau_e_store,Qmu_store, &
     nglob_oceans, nglob_xy
-
-
 
   use manager_hdf5
 #endif
@@ -125,7 +151,7 @@
   !
   if (myrank == 0) then
     ! create and open solver_data.h5
-    name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/'//'solver_data.h5'
+    name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH)) // '/' // 'solver_data.h5'
     if (iregion_code == 1) then
       call h5_create_file(name_database_hdf5)
     else
@@ -447,9 +473,11 @@
       call h5_write_dataset_collect_hyperslab_in_group('c66store', c66store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     else
       if (TRANSVERSE_ISOTROPY) then
-        call h5_write_dataset_collect_hyperslab_in_group('kappahstore', kappahstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+        call h5_write_dataset_collect_hyperslab_in_group('kappahstore', kappahstore, &
+                                                         (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
         call h5_write_dataset_collect_hyperslab_in_group('muhstore', muhstore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
-        call h5_write_dataset_collect_hyperslab_in_group('eta_anisostore', eta_anisostore, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+        call h5_write_dataset_collect_hyperslab_in_group('eta_anisostore', eta_anisostore, &
+                                                         (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
       endif
     endif
     ! for azimutahl aniso kernels
@@ -496,7 +524,8 @@
 
   ! ocean load mass matrix
   if (OCEANS .and. iregion_code == IREGION_CRUST_MANTLE) then
-    call h5_write_dataset_collect_hyperslab_in_group('rmass_ocean_load', rmass_ocean_load, (/sum(offset_nnodes_oceans(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('rmass_ocean_load', rmass_ocean_load, &
+                                                     (/sum(offset_nnodes_oceans(0:myrank-1))/), H5_COL)
   endif
 
   ! close group for iregion_code
@@ -528,34 +557,52 @@
   call h5_write_dataset_collect_hyperslab_in_group('sub_nspec2D_top', (/arr_nspec2d_top(myrank)/), (/myrank/), H5_COL)
 
   if (arr_nspec2d_xmin(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_xmin', ibelm_xmin, (/sum(arr_nspec2d_xmin(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_xmin', normal_xmin, (/0,0,0,sum(arr_nspec2d_xmin(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_xmin', jacobian2D_xmin, (/0,0,sum(arr_nspec2d_xmin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_xmin', ibelm_xmin, &
+                                                     (/sum(arr_nspec2d_xmin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_xmin', normal_xmin, &
+                                                     (/0,0,0,sum(arr_nspec2d_xmin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_xmin', jacobian2D_xmin, &
+                                                     (/0,0,sum(arr_nspec2d_xmin(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_xmax(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_xmax', ibelm_xmax, (/sum(arr_nspec2d_xmax(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_xmax', normal_xmax, (/0,0,0,sum(arr_nspec2d_xmax(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_xmax', jacobian2D_xmax, (/0,0,sum(arr_nspec2d_xmax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_xmax', ibelm_xmax, &
+                                                     (/sum(arr_nspec2d_xmax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_xmax', normal_xmax, &
+                                                     (/0,0,0,sum(arr_nspec2d_xmax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_xmax', jacobian2D_xmax, &
+                                                     (/0,0,sum(arr_nspec2d_xmax(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_ymin(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_ymin', ibelm_ymin, (/sum(arr_nspec2d_ymin(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_ymin', normal_ymin, (/0,0,0,sum(arr_nspec2d_ymin(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_ymin', jacobian2D_ymin, (/0,0,sum(arr_nspec2d_ymin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_ymin', ibelm_ymin, &
+                                                     (/sum(arr_nspec2d_ymin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_ymin', normal_ymin, &
+                                                     (/0,0,0,sum(arr_nspec2d_ymin(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_ymin', jacobian2D_ymin, &
+                                                     (/0,0,sum(arr_nspec2d_ymin(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_ymax(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_ymax', ibelm_ymax, (/sum(arr_nspec2d_ymax(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_ymax', normal_ymax, (/0,0,0,sum(arr_nspec2d_ymax(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_ymax', jacobian2D_ymax, (/0,0,sum(arr_nspec2d_ymax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_ymax', ibelm_ymax, &
+                                                     (/sum(arr_nspec2d_ymax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_ymax', normal_ymax, &
+                                                     (/0,0,0,sum(arr_nspec2d_ymax(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_ymax', jacobian2D_ymax, &
+                                                     (/0,0,sum(arr_nspec2d_ymax(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_bottom(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_bottom', ibelm_bottom, (/sum(arr_nspec2d_bottom(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_bottom', normal_bottom, (/0,0,0,sum(arr_nspec2d_bottom(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_bottom', jacobian2D_bottom, (/0,0,sum(arr_nspec2d_bottom(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_bottom', ibelm_bottom, &
+                                                     (/sum(arr_nspec2d_bottom(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_bottom', normal_bottom, &
+                                                     (/0,0,0,sum(arr_nspec2d_bottom(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_bottom', jacobian2D_bottom, &
+                                                     (/0,0,sum(arr_nspec2d_bottom(0:myrank-1))/), H5_COL)
   endif
   if (arr_nspec2d_top(myrank) /= 0) then
-    call h5_write_dataset_collect_hyperslab_in_group('ibelm_top', ibelm_top, (/sum(arr_nspec2d_top(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('normal_top', normal_top, (/0,0,0,sum(arr_nspec2d_top(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_top', jacobian2D_top, (/0,0,sum(arr_nspec2d_top(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('ibelm_top', ibelm_top, &
+                                                     (/sum(arr_nspec2d_top(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('normal_top', normal_top, &
+                                                     (/0,0,0,sum(arr_nspec2d_top(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('jacobian2D_top', jacobian2D_top, &
+                                                     (/0,0,sum(arr_nspec2d_top(0:myrank-1))/), H5_COL)
   endif
 
   ! close group for iregion_code
@@ -574,8 +621,10 @@
 
     ! create dataset for attenuation
     call h5_write_dataset_collect_hyperslab_in_group('tau_s_store', tau_s_store, (/myrank*N_SLS/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('tau_e_store', tau_e_store, (/0,0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('Qmu_store', Qmu_store, (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('tau_e_store', tau_e_store, &
+                                                     (/0,0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('Qmu_store', Qmu_store, &
+                                                     (/0,0,0,sum(offset_nelems(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab_in_group('att_f_c_source', (/ATT_F_C_SOURCE/), (/myrank/), H5_COL)
 
     call h5_close_group()
@@ -584,6 +633,16 @@
 
 #else
   ! no HDF5 compilation
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(idoubling,kind=4)
+  idummy = size(ibool,kind=4)
+  idummy = size(xstore,kind=4)
+  idummy = size(ystore,kind=4)
+  idummy = size(zstore,kind=4)
+  idummy = max(NSPEC2D_TOP,NSPEC2D_BOTTOM)
 
   ! user output
   print *
@@ -594,7 +653,7 @@
 
 #endif
 
-end subroutine save_arrays_solver_hdf5
+  end subroutine save_arrays_solver_hdf5
 
 !
 !-----------------------------------------------------------------------
@@ -648,9 +707,6 @@ end subroutine save_arrays_solver_hdf5
 
   ! processor dependent group names
   character(len=64) :: gname_region
-
-  ! process rank
-  myrank = myrank
 
   ! first check the number of surface elements are the same for Moho, 400, 670
   if (.not. SUPPRESS_CRUSTAL_MESH .and. HONOR_1D_SPHERICAL_MOHO) then
@@ -742,13 +798,16 @@ end subroutine save_arrays_solver_hdf5
   call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_670_top', (/act_arr_nspec2d_670_top(myrank)/), (/myrank/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('sub_NSPEC2D_670_bot', (/act_arr_nspec2d_670_bot(myrank)/), (/myrank/), H5_COL)
 
-  call h5_write_dataset_collect_hyperslab_in_group('ibelm_moho_top', ibelm_moho_top, (/sum(arr_nspec2d_moho_top(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab_in_group('ibelm_moho_bot', ibelm_moho_bot, (/sum(arr_nspec2d_moho_bot(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('ibelm_moho_top', ibelm_moho_top, &
+                                                   (/sum(arr_nspec2d_moho_top(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('ibelm_moho_bot', ibelm_moho_bot, &
+                                                   (/sum(arr_nspec2d_moho_bot(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('ibelm_400_top', ibelm_400_top, (/sum(arr_nspec2d_400_top(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('ibelm_400_bot', ibelm_400_bot, (/sum(arr_nspec2d_400_bot(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('ibelm_670_top', ibelm_670_top, (/sum(arr_nspec2d_670_top(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('ibelm_670_bot', ibelm_670_bot, (/sum(arr_nspec2d_670_bot(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab_in_group('normal_moho', normal_moho, (/0,0,0,sum(arr_nspec2d_moho_top(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('normal_moho', normal_moho, &
+                                                   (/0,0,0,sum(arr_nspec2d_moho_top(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('normal_400', normal_400, (/0,0,0,sum(arr_nspec2d_400_top(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('normal_670', normal_670, (/0,0,0,sum(arr_nspec2d_670_top(0:myrank-1))/), H5_COL)
 
@@ -768,7 +827,7 @@ end subroutine save_arrays_solver_hdf5
   stop 'Error HDF5 save_databases_hdf5(): called without compilation support'
 #endif
 
-end subroutine save_arrays_boundary_hdf5
+  end subroutine save_arrays_boundary_hdf5
 
 !
 !-------------------------------------------------------------------------------------------------
@@ -783,9 +842,9 @@ end subroutine save_arrays_boundary_hdf5
                                   num_colors_outer,num_colors_inner, &
                                   num_elem_colors)
   use constants
-  use shared_parameters, only: H5_COL
 
 #ifdef USE_HDF5
+  use shared_parameters, only: H5_COL
   use meshfem_par, only: &
     NPROCTOT
   use manager_hdf5
@@ -827,8 +886,6 @@ end subroutine save_arrays_boundary_hdf5
   integer, dimension(0:NPROCTOT-1) :: offset_num_colors_outer
   integer, dimension(0:NPROCTOT-1) :: offset_num_colors_inner
 
-  myrank = myrank
-
   ! gather the offsets
   call gather_all_all_singlei(num_interfaces, offset_num_interfaces, NPROCTOT)
   call gather_all_all_singlei(max_nibool_interfaces, offset_max_nibool_interfaces, NPROCTOT)
@@ -868,7 +925,8 @@ end subroutine save_arrays_boundary_hdf5
       call h5_create_dataset_gen_in_group("max_nibool_interfaces", (/NPROCTOT/), 1, 1)
       call h5_create_dataset_gen_in_group("my_neighbors", (/sum(offset_num_interfaces(:))/), 1, 1)
       call h5_create_dataset_gen_in_group("nibool_interfaces", (/sum(offset_num_interfaces(:))/), 1, 1)
-      call h5_create_dataset_gen_in_group("ibool_interfaces", (/maxval(offset_max_nibool_interfaces),sum(offset_num_interfaces(:))/), 2, 1)
+      call h5_create_dataset_gen_in_group("ibool_interfaces", &
+                          (/maxval(offset_max_nibool_interfaces),sum(offset_num_interfaces(:))/), 2, 1)
     else
       ! dummy
       call h5_create_dataset_gen_in_group("max_nibool_interfaces", (/NPROCTOT/), 1, 1)
@@ -887,7 +945,8 @@ end subroutine save_arrays_boundary_hdf5
 
     ! mesh coloring
     if (sum(offset_num_colors_outer) + sum(offset_num_colors_inner) > 0) then
-      call h5_create_dataset_gen_in_group("num_elem_colors", (/sum(offset_num_colors_outer(:)) + sum(offset_num_colors_inner(:))/), 1, 1)
+      call h5_create_dataset_gen_in_group("num_elem_colors", &
+                          (/sum(offset_num_colors_outer(:)) + sum(offset_num_colors_inner(:))/), 1, 1)
     else
       ! dummy
       call h5_create_dataset_gen_in_group("num_elem_colors", (/NPROCTOT/), 1, 1)
@@ -910,18 +969,25 @@ end subroutine save_arrays_boundary_hdf5
 
   ! write datasets
   call h5_write_dataset_collect_hyperslab_in_group('offset_num_interfaces', (/offset_num_interfaces(myrank)/), (/myrank/), H5_COL)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_max_nibool_interfaces', (/offset_max_nibool_interfaces(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_max_nibool_interfaces', &
+                                                   (/offset_max_nibool_interfaces(myrank)/), (/myrank/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('offset_nspec_inner', (/offset_nspec_inner(myrank)/), (/myrank/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('offset_nspec_outer', (/offset_nspec_outer(myrank)/), (/myrank/), H5_COL)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_num_phase_ispec', (/offset_num_phase_ispec(myrank)/), (/myrank/), H5_COL)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_num_colors_outer', (/offset_num_colors_outer(myrank)/), (/myrank/), H5_COL)
-  call h5_write_dataset_collect_hyperslab_in_group('offset_num_colors_inner', (/offset_num_colors_inner(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_num_phase_ispec', &
+                                                   (/offset_num_phase_ispec(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_num_colors_outer', &
+                                                   (/offset_num_colors_outer(myrank)/), (/myrank/), H5_COL)
+  call h5_write_dataset_collect_hyperslab_in_group('offset_num_colors_inner', &
+                                                   (/offset_num_colors_inner(myrank)/), (/myrank/), H5_COL)
 
   if (sum(offset_num_interfaces) > 0) then
     call h5_write_dataset_collect_hyperslab_in_group("max_nibool_interfaces", (/max_nibool_interfaces/), (/myrank/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group("my_neighbors", my_neighbors, (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group("nibool_interfaces", nibool_interfaces, (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group("ibool_interfaces", ibool_interfaces, (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("my_neighbors", my_neighbors, &
+                                                     (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("nibool_interfaces", nibool_interfaces, &
+                                                     (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("ibool_interfaces", ibool_interfaces, &
+                                                     (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
   else
     ! dummy
     call h5_write_dataset_collect_hyperslab_in_group("max_nibool_interfaces", (/max_nibool_interfaces/), (/myrank/), H5_COL)
@@ -932,7 +998,8 @@ end subroutine save_arrays_boundary_hdf5
 
   ! num_phase_ispec
   if (sum(offset_num_phase_ispec) > 0) then
-    call h5_write_dataset_collect_hyperslab_in_group("phase_ispec_inner", phase_ispec_inner, (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("phase_ispec_inner", phase_ispec_inner, &
+                                                     (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
   else
     ! dummy
     call h5_write_dataset_collect_hyperslab_in_group("phase_ispec_inner", phase_ispec_inner, (/myrank,0/), H5_COL)
@@ -940,7 +1007,8 @@ end subroutine save_arrays_boundary_hdf5
 
   ! mesh coloring
   if (sum(offset_num_colors_outer) + sum(offset_num_colors_inner) > 0) then
-    call h5_write_dataset_collect_hyperslab_in_group("num_elem_colors", num_elem_colors, (/sum(offset_num_colors_outer(0:myrank-1)) + sum(offset_num_colors_inner(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("num_elem_colors", num_elem_colors, &
+                          (/sum(offset_num_colors_outer(0:myrank-1)) + sum(offset_num_colors_inner(0:myrank-1))/), H5_COL)
   else
     ! dummy
     call h5_write_dataset_collect_hyperslab_in_group("num_elem_colors", num_elem_colors, (/myrank/), H5_COL)
@@ -953,13 +1021,29 @@ end subroutine save_arrays_boundary_hdf5
 
 #else
   ! no HDF5 compilation
-  print* , "Error: HDF5 routine save_MPI_arrays_hdf5() called without HDF5 Support."
-  print* , "To enable HDF5 support, reconfigure with --with-hdf5 flag."
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = iregion_code
+  idummy = len_trim(LOCAL_PATH)
+  idummy = size(ibool_interfaces,kind=4)
+  idummy = size(my_neighbors,kind=4)
+  idummy = size(nibool_interfaces,kind=4)
+  idummy = max(nspec_inner,nspec_outer)
+  idummy = size(num_elem_colors)
+  idummy = size(phase_ispec_inner)
+
+  print * , "Error: HDF5 routine save_MPI_arrays_hdf5() called without HDF5 Support."
+  print * , "To enable HDF5 support, reconfigure with --with-hdf5 flag."
   stop 'Error HDF5 save_MPI_arrays_hdf5(): called without compilation support'
 #endif
 
   end subroutine save_MPI_arrays_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine get_absorb_stacey_boundary_hdf5(iregion, num_abs_boundary_faces, &
                                          abs_boundary_ispec,abs_boundary_npoin, &
@@ -1037,11 +1121,14 @@ end subroutine save_arrays_boundary_hdf5
     if (sum(offset_num_abs_boundary_faces) > 0) then
       call h5_create_dataset_gen_in_group("abs_boundary_ispec", (/sum(offset_num_abs_boundary_faces(:))/), 1, 1)
       call h5_create_dataset_gen_in_group("abs_boundary_npoin", (/sum(offset_num_abs_boundary_faces(:))/), 1, 1)
-      call h5_create_dataset_gen_in_group("abs_boundary_ijk", (/NDIM,NGLLSQUARE,sum(offset_num_abs_boundary_faces(:))/), 3, CUSTOM_REAL)
-      call h5_create_dataset_gen_in_group("abs_boundary_jacobian2Dw", (/NGLLSQUARE,sum(offset_num_abs_boundary_faces(:))/), 2, CUSTOM_REAL)
+      call h5_create_dataset_gen_in_group("abs_boundary_ijk", &
+                                          (/NDIM,NGLLSQUARE,sum(offset_num_abs_boundary_faces(:))/), 3, CUSTOM_REAL)
+      call h5_create_dataset_gen_in_group("abs_boundary_jacobian2Dw", &
+                                          (/NGLLSQUARE,sum(offset_num_abs_boundary_faces(:))/), 2, CUSTOM_REAL)
 
       if (iregion == IREGION_CRUST_MANTLE) then
-        call h5_create_dataset_gen_in_group("abs_boundary_normal", (/NDIM,NGLLSQUARE,sum(offset_num_abs_boundary_faces(:))/), 3, CUSTOM_REAL)
+        call h5_create_dataset_gen_in_group("abs_boundary_normal", &
+                                            (/NDIM,NGLLSQUARE,sum(offset_num_abs_boundary_faces(:))/), 3, CUSTOM_REAL)
       endif
     else
       ! dummy
@@ -1066,15 +1153,21 @@ end subroutine save_arrays_boundary_hdf5
   call h5_open_group(gname_region)
 
   ! write datasets
-  call h5_write_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", (/offset_num_abs_boundary_faces(myrank)/), (/myrank/), .true.)
+  call h5_write_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", &
+                                                   (/offset_num_abs_boundary_faces(myrank)/), (/myrank/), .true.)
 
   if (sum(offset_num_abs_boundary_faces) > 0) then
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ispec", abs_boundary_ispec, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_npoin", abs_boundary_npoin, (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ijk", abs_boundary_ijk, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", abs_boundary_jacobian2Dw, (/0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ispec", abs_boundary_ispec, &
+                                                     (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_npoin", abs_boundary_npoin, &
+                                                     (/sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_ijk", abs_boundary_ijk, &
+                                                     (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_jacobian2Dw", abs_boundary_jacobian2Dw, &
+                                                     (/0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
     if (iregion == IREGION_CRUST_MANTLE) then
-      call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_normal", abs_boundary_normal, (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab_in_group("abs_boundary_normal", abs_boundary_normal, &
+                                                       (/0,0,sum(offset_num_abs_boundary_faces(0:myrank-1))/), H5_COL)
     endif
   else
     ! dummy
@@ -1093,15 +1186,21 @@ end subroutine save_arrays_boundary_hdf5
   call h5_close_file_p()
 
 #else
-    ! no HDF5 compilation
-    print* , "Error: HDF5 routine get_absorb_stacey_boundary_hdf5() called without HDF5 Support."
-    print* , "To enable HDF5 support, reconfigure with --with-hdf5 flag."
-    stop 'Error HDF5 get_absorb_stacey_boundary_hdf5(): called without compilation support'
+  ! no HDF5 compilation
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = iregion
+  idummy = size(abs_boundary_ispec,kind=4)
+  idummy = size(abs_boundary_npoin)
+  idummy = size(abs_boundary_ijk)
+  idummy = size(abs_boundary_normal,kind=4)
+  idummy = size(abs_boundary_jacobian2dw,kind=4)
+
+  print * , "Error: HDF5 routine get_absorb_stacey_boundary_hdf5() called without HDF5 Support."
+  print * , "To enable HDF5 support, reconfigure with --with-hdf5 flag."
+  stop 'Error HDF5 get_absorb_stacey_boundary_hdf5(): called without compilation support'
 #endif
 
-
-
-
-
-
-    end subroutine get_absorb_stacey_boundary_hdf5
+  end subroutine get_absorb_stacey_boundary_hdf5

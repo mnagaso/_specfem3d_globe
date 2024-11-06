@@ -25,7 +25,8 @@
 !
 !=====================================================================
 
-subroutine write_kernels_strength_noise_hdf5()
+
+  subroutine write_kernels_strength_noise_hdf5()
 
   use specfem_par
   use specfem_par_crustmantle
@@ -71,7 +72,8 @@ subroutine write_kernels_strength_noise_hdf5()
   call h5_open_file_p_collect(file_name)
 
   ! write data
-  call h5_write_dataset_collect_hyperslab('sigma_kernel', sigma_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('sigma_kernel', sigma_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
   ! close hdf5
   call h5_close_file_p()
@@ -84,10 +86,13 @@ subroutine write_kernels_strength_noise_hdf5()
 
 #endif
 
-end subroutine write_kernels_strength_noise_hdf5
+  end subroutine write_kernels_strength_noise_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mantle, &
+  subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mantle, &
                                    betav_kl_crust_mantle,betah_kl_crust_mantle, &
                                    eta_kl_crust_mantle, &
                                    bulk_c_kl_crust_mantle,bulk_beta_kl_crust_mantle, &
@@ -220,42 +225,68 @@ subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mant
 
   ! write data
   if (SAVE_TRANSVERSE_KL_ONLY) then
-    call h5_write_dataset_collect_hyperslab('alphav_kernel', alphav_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('alphah_kernel', alphah_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('betav_kernel', betav_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('betah_kernel', betah_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('eta_kernel', eta_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('alphav_kernel', alphav_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('alphah_kernel', alphah_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('betav_kernel', betav_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('betah_kernel', betah_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('eta_kernel', eta_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
-    call h5_write_dataset_collect_hyperslab('bulk_c_kernel', bulk_c_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('bulk_betav_kernel', bulk_betav_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('bulk_betah_kernel', bulk_betah_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('bulk_c_kernel', bulk_c_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('bulk_betav_kernel', bulk_betav_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('bulk_betah_kernel', bulk_betah_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
-    call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('bulk_beta_kernel', bulk_beta_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('bulk_beta_kernel', bulk_beta_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
   else if (SAVE_AZIMUTHAL_ANISO_KL_ONLY) then
-    call h5_write_dataset_collect_hyperslab('alphav_kernel', alphav_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('alphah_kernel', alphah_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('betav_kernel', betav_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('betah_kernel', betah_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('alphav_kernel', alphav_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('alphah_kernel', alphah_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('betav_kernel', betav_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('betah_kernel', betah_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
-    call h5_write_dataset_collect_hyperslab('bulk_c_kernel', bulk_c_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('bulk_betav_kernel', bulk_betav_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('bulk_betah_kernel', bulk_betah_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('bulk_c_kernel', bulk_c_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('bulk_betav_kernel', bulk_betav_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('bulk_betah_kernel', bulk_betah_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
-    call h5_write_dataset_collect_hyperslab('eta_kernel', eta_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('eta_kernel', eta_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
-    call h5_write_dataset_collect_hyperslab('Gc_prime_kernel', Gc_prime_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('Gs_prime_kernel', Gs_prime_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('Gc_prime_kernel', Gc_prime_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('Gs_prime_kernel', Gs_prime_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
     ! check isotropic kernel
     if (.false.) then
-      call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      call h5_write_dataset_collect_hyperslab('bulk_beta_kernel', bulk_beta_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_crust_mantle, &
+                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_crust_mantle, &
+                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+      call h5_write_dataset_collect_hyperslab('bulk_beta_kernel', bulk_beta_kl_crust_mantle, &
+                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
     endif
 
     ! check anisotropic kernels
@@ -279,8 +310,10 @@ subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mant
   else
 
     ! fully anisotropic kernels
-    call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab('cijkl_kernel', cijkl_kl_crust_mantle, (/0,0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, &
+                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab('cijkl_kernel', cijkl_kl_crust_mantle, &
+                                            (/0,0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
   endif
 
@@ -288,6 +321,22 @@ subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mant
   call h5_close_file_p()
 
 #else
+  ! no HDF5 support
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(alphav_kl_crust_mantle,kind=4)
+  idummy = size(alphah_kl_crust_mantle,kind=4)
+  idummy = size(betav_kl_crust_mantle,kind=4)
+  idummy = size(betah_kl_crust_mantle,kind=4)
+  idummy = size(eta_kl_crust_mantle,kind=4)
+  idummy = size(bulk_c_kl_crust_mantle,kind=4)
+  idummy = size(bulk_beta_kl_crust_mantle,kind=4)
+  idummy = size(bulk_betav_kl_crust_mantle,kind=4)
+  idummy = size(bulk_betah_kl_crust_mantle,kind=4)
+  idummy = size(Gc_prime_kl_crust_mantle,kind=4)
+  idummy = size(Gs_prime_kl_crust_mantle,kind=4)
 
   print *,'Error: HDF5 not enabled in this version of the code'
   print *, 'Please recompile with the HDF5 option enabled with the configure flag --with-hdf5'
@@ -295,10 +344,13 @@ subroutine write_kernels_cm_ani_hdf5(alphav_kl_crust_mantle,alphah_kl_crust_mant
 
 #endif
 
-end subroutine write_kernels_cm_ani_hdf5
+  end subroutine write_kernels_cm_ani_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, rhonotprime_kl_crust_mantle, &
+  subroutine write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, rhonotprime_kl_crust_mantle, &
                                     bulk_c_kl_crust_mantle,bulk_beta_kl_crust_mantle)
 
   use specfem_par
@@ -362,21 +414,39 @@ subroutine write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, 
   call h5_open_file_p_collect(file_name)
 
   ! write data
-  call h5_write_dataset_collect_hyperslab('rhonotprime_kernel', rhonotprime_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('kappa_kernel', kappa_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('mu_kernel', mu_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('rhonotprime_kernel', rhonotprime_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('kappa_kernel', kappa_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('mu_kernel', mu_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
-  call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
-  call h5_write_dataset_collect_hyperslab('bulk_c_kernel', bulk_c_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('bulk_beta_kernel', bulk_beta_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('bulk_c_kernel', bulk_c_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('bulk_beta_kernel', bulk_beta_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
   ! close hdf5
   call h5_close_file_p()
 
 #else
+  ! no HDF5 support
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(mu_kl_crust_mantle,kind=4)
+  idummy = size(kappa_kl_crust_mantle,kind=4)
+  idummy = size(rhonotprime_kl_crust_mantle,kind=4)
+  idummy = size(bulk_c_kl_crust_mantle,kind=4)
+  idummy = size(bulk_beta_kl_crust_mantle,kind=4)
 
   print *,'Error: HDF5 not enabled in this version of the code'
   print *, 'Please recompile with the HDF5 option enabled with the configure flag --with-hdf5'
@@ -384,10 +454,13 @@ subroutine write_kernels_cm_iso_hdf5(mu_kl_crust_mantle, kappa_kl_crust_mantle, 
 
 #endif
 
-end subroutine write_kernels_cm_iso_hdf5
+  end subroutine write_kernels_cm_iso_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_oc_hdf5()
+  subroutine write_kernels_oc_hdf5()
 
   use specfem_par
   use specfem_par_outercore
@@ -433,8 +506,10 @@ subroutine write_kernels_oc_hdf5()
   call h5_open_file_p_collect(file_name)
 
   ! write data
-  call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_outer_core, (/0,0,0,sum(offset_nspec_oc_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_outer_core, (/0,0,0,sum(offset_nspec_oc_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_outer_core, &
+                                          (/0,0,0,sum(offset_nspec_oc_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_outer_core, &
+                                          (/0,0,0,sum(offset_nspec_oc_adj(0:myrank-1))/), H5_COL)
 
   ! close hdf5
   call h5_close_file_p()
@@ -447,10 +522,13 @@ subroutine write_kernels_oc_hdf5()
 
 #endif
 
-end subroutine write_kernels_oc_hdf5
+  end subroutine write_kernels_oc_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_ic_hdf5()
+  subroutine write_kernels_ic_hdf5()
 
   use specfem_par
   use specfem_par_innercore
@@ -497,9 +575,12 @@ subroutine write_kernels_ic_hdf5()
   call h5_open_file_p_collect(file_name)
 
   ! write data
-  call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_inner_core, (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_inner_core, (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_inner_core, (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_inner_core, &
+                                          (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_inner_core, &
+                                          (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_inner_core, &
+                                          (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
 
   ! close hdf5
   call h5_close_file_p()
@@ -512,10 +593,13 @@ subroutine write_kernels_ic_hdf5()
 
 #endif
 
-end subroutine write_kernels_ic_hdf5
+  end subroutine write_kernels_ic_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_boundary_kl_hdf5()
+  subroutine write_kernels_boundary_kl_hdf5()
 
   use specfem_par
   use specfem_par_crustmantle
@@ -598,10 +682,13 @@ subroutine write_kernels_boundary_kl_hdf5()
 
 #endif
 
-end subroutine write_kernels_boundary_kl_hdf5
+  end subroutine write_kernels_boundary_kl_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_kernels_Hessian_hdf5()
+  subroutine write_kernels_Hessian_hdf5()
 
   use specfem_par
   use specfem_par_crustmantle
@@ -649,10 +736,14 @@ subroutine write_kernels_Hessian_hdf5()
   call h5_open_file_p_collect(file_name)
 
   ! write data
-  call h5_write_dataset_collect_hyperslab('hess_kernel', hess_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('hess_rho_kernel', hess_rho_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('hess_kappa_kernel', hess_kappa_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-  call h5_write_dataset_collect_hyperslab('hess_mu_kernel', hess_mu_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('hess_kernel', hess_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('hess_rho_kernel', hess_rho_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('hess_kappa_kernel', hess_kappa_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+  call h5_write_dataset_collect_hyperslab('hess_mu_kernel', hess_mu_kl_crust_mantle, &
+                                          (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
 
   ! close hdf5
   call h5_close_file_p()
@@ -665,4 +756,5 @@ subroutine write_kernels_Hessian_hdf5()
 
 #endif
 
-end subroutine write_kernels_Hessian_hdf5
+  end subroutine write_kernels_Hessian_hdf5
+
