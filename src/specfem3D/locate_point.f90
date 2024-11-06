@@ -509,13 +509,13 @@
     ! the polynomial solution is defined everywhere
     ! can be useful for convergence of iterative scheme with distorted elements
     !if (xi > 1.10d0) xi = 1.10d0
-    !if (xi < -1.10d0) xi = -1.10d0
+    !if (xi <-1.10d0) xi = -1.10d0
     if (abs(xi) > 1.10d0) xi = sign(1.10d0,xi)
     !if (eta > 1.10d0) eta = 1.10d0
-    !if (eta < -1.10d0) eta = -1.10d0
+    !if (eta <-1.10d0) eta = -1.10d0
     if (abs(eta) > 1.10d0) eta = sign(1.10d0,eta)
     !if (gamma > 1.10d0) gamma = 1.10d0
-    !if (gamma < -1.10d0) gamma = -1.10d0
+    !if (gamma <-1.10d0) gamma = -1.10d0
     if (abs(gamma) > 1.10d0) gamma = sign(1.10d0,gamma)
 
   ! end of non linear iterations

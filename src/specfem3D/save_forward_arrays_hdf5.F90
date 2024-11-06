@@ -26,7 +26,7 @@
 !=====================================================================
 
 
-subroutine save_intermediate_forward_arrays_hdf5()
+  subroutine save_intermediate_forward_arrays_hdf5()
 
   use specfem_par
   use specfem_par_crustmantle
@@ -229,11 +229,13 @@ subroutine save_intermediate_forward_arrays_hdf5()
 
 #endif
 
+  end subroutine save_intermediate_forward_arrays_hdf5
 
-end subroutine save_intermediate_forward_arrays_hdf5
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-
-subroutine save_forward_arrays_hdf5()
+  subroutine save_forward_arrays_hdf5()
 
   use specfem_par
   use specfem_par_crustmantle
@@ -439,11 +441,13 @@ subroutine save_forward_arrays_hdf5()
 
 #endif
 
+  end subroutine save_forward_arrays_hdf5
 
-end subroutine save_forward_arrays_hdf5
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-
-subroutine save_forward_arrays_undoatt_hdf5()
+  subroutine save_forward_arrays_undoatt_hdf5()
 
   use specfem_par
   use specfem_par_crustmantle
@@ -648,10 +652,13 @@ subroutine save_forward_arrays_undoatt_hdf5()
 
 #endif
 
-end subroutine save_forward_arrays_undoatt_hdf5
+  end subroutine save_forward_arrays_undoatt_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine save_forward_model_at_shifted_frequency_hdf5(factor_scale_relaxed_crust_mantle,factor_scale_relaxed_inner_core)
+  subroutine save_forward_model_at_shifted_frequency_hdf5(factor_scale_relaxed_crust_mantle,factor_scale_relaxed_inner_core)
 
   use constants
 
@@ -974,11 +981,18 @@ subroutine save_forward_model_at_shifted_frequency_hdf5(factor_scale_relaxed_cru
   call h5_close_file_p()
 
 #else
+  ! no HDF5 support
 
-    print *,'Error: HDF5 not enabled in this version of the code'
-    print *, 'Please recompile with the HDF5 option enabled with the configure flag --with-hdf5'
-    call exit_mpi(myrank,'Error: HDF5 not enabled in this version of the code')
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(factor_scale_relaxed_crust_mantle,kind=4)
+  idummy = size(factor_scale_relaxed_inner_core,kind=4)
+
+  print *,'Error: HDF5 not enabled in this version of the code'
+  print *, 'Please recompile with the HDF5 option enabled with the configure flag --with-hdf5'
+  call exit_mpi(myrank,'Error: HDF5 not enabled in this version of the code')
 
 #endif
 
-end subroutine save_forward_model_at_shifted_frequency_hdf5
+  end subroutine save_forward_model_at_shifted_frequency_hdf5

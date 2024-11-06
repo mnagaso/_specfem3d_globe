@@ -26,6 +26,7 @@
 !=====================================================================
 
   subroutine movie_volume_init_hdf5()
+
 #ifdef USE_HDF5
     use specfem_par
     use specfem_par_movie_hdf5
@@ -92,25 +93,31 @@
     if (NSPEC_INNER_CORE == 0) output_ic = .false.
 
     ! print
-    !print*, 'output_sv = ',output_sv
-    !print*, 'output_cm = ',output_cm
-    !print*, 'output_oc = ',output_oc
-    !print*, 'output_ic = ',output_ic
-    !print*, 'NSPEC_CRUST_MANTLE = ',NSPEC_CRUST_MANTLE
-    !print*, 'NSPEC_CRUST_MANTLE_STRAIN_ONLY = ',NSPEC_CRUST_MANTLE_STRAIN_ONLY
-    !print*, 'NSPEC_CRUST_MANTLE_STR_OR_ATT = ',NSPEC_CRUST_MANTLE_STR_OR_ATT
-    !print*, 'NSPEC_OUTER_CORE = ',NSPEC_OUTER_CORE
-    !print*, 'NSPEC_OUTER_CORE_3DMOVIE = ',NSPEC_OUTER_CORE_3DMOVIE
-    !print*, 'NSPEC_INNER_CORE = ',NSPEC_INNER_CORE
+    !print *, 'output_sv = ',output_sv
+    !print *, 'output_cm = ',output_cm
+    !print *, 'output_oc = ',output_oc
+    !print *, 'output_ic = ',output_ic
+    !print *, 'NSPEC_CRUST_MANTLE = ',NSPEC_CRUST_MANTLE
+    !print *, 'NSPEC_CRUST_MANTLE_STRAIN_ONLY = ',NSPEC_CRUST_MANTLE_STRAIN_ONLY
+    !print *, 'NSPEC_CRUST_MANTLE_STR_OR_ATT = ',NSPEC_CRUST_MANTLE_STR_OR_ATT
+    !print *, 'NSPEC_OUTER_CORE = ',NSPEC_OUTER_CORE
+    !print *, 'NSPEC_OUTER_CORE_3DMOVIE = ',NSPEC_OUTER_CORE_3DMOVIE
+    !print *, 'NSPEC_INNER_CORE = ',NSPEC_INNER_CORE
 
 #else
     write (*,*) 'Error: HDF5 is not enabled in this version of the code.'
     write (*,*) 'Please recompile with the HDF5 option enabled with --with-hdf5'
     stop
 #endif
+
   end subroutine movie_volume_init_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
+
   subroutine movie_volume_finalize_hdf5()
+
 #ifdef USE_HDF5
     use specfem_par_movie_hdf5
 
@@ -128,7 +135,12 @@
     write (*,*) 'Please recompile with the HDF5 option enabled with --with-hdf5'
     stop
 #endif
+
   end subroutine movie_volume_finalize_hdf5
+
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine write_movie_volume_mesh_hdf5(nu_3dmovie,num_ibool_3dmovie,mask_3dmovie,mask_ibool_3dmovie, &
                                           muvstore_crust_mantle_3dmovie,npoints_3dmovie,nelems_3dmovie_in)
@@ -235,19 +247,19 @@
   nspec_vol_mov_all_proc_ic_conn = sum(offset_nspec_vol_ic_conn)
 
   !if (myrank == 0) then
-  !  print*, 'npoints_vol_mov_all_proc = ',    npoints_vol_mov_all_proc
-  !  print*, 'npoints_vol_mov_all_proc_cm = ', npoints_vol_mov_all_proc_cm
-  !  print*, 'npoints_vol_mov_all_proc_oc = ', npoints_vol_mov_all_proc_oc
-  !  print*, 'npoints_vol_mov_all_proc_ic = ', npoints_vol_mov_all_proc_ic
+  !  print *, 'npoints_vol_mov_all_proc = ',    npoints_vol_mov_all_proc
+  !  print *, 'npoints_vol_mov_all_proc_cm = ', npoints_vol_mov_all_proc_cm
+  !  print *, 'npoints_vol_mov_all_proc_oc = ', npoints_vol_mov_all_proc_oc
+  !  print *, 'npoints_vol_mov_all_proc_ic = ', npoints_vol_mov_all_proc_ic
 
-  !  print*, 'nspec_vol_mov_all_proc = ',    nspec_vol_mov_all_proc
-  !  print*, 'nspec_vol_mov_all_proc_cm = ', nspec_vol_mov_all_proc_cm
-  !  print*, 'nspec_vol_mov_all_proc_oc = ', nspec_vol_mov_all_proc_oc
-  !  print*, 'nspec_vol_mov_all_proc_ic = ', nspec_vol_mov_all_proc_ic
+  !  print *, 'nspec_vol_mov_all_proc = ',    nspec_vol_mov_all_proc
+  !  print *, 'nspec_vol_mov_all_proc_cm = ', nspec_vol_mov_all_proc_cm
+  !  print *, 'nspec_vol_mov_all_proc_oc = ', nspec_vol_mov_all_proc_oc
+  !  print *, 'nspec_vol_mov_all_proc_ic = ', nspec_vol_mov_all_proc_ic
 
-  !  print*, 'nspec_vol_mov_all_proc_cm_conn = ', nspec_vol_mov_all_proc_cm_conn
-  !  print*, 'nspec_vol_mov_all_proc_oc_conn = ', nspec_vol_mov_all_proc_oc_conn
-  !  print*, 'nspec_vol_mov_all_proc_ic_conn = ', nspec_vol_mov_all_proc_ic_conn
+  !  print *, 'nspec_vol_mov_all_proc_cm_conn = ', nspec_vol_mov_all_proc_cm_conn
+  !  print *, 'nspec_vol_mov_all_proc_oc_conn = ', nspec_vol_mov_all_proc_oc_conn
+  !  print *, 'nspec_vol_mov_all_proc_ic_conn = ', nspec_vol_mov_all_proc_ic_conn
   !endif
 
   !
@@ -312,8 +324,8 @@
 
     ! check if counters are correct
     if (ipoints_3dmovie /= npoints_3dmovie) then
-      print*, 'Error: did not find the right number of points for 3D movie'
-      print*, 'ipoints_3dmovie = ',ipoints_3dmovie,' npoints_3dmovie = ',npoints_3dmovie
+      print *, 'Error: did not find the right number of points for 3D movie'
+      print *, 'ipoints_3dmovie = ',ipoints_3dmovie,' npoints_3dmovie = ',npoints_3dmovie
       stop
     endif
 
@@ -414,7 +426,7 @@
 
   ! create elm_conn for movie
   ! for crust and mantle (strain and vector output)
-  if (output_sv) call get_conn_for_movie(elm_conn,    sum(offset_poin_vol(0:myrank-1)), iNIT, nelems_3dmovie,    &
+  if (output_sv) call get_conn_for_movie(elm_conn,    sum(offset_poin_vol(0:myrank-1)), iNIT, nelems_3dmovie, &
                         npoints_3dmovie, NSPEC_CRUST_MANTLE, num_ibool_3dmovie, mask_ibool_3dmovie, ibool_crust_mantle)
   ! for crust and mantle (not strain or vector output)
   if (output_cm) call get_conn_for_movie(elm_conn_cm, sum(offset_poin_vol_cm(0:myrank-1)), 1, nelems_3dmovie_cm, &
@@ -538,15 +550,30 @@
                            npoints_vol_mov_all_proc_ic, nspec_vol_mov_all_proc_ic)
 
 #else
+  ! no HDF5 support
 
-    print*, 'Error: HDF5 is not enabled in this version of the code.'
-    print*, 'Please recompile with the HDF5 option enabled with --with-hdf5'
-    stop
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = nelems_3dmovie_in
+
+  idummy = size(num_ibool_3dmovie,kind=4)
+  idummy = size(nu_3dmovie,kind=4)
+  idummy = size(mask_3dmovie,kind=4)
+  idummy = size(mask_ibool_3dmovie,kind=4)
+  idummy = size(muvstore_crust_mantle_3dmovie,kind=4)
+
+  print *, 'Error: HDF5 is not enabled in this version of the code.'
+  print *, 'Please recompile with the HDF5 option enabled with --with-hdf5'
+  stop
 
 #endif
 
   end subroutine write_movie_volume_mesh_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine write_movie_volume_strains_hdf5(vnspec_eps_cm, &
                                         eps_trace_over_3_crust_mantle, &
@@ -708,19 +735,31 @@
 
 
 #else
+  ! no HDF5 support
 
-    print*, 'Error: HDF5 is not enabled in this version of the code.'
-    print*, 'Please recompile with the HDF5 option enabled with --with-hdf5'
-    stop
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(eps_trace_over_3_crust_mantle,kind=4)
+  idummy = size(epsilondev_xx_crust_mantle,kind=4)
+  idummy = size(epsilondev_yy_crust_mantle,kind=4)
+  idummy = size(epsilondev_xy_crust_mantle,kind=4)
+  idummy = size(epsilondev_xz_crust_mantle,kind=4)
+  idummy = size(epsilondev_yz_crust_mantle,kind=4)
+
+  print *, 'Error: HDF5 is not enabled in this version of the code.'
+  print *, 'Please recompile with the HDF5 option enabled with --with-hdf5'
+  stop
 
 #endif
 
   end subroutine write_movie_volume_strains_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-
-
-subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_mantle, &
+  subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_mantle, &
                                        div_displ_outer_core, &
                                        accel_outer_core,kappavstore_outer_core,rhostore_outer_core,ibool_outer_core, &
                                        vnspec_eps_ic,eps_trace_over_3_inner_core, &
@@ -734,7 +773,7 @@ subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_
   use constants_solver
 
 #ifdef USE_HDF5
-  use shared_parameters, only: OUTPUT_FILES,H5_COL
+  use shared_parameters, only: OUTPUT_FILES
   use specfem_par, only: it
   use specfem_par_crustmantle, only: ibool_crust_mantle
   use specfem_par_innercore, only: ibool_inner_core
@@ -902,6 +941,7 @@ subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_
       do k = 1, NGLLZ
         do j = 1, NGLLY
           do i = 1, NGLLX
+            iglob = ibool_inner_core(i,j,k,ispec)
             tmp_data(iglob) = sqrt( epsilondev_xx_inner_core(i,j,k,ispec)**2 &
                                   + epsilondev_yy_inner_core(i,j,k,ispec)**2 &
                                   + epsilondev_xy_inner_core(i,j,k,ispec)**2 &
@@ -920,16 +960,43 @@ subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_
   call h5_close_file()
 
 #else
+  ! no HDF5 support
 
-    print*, 'Error: HDF5 is not enabled in this version of the code.'
-    print*, 'Please recompile with the HDF5 option enabled with --with-hdf5'
-    stop
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(eps_trace_over_3_crust_mantle,kind=4)
+  idummy = size(div_displ_outer_core,kind=4)
+
+  idummy = size(accel_outer_core,kind=4)
+  idummy = size(kappavstore_outer_core,kind=4)
+  idummy = size(rhostore_outer_core,kind=4)
+  idummy = size(ibool_outer_core,kind=4)
+
+  idummy = size(eps_trace_over_3_inner_core,kind=4)
+  idummy = size(epsilondev_xx_crust_mantle,kind=4)
+  idummy = size(epsilondev_yy_crust_mantle,kind=4)
+  idummy = size(epsilondev_xy_crust_mantle,kind=4)
+  idummy = size(epsilondev_xz_crust_mantle,kind=4)
+  idummy = size(epsilondev_yz_crust_mantle,kind=4)
+
+  idummy = size(epsilondev_xx_inner_core,kind=4)
+  idummy = size(epsilondev_yy_inner_core,kind=4)
+  idummy = size(epsilondev_xy_inner_core,kind=4)
+  idummy = size(epsilondev_xz_inner_core,kind=4)
+  idummy = size(epsilondev_yz_inner_core,kind=4)
+
+  print *, 'Error: HDF5 is not enabled in this version of the code.'
+  print *, 'Please recompile with the HDF5 option enabled with --with-hdf5'
+  stop
 
 #endif
 
   end subroutine write_movie_volume_divcurl_hdf5
 
-
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine write_movie_volume_vector_hdf5(npoints_3dmovie, &
                                        ibool_crust_mantle,vector_crust_mantle, &
@@ -1060,16 +1127,30 @@ subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_
   deallocate(store_val3d_N,store_val3d_E,store_val3d_Z)
 
 #else
+  ! no HDF5 support
 
-    print*, 'Error: HDF5 is not enabled in this version of the code.'
-    print*, 'Please recompile with the HDF5 option enabled with --with-hdf5'
-    stop
+  ! to avoid compiler warnings
+  integer :: idummy
+  double precision :: d_dummy
+
+  idummy = size(ibool_crust_mantle,kind=4)
+  idummy = size(mask_3dmovie,kind=4)
+  idummy = size(nu_3dmovie,kind=4)
+  idummy = size(vector_crust_mantle,kind=4)
+
+  d_dummy = scalingval
+
+  print *, 'Error: HDF5 is not enabled in this version of the code.'
+  print *, 'Please recompile with the HDF5 option enabled with --with-hdf5'
+  stop
 
 #endif
 
-
   end subroutine write_movie_volume_vector_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine write_movie_volume_displnorm_hdf5(displ_crust_mantle,displ_inner_core,displ_outer_core, &
                                          ibool_crust_mantle,ibool_inner_core,ibool_outer_core)
@@ -1079,7 +1160,7 @@ subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_
   use constants_solver
 
 #ifdef USE_HDF5
-  use shared_parameters, only: OUTPUT_FILES,H5_COL
+  use shared_parameters, only: OUTPUT_FILES
   use specfem_par, only: it, scale_displ
   use specfem_par_movie_hdf5
 #endif
@@ -1216,17 +1297,31 @@ subroutine write_movie_volume_divcurl_hdf5(vnspec_eps_cm,eps_trace_over_3_crust_
 
 
 #else
+  ! no HDF5 support
 
-    print*, 'Error: HDF5 is not enabled in this version of the code.'
-    print*, 'Please recompile with the HDF5 option enabled with --with-hdf5'
-    stop
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(displ_crust_mantle,kind=4)
+  idummy = size(displ_inner_core,kind=4)
+  idummy = size(displ_outer_core,kind=4)
+  idummy = size(ibool_crust_mantle,kind=4)
+  idummy = size(ibool_inner_core,kind=4)
+  idummy = size(ibool_outer_core,kind=4)
+
+  print *, 'Error: HDF5 is not enabled in this version of the code.'
+  print *, 'Please recompile with the HDF5 option enabled with --with-hdf5'
+  stop
 
 #endif
 
   end subroutine write_movie_volume_displnorm_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,veloc_outer_core, &
+  subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,veloc_outer_core, &
                                        ibool_crust_mantle,ibool_inner_core,ibool_outer_core)
 
 ! outputs norm of velocity: MOVIE_VOLUME_TYPE == 8
@@ -1234,7 +1329,7 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
   use constants_solver
 
 #ifdef USE_HDF5
-  use shared_parameters, only: OUTPUT_FILES,H5_COL
+  use shared_parameters, only: OUTPUT_FILES
   use specfem_par, only: it, scale_veloc
   use specfem_par_movie_hdf5
 #endif
@@ -1370,18 +1465,31 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
   call h5_close_file_p()
 
 #else
+  ! no HDF5 support
 
-    print*, 'Error: HDF5 is not enabled in this version of the code.'
-    print*, 'Please recompile with the HDF5 option enabled with --with-hdf5'
-    stop
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(veloc_crust_mantle,kind=4)
+  idummy = size(veloc_inner_core,kind=4)
+  idummy = size(veloc_outer_core,kind=4)
+  idummy = size(ibool_crust_mantle,kind=4)
+  idummy = size(ibool_inner_core,kind=4)
+  idummy = size(ibool_outer_core,kind=4)
+
+  print *, 'Error: HDF5 is not enabled in this version of the code.'
+  print *, 'Please recompile with the HDF5 option enabled with --with-hdf5'
+  stop
 
 #endif
 
   end subroutine write_movie_volume_velnorm_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-
- subroutine write_movie_volume_accelnorm_hdf5(accel_crust_mantle,accel_inner_core,accel_outer_core, &
+  subroutine write_movie_volume_accelnorm_hdf5(accel_crust_mantle,accel_inner_core,accel_outer_core, &
                                          ibool_crust_mantle,ibool_inner_core,ibool_outer_core)
 
 ! outputs norm of acceleration: MOVIE_VOLUME_TYPE == 1
@@ -1389,7 +1497,7 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
   use constants_solver
 
 #ifdef USE_HDF5
-  use shared_parameters, only: OUTPUT_FILES,H5_COL
+  use shared_parameters, only: OUTPUT_FILES
   use specfem_par, only: it, scale_t_inv,scale_veloc
   use specfem_par_movie_hdf5
 #endif
@@ -1525,10 +1633,21 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
   endif
 
 #else
+  ! no HDF5 support
 
-    print*, 'Error: HDF5 is not enabled in this version of the code.'
-    print*, 'Please recompile with the HDF5 option enabled with --with-hdf5'
-    stop
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = size(accel_crust_mantle,kind=4)
+  idummy = size(accel_inner_core,kind=4)
+  idummy = size(accel_outer_core,kind=4)
+  idummy = size(ibool_crust_mantle,kind=4)
+  idummy = size(ibool_inner_core,kind=4)
+  idummy = size(ibool_outer_core,kind=4)
+
+  print *, 'Error: HDF5 is not enabled in this version of the code.'
+  print *, 'Please recompile with the HDF5 option enabled with --with-hdf5'
+  stop
 
 #endif
 
@@ -1539,6 +1658,7 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
 !
 
 #ifdef USE_HDF5
+
   subroutine get_conn_for_movie(elm_conn,offset,iNIT,nelems_3dmovie,npoints_3dmovie, &
                                 nelems_in_this_region, &
                                 num_ibool_3dmovie,mask_ibool_3dmovie,ibool_of_the_section)
@@ -1558,7 +1678,7 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
   integer, dimension(NGLLX,NGLLY,NGLLZ,nelems_in_this_region),intent(in) :: ibool_of_the_section
   integer, dimension(9,nelems_3dmovie), intent(out) :: elm_conn
   ! local parameters
-  integer :: ispec,ii
+  integer :: ispec
   integer,parameter :: cell_type = 9
   integer :: iglob1,iglob2,iglob3,iglob4,iglob5,iglob6,iglob7,iglob8
   integer :: n1,n2,n3,n4,n5,n6,n7,n8
@@ -1637,6 +1757,7 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
 !
 !-------------------------------------------------------------------------------------------------
 !
+
 #ifdef USE_HDF5
 
   subroutine elm2node_base(array_3dspec, array_1dmovie, nelms, npoints, ibool_of_the_section)
@@ -1671,10 +1792,14 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
 
 #endif
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
 #ifdef USE_HDF5
 
   subroutine write_array3dspec_as_1d_hdf5(dset_name, nelms, npoints, array_3dspec, offset1d, ibool_of_the_section)
+
   use specfem_par
   use specfem_par_movie_hdf5
 
@@ -1687,7 +1812,6 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
   integer, dimension(NGLLX,NGLLY,NGLLZ,nelms), intent(in) :: ibool_of_the_section
 
   ! local parameters
-  integer :: i,j,k,ii
   real(kind=CUSTOM_REAL), dimension(npoints) :: array_1dmovie
 
   ! convert 3d array to 1d array
@@ -1703,9 +1827,11 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
 !
 !-------------------------------------------------------------------------------------------------
 !
+
 #ifdef USE_HDF5
 
   subroutine write_xdmf_vol_hdf5_one_data(fname_h5, attr_name, dset_name, len_data, target_unit, it_str, value_on_node)
+
     use specfem_par
     use specfem_par_movie_hdf5
 
@@ -1737,6 +1863,9 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
 
   end subroutine write_xdmf_vol_hdf5_one_data
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine write_xdmf_vol_hdf5_header(nelems, nglobs, fname_h5_data_vol_xdmf, target_unit, region_flag)
 
@@ -1815,6 +1944,10 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
 
   end subroutine write_xdmf_vol_hdf5_header
 
+!
+!-------------------------------------------------------------------------------------------------
+!
+
   subroutine write_xdmf_vol_hdf5_footer(target_unit)
 
     implicit none
@@ -1828,6 +1961,9 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
 
   end subroutine write_xdmf_vol_hdf5_footer
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine write_xdmf_vol_hdf5(npoints_3dmovie,    nelems_3dmovie, &
                                  npoints_3dmovie_cm, nelems_3dmovie_cm, &
@@ -1847,10 +1983,6 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
   ! local parameters
   integer                       :: i, ii
   character(len=20)             :: it_str, movie_prefix
-  character(len=20)             :: nelm_str,    nglo_str
-  character(len=20)             :: nelm_str_cm, nglo_str_cm
-  character(len=20)             :: nelm_str_oc, nglo_str_oc
-  character(len=20)             :: nelm_str_ic, nglo_str_ic
   character(len=MAX_STRING_LEN) :: fname_xdmf_vol, fname_xdmf_vol_oc, fname_xdmf_vol_ic
   character(len=MAX_STRING_LEN) :: fname_h5_data_vol_xdmf
 
@@ -1885,7 +2017,7 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
       ! write headers for each dataset
 
       ! volume strain
-      if (MOVIE_VOLUME_TYPE == 1 .OR. MOVIE_VOLUME_TYPE == 2 .OR. MOVIE_VOLUME_TYPE == 3) then
+      if (MOVIE_VOLUME_TYPE == 1 .or. MOVIE_VOLUME_TYPE == 2 .or. MOVIE_VOLUME_TYPE == 3) then
         if (MOVIE_VOLUME_TYPE == 1) then
           movie_prefix = 'E' ! strain
         else if (MOVIE_VOLUME_TYPE == 2) then
@@ -2126,6 +2258,17 @@ subroutine write_movie_volume_velnorm_hdf5(veloc_crust_mantle,veloc_inner_core,v
     close(xdmf_vol)
 
   endif ! output_ic
+
+  ! to avoid compiler warnings
+  i = npoints_3dmovie
+  i = npoints_3dmovie_cm
+  i = npoints_3dmovie_ic
+  i = npoints_3dmovie_oc
+
+  i = nelems_3dmovie
+  i = nelems_3dmovie_cm
+  i = nelems_3dmovie_ic
+  i = nelems_3dmovie_oc
 
   end subroutine write_xdmf_vol_hdf5
 

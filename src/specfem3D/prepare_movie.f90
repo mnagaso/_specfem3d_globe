@@ -76,7 +76,7 @@
       nmovie_points = NGLLX * NGLLY * NSPEC2D_TOP(IREGION_CRUST_MANTLE)
     else ! HDF5
       nmovie_points = 4 * (NGLLX-1) * (NGLLY-1) * NSPEC2D_TOP(IREGION_CRUST_MANTLE)
-    end if
+    endif
     NIT = 1
   endif
 

@@ -690,6 +690,8 @@ contains
 
   ! initializes
   seismogram_tmp(:,:) = 0.0_CUSTOM_REAL
+  is_for_asdf = .false.
+  is_for_hdf5 = .false.
 
   ! check file type
   if (ftype_flag == 0) then

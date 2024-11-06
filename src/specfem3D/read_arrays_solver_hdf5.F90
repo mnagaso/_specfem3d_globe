@@ -1,3 +1,31 @@
+!=====================================================================
+!
+!                       S p e c f e m 3 D  G l o b e
+!                       ----------------------------
+!
+!     Main historical authors: Dimitri Komatitsch and Jeroen Tromp
+!                        Princeton University, USA
+!                and CNRS / University of Marseille, France
+!                 (there are currently many more authors!)
+! (c) Princeton University and CNRS / University of Marseille, April 2014
+!
+! This program is free software; you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation; either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License along
+! with this program; if not, write to the Free Software Foundation, Inc.,
+! 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+!
+!=====================================================================
+
+
   subroutine read_arrays_solver_hdf5(iregion_code, &
                                 nspec,nglob,nglob_xy, &
                                 nspec_iso,nspec_tiso,nspec_ani, &
@@ -297,18 +325,86 @@
   call h5_close_file_p()
 
 #else
-  print*
-  print*,'ERROR: HDF5 support not enabled'
-  print*, 'Please recompile with HDF5 support with the --with-hdf5 option'
-  print*
+  ! no HDF5 support
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = iregion_code
+
+  idummy = size(ibool,kind=4)
+  idummy = size(idoubling,kind=4)
+  idummy = size(ispec_is_tiso,kind=4)
+
+  idummy = size(xstore,kind=4)
+  idummy = size(ystore,kind=4)
+  idummy = size(zstore,kind=4)
+
+  idummy = size(xix,kind=4)
+  idummy = size(xiy,kind=4)
+  idummy = size(xiz,kind=4)
+  idummy = size(etax,kind=4)
+  idummy = size(etay,kind=4)
+  idummy = size(etaz,kind=4)
+  idummy = size(gammax,kind=4)
+  idummy = size(gammay,kind=4)
+  idummy = size(gammaz,kind=4)
+
+  idummy = size(c11store,kind=4)
+  idummy = size(c12store,kind=4)
+  idummy = size(c13store,kind=4)
+  idummy = size(c14store,kind=4)
+  idummy = size(c15store,kind=4)
+  idummy = size(c16store,kind=4)
+  idummy = size(c22store,kind=4)
+  idummy = size(c23store,kind=4)
+  idummy = size(c24store,kind=4)
+  idummy = size(c25store,kind=4)
+  idummy = size(c26store,kind=4)
+  idummy = size(c33store,kind=4)
+  idummy = size(c34store,kind=4)
+  idummy = size(c35store,kind=4)
+  idummy = size(c36store,kind=4)
+  idummy = size(c44store,kind=4)
+  idummy = size(c45store,kind=4)
+  idummy = size(c46store,kind=4)
+  idummy = size(c55store,kind=4)
+  idummy = size(c56store,kind=4)
+  idummy = size(c66store,kind=4)
+
+  idummy = size(kappavstore,kind=4)
+  idummy = size(kappahstore,kind=4)
+  idummy = size(muvstore,kind=4)
+  idummy = size(muhstore,kind=4)
+  idummy = size(mu0store,kind=4)
+  idummy = size(rhostore,kind=4)
+  idummy = size(eta_anisostore,kind=4)
+  idummy = size(rho_vp,kind=4)
+  idummy = size(rho_vs,kind=4)
+
+  idummy = size(rmassx,kind=4)
+  idummy = size(rmassy,kind=4)
+  idummy = size(rmassz,kind=4)
+
+  idummy = size(b_rmassx,kind=4)
+  idummy = size(b_rmassy,kind=4)
+
+  idummy = size(rmass_ocean_load,kind=4)
+
+  print *
+  print *,'ERROR: HDF5 support not enabled'
+  print *, 'Please recompile with HDF5 support with the --with-hdf5 option'
+  print *
   stop
 #endif
 
+  end subroutine read_arrays_solver_hdf5
 
-end subroutine read_arrays_solver_hdf5
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-
-subroutine read_mesh_databases_MPI_hdf5(iregion_code)
+  subroutine read_mesh_databases_MPI_hdf5(iregion_code)
 
   use specfem_par
   use specfem_par_crustmantle
@@ -402,7 +498,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                     nibool_interfaces_crust_mantle(1:num_interfaces), &
                                     (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
     allocate(ibool_interfaces_crust_mantle(max_nibool_interfaces,num_interfaces), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating ibool_interfaces_crust_mantle etc.')
@@ -411,7 +507,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                     ibool_interfaces_crust_mantle(1:max_nibool_interfaces,1:num_interfaces), &
                                     (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
     allocate(phase_ispec_inner_crust_mantle(num_phase_ispec,2), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating phase_ispec_inner_crust_mantle etc.')
@@ -420,7 +516,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                     phase_ispec_inner_crust_mantle(1:num_phase_ispec,1:2), &
                                     (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
-    end if
+    endif
 
     allocate(num_elem_colors_crust_mantle(num_colors_outer+num_colors_inner), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating num_elem_colors_crust_mantle etc.')
@@ -428,7 +524,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                     num_elem_colors_crust_mantle(1:(num_colors_outer+num_colors_inner)), &
                                     (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
   case (IREGION_OUTER_CORE)
 
@@ -450,7 +546,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                     nibool_interfaces_outer_core(1:num_interfaces), &
                                     (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
     allocate(ibool_interfaces_outer_core(max_nibool_interfaces,num_interfaces), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating ibool_interfaces_outer_core etc.')
@@ -459,7 +555,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                     ibool_interfaces_outer_core(1:max_nibool_interfaces,1:num_interfaces), &
                                     (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
     allocate(phase_ispec_inner_outer_core(num_phase_ispec,2), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating phase_ispec_inner_outer_core etc.')
@@ -468,7 +564,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                     phase_ispec_inner_outer_core(1:num_phase_ispec,1:2), &
                                     (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
-    end if
+    endif
 
     allocate(num_elem_colors_outer_core(num_colors_outer+num_colors_inner), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating num_elem_colors_outer_core etc.')
@@ -476,7 +572,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                     num_elem_colors_outer_core(1:(num_colors_outer+num_colors_inner)), &
                                     (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
   case (IREGION_INNER_CORE)
 
@@ -498,7 +594,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
         call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                       nibool_interfaces_inner_core(1:num_interfaces), &
                                       (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-      end if
+      endif
 
       allocate(ibool_interfaces_inner_core(max_nibool_interfaces,num_interfaces), stat=ierr)
       if (ierr /= 0) call exit_mpi(myrank,'Error allocating ibool_interfaces_inner_core etc.')
@@ -507,7 +603,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
         call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                       ibool_interfaces_inner_core(1:max_nibool_interfaces,1:num_interfaces), &
                                       (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-      end if
+      endif
 
       allocate(phase_ispec_inner_inner_core(num_phase_ispec,2), stat=ierr)
       if (ierr /= 0) call exit_mpi(myrank,'Error allocating phase_ispec_inner_inner_core etc.')
@@ -516,7 +612,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
         call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                       phase_ispec_inner_inner_core(1:num_phase_ispec,1:2), &
                                       (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
-      end if
+      endif
 
       allocate(num_elem_colors_inner_core(num_colors_outer+num_colors_inner), stat=ierr)
       if (ierr /= 0) call exit_mpi(myrank,'Error allocating num_elem_colors_inner_core etc.')
@@ -524,7 +620,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
         call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                       num_elem_colors_inner_core(1:(num_colors_outer+num_colors_inner)), &
                                       (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
-      end if
+      endif
 
   case (IREGION_TRINFINITE)
 
@@ -546,7 +642,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                     nibool_interfaces_trinfinite(1:num_interfaces), &
                                     (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
     allocate(ibool_interfaces_trinfinite(max_nibool_interfaces,num_interfaces), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating ibool_interfaces_trinfinite etc.')
@@ -555,7 +651,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                     ibool_interfaces_trinfinite(1:max_nibool_interfaces,1:num_interfaces), &
                                     (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
     allocate(phase_ispec_inner_trinfinite(num_phase_ispec,2), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating phase_ispec_inner_trinfinite etc.')
@@ -564,7 +660,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                     phase_ispec_inner_trinfinite(1:num_phase_ispec,1:2), &
                                     (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
-    end if
+    endif
 
     allocate(num_elem_colors_trinfinite(num_colors_outer+num_colors_inner), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating num_elem_colors_trinfinite etc.')
@@ -572,7 +668,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                     num_elem_colors_trinfinite(1:(num_colors_outer+num_colors_inner)), &
                                     (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
   case (IREGION_INFINITE)
 
@@ -594,7 +690,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("nibool_interfaces", &
                                     nibool_interfaces_infinite(1:num_interfaces), &
                                     (/sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
     allocate(ibool_interfaces_infinite(max_nibool_interfaces,num_interfaces), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating ibool_interfaces_infinite etc.')
@@ -603,7 +699,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("ibool_interfaces", &
                                     ibool_interfaces_infinite(1:max_nibool_interfaces,1:num_interfaces), &
                                     (/0,sum(offset_num_interfaces(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
     allocate(phase_ispec_inner_infinite(num_phase_ispec,2), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating phase_ispec_inner_infinite etc.')
@@ -612,7 +708,7 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("phase_ispec_inner", &
                                     phase_ispec_inner_infinite(1:num_phase_ispec,1:2), &
                                     (/sum(offset_num_phase_ispec(0:myrank-1)),0/), H5_COL)
-    end if
+    endif
 
     allocate(num_elem_colors_infinite(num_colors_outer+num_colors_inner), stat=ierr)
     if (ierr /= 0) call exit_mpi(myrank,'Error allocating num_elem_colors_infinite etc.')
@@ -620,10 +716,10 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
       call h5_read_dataset_collect_hyperslab_in_group("num_elem_colors", &
                                     num_elem_colors_infinite(1:(num_colors_outer+num_colors_inner)), &
                                     (/sum(offset_num_colors_outer(0:myrank-1))/), H5_COL)
-    end if
+    endif
 
   case default
-    print*, 'ERROR: unknown region code'
+    print *, 'ERROR: unknown region code'
     stop
   end select
 
@@ -633,18 +729,27 @@ subroutine read_mesh_databases_MPI_hdf5(iregion_code)
   call h5_close_file_p()
 
 #else
-  print*
-  print*,'ERROR: HDF5 support not enabled'
-  print*, 'Please recompile with HDF5 support with the --with-hdf5 option'
-  print*
+  ! no HDF5 support
+
+  ! to avoid compiler warnings
+  integer :: idummy
+
+  idummy = iregion_code
+
+  print *
+  print *,'ERROR: HDF5 support not enabled'
+  print *, 'Please recompile with HDF5 support with the --with-hdf5 option'
+  print *
   stop
 #endif
 
-end subroutine read_mesh_databases_MPI_hdf5
+  end subroutine read_mesh_databases_MPI_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-
-subroutine read_mesh_databases_coupling_hdf5()
+  subroutine read_mesh_databases_coupling_hdf5()
 
 #ifdef USE_HDF5
   use constants
@@ -781,7 +886,7 @@ subroutine read_mesh_databases_coupling_hdf5()
     call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmin", jacobian2D_xmin_crust_mantle, &
                                                     (/0,0,sum(offset_nspec2D_xmin(0:myrank-1))/), H5_COL)
     ! jacobian_xmax
-    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmax", jacobian2D_xmax_crust_mantle,&
+    call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_xmax", jacobian2D_xmax_crust_mantle, &
                                                     (/0,0,sum(offset_nspec2D_xmax(0:myrank-1))/), H5_COL)
     ! jacobian_ymin
     call h5_read_dataset_collect_hyperslab_in_group("jacobian2D_ymin", jacobian2D_ymin_crust_mantle, &
@@ -798,7 +903,7 @@ subroutine read_mesh_databases_coupling_hdf5()
 
     ! close group
     call h5_close_group()
-  end if ! NSPEC_CRUST_MANTLE > 0
+  endif ! NSPEC_CRUST_MANTLE > 0
 
   if (NSPEC_OUTER_CORE > 0) then
     ! change group name
@@ -882,7 +987,7 @@ subroutine read_mesh_databases_coupling_hdf5()
 
     ! close group
     call h5_close_group()
-  end if ! NSPEC_OUTER_CORE > 0
+  endif ! NSPEC_OUTER_CORE > 0
 
   if (NSPEC_INNER_CORE > 0) then
 
@@ -929,7 +1034,7 @@ subroutine read_mesh_databases_coupling_hdf5()
 
     ! close group
     call h5_close_group()
-  end if ! NSPEC_INNER_CORE > 0
+  endif ! NSPEC_INNER_CORE > 0
 
   if (FULL_GRAVITY) then
     if (ADD_TRINF) then
@@ -977,8 +1082,8 @@ subroutine read_mesh_databases_coupling_hdf5()
 
         ! close group
         call h5_close_group()
-      end if ! NSPEC_TRINFINITE > 0
-    end if ! ADD_TRINF
+      endif ! NSPEC_TRINFINITE > 0
+    endif ! ADD_TRINF
 
     if (NSPEC_INFINITE > 0) then
       ! change group name
@@ -1024,8 +1129,8 @@ subroutine read_mesh_databases_coupling_hdf5()
 
       ! close group
       call h5_close_group()
-    end if ! NSPEC_INFINITE > 0
-  end if ! FULL_GRAVITY
+    endif ! NSPEC_INFINITE > 0
+  endif ! FULL_GRAVITY
 
   ! close file
   call h5_close_file_p()
@@ -1049,7 +1154,7 @@ subroutine read_mesh_databases_coupling_hdf5()
 
       ! checks setup
       if (tmp_nspec2d_moho /= NSPEC2D_MOHO .or. tmp_nspec2d_400 /= NSPEC2D_400 .or. tmp_nspec2d_670 /= NSPEC2D_670) then
-        print *,'Error: invalid NSPEC2D values read in for solver: ',&
+        print *,'Error: invalid NSPEC2D values read in for solver: ', &
                  tmp_nspec2d_moho,tmp_nspec2d_400,tmp_nspec2d_670,'(boundary_disc.h5)'
         print *,'       should be MOHO/400/670 : ',NSPEC2D_MOHO,NSPEC2D_400,NSPEC2D_670,'(mesh_parameters.h5)'
         call exit_mpi(myrank, 'Error reading boundary_disc.h5 file')
@@ -1099,24 +1204,24 @@ subroutine read_mesh_databases_coupling_hdf5()
 
       ! close group
       call h5_close_group()
-    end if ! NSPEC_CRUST_MANTLE > 0
-  end if ! SAVE_BOUNDARY_MESH .and. SIMULATION_TYPE == 3
-
-
-
+    endif ! NSPEC_CRUST_MANTLE > 0
+  endif ! SAVE_BOUNDARY_MESH .and. SIMULATION_TYPE == 3
 
 #else
-  print*
-  print*,'ERROR: HDF5 support not enabled'
-  print*, 'Please recompile with HDF5 support with the --with-hdf5 option'
-  print*
+  print *
+  print *,'ERROR: HDF5 support not enabled'
+  print *, 'Please recompile with HDF5 support with the --with-hdf5 option'
+  print *
   stop
 #endif
 
-end subroutine read_mesh_databases_coupling_hdf5
+  end subroutine read_mesh_databases_coupling_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine read_mesh_databases_stacey_hdf5
+  subroutine read_mesh_databases_stacey_hdf5
 
   use specfem_par
   use specfem_par_crustmantle
@@ -1213,7 +1318,7 @@ subroutine read_mesh_databases_stacey_hdf5
 
     ! close group
     call h5_close_group()
-  end if ! NSPEC_CRUST_MANTLE > 0
+  endif ! NSPEC_CRUST_MANTLE > 0
 
   if (NSPEC_OUTER_CORE > 0) then
     ! open the group
@@ -1277,24 +1382,27 @@ subroutine read_mesh_databases_stacey_hdf5
 
     ! close group
     call h5_close_group()
-  end if ! NSPEC_OUTER_CORE > 0
+  endif ! NSPEC_OUTER_CORE > 0
 
   ! close file
   call h5_close_file_p()
 
 
 #else
-  print*
-  print*,'ERROR: HDF5 support not enabled'
-  print*, 'Please recompile with HDF5 support with the --with-hdf5 option'
-  print*
+  print *
+  print *,'ERROR: HDF5 support not enabled'
+  print *, 'Please recompile with HDF5 support with the --with-hdf5 option'
+  print *
   stop
 #endif
 
-end subroutine read_mesh_databases_stacey_hdf5
+  end subroutine read_mesh_databases_stacey_hdf5
 
+!
+!-------------------------------------------------------------------------------------------------
+!
 
-subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_s, vnspec, f_c_source)
+  subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_s, vnspec, f_c_source)
 
   use constants_solver
 
@@ -1322,11 +1430,8 @@ subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_
   integer :: comm, info
   double precision, dimension(0:NPROCTOT_VAL-1) :: tmp_dp_arr
 
-#endif
-
   if (.not. ATTENUATION_VAL) return
 
-#ifdef USE_HDF5
   call world_get_comm(comm)
   call world_get_info_null(info)
 
@@ -1370,11 +1475,24 @@ subroutine read_attenuation_hdf5(iregion_code, factor_common, scale_factor, tau_
   call h5_close_file_p()
 
 #else
-  print*
-  print*,'ERROR: HDF5 support not enabled'
-  print*, 'Please recompile with HDF5 support with the --with-hdf5 option'
-  print*
+  ! no HDF5 support
+
+  ! to avoid compiler warnings
+  integer :: idummy
+  double precision :: d_dummy
+
+  idummy = iregion_code
+  d_dummy = f_c_source
+
+  idummy = size(factor_common,kind=4)
+  idummy = size(scale_factor,kind=4)
+  idummy = size(tau_s,kind=4)
+
+  print *
+  print *,'ERROR: HDF5 support not enabled'
+  print *, 'Please recompile with HDF5 support with the --with-hdf5 option'
+  print *
   stop
 #endif
 
-end subroutine read_attenuation_hdf5
+  end subroutine read_attenuation_hdf5
