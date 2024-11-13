@@ -529,9 +529,9 @@
     endif ! ATTENUATION_VAL
 
     if (FULL_GRAVITY_VAL) then
-      call isend_i_inter(neq,NPROCTOT_VAL,dest_ionod,io_tag_ford_undo_neq,req_dump_ford_undo(req_count))
+      call isend_i_inter((/neq/),NPROCTOT_VAL,dest_ionod,io_tag_ford_undo_neq,req_dump_ford_undo(req_count))
       req_count = req_count + 1
-      call isend_i_inter(neq1,NPROCTOT_VAL,dest_ionod,io_tag_ford_undo_neq1,req_dump_ford_undo(req_count))
+      call isend_i_inter((/neq1/),NPROCTOT_VAL,dest_ionod,io_tag_ford_undo_neq1,req_dump_ford_undo(req_count))
       req_count = req_count + 1
       call isend_cr_inter(pgrav1,offset_pgrav1(myrank),dest_ionod,io_tag_ford_undo_pgrav1,req_dump_ford_undo(req_count))
       req_count = req_count + 1

@@ -78,7 +78,7 @@
                                             (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
   else
     call write_array3dspec_as_1d_hdf5('sigma_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      sigma_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      sigma_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
   endif
 
@@ -371,79 +371,76 @@
 
   else ! HDF5_KERNEL_VIS
     if (SAVE_TRANSVERSE_KL_ONLY) then
-      !call write_array3dspec_as_1d_hdf5('sigma_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-      !                                sigma_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
-      !                                ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('alphav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      alphav_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      alphav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('alphah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      alphah_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      alphah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('betav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      betav_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      betav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('betah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      betah_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      betah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('eta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      eta_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      eta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      rho_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      rho_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('bulk_c_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      bulk_c_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      bulk_c_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('bulk_betav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      bulk_betav_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      bulk_betav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('bulk_betah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      bulk_betah_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      bulk_betah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      alpha_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      alpha_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('beta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      beta_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      beta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('bulk_beta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      bulk_beta_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      bulk_beta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
 
     else if (SAVE_AZIMUTHAL_ANISO_KL_ONLY) then
       call write_array3dspec_as_1d_hdf5('alphav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      alphav_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      alphav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('alphah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      alphah_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      alphah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('betav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      betav_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      betav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('betah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      betah_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      betah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('bulk_c_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      bulk_c_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      bulk_c_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('bulk_betav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      bulk_betav_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      bulk_betav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('bulk_betah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      bulk_betah_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      bulk_betah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('eta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      eta_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      eta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      rho_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      rho_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('Gc_prime_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      Gc_prime_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      Gc_prime_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
       call write_array3dspec_as_1d_hdf5('Gs_prime_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                      Gs_prime_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                      Gs_prime_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
 
     else
@@ -586,30 +583,30 @@
   else
 
     call write_array3dspec_as_1d_hdf5('rhonotprime_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    rhonotprime_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    rhonotprime_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
     call write_array3dspec_as_1d_hdf5('kappa_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    kappa_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    kappa_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
     call write_array3dspec_as_1d_hdf5('mu_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    mu_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    mu_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
 
     call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    rho_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    rho_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
     call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    alpha_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    alpha_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
     call write_array3dspec_as_1d_hdf5('beta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    beta_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    beta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
 
     call write_array3dspec_as_1d_hdf5('bulk_c_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    bulk_c_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    bulk_c_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
     call write_array3dspec_as_1d_hdf5('bulk_beta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    bulk_beta_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    bulk_beta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
 
   endif
@@ -697,10 +694,10 @@
                                             (/0,0,0,sum(offset_nspec_oc_adj(0:myrank-1))/), H5_COL)
   else
     call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_oc_adj(myrank-1), offset_nglob_oc(myrank-1), &
-                                    rho_kl_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), &
+                                    rho_kl_outer_core, sum(offset_nglob_oc(0:myrank-1)), &
                                     ibool_outer_core, .false.)
     call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_oc_adj(myrank-1), offset_nglob_oc(myrank-1), &
-                                    alpha_kl_outer_core, (/sum(offset_nglob_oc(0:myrank-1))/), &
+                                    alpha_kl_outer_core, sum(offset_nglob_oc(0:myrank-1)), &
                                     ibool_outer_core, .false.)
   endif
   ! close hdf5
@@ -780,13 +777,13 @@
                                             (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
   else
     call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_ic_adj(myrank-1), offset_nglob_ic(myrank-1), &
-                                    rho_kl_inner_core, (/sum(offset_nglob_ic(0:myrank-1))/), &
+                                    rho_kl_inner_core, sum(offset_nglob_ic(0:myrank-1)), &
                                     ibool_inner_core, .false.)
     call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_ic_adj(myrank-1), offset_nglob_ic(myrank-1), &
-                                    alpha_kl_inner_core, (/sum(offset_nglob_ic(0:myrank-1))/), &
+                                    alpha_kl_inner_core, sum(offset_nglob_ic(0:myrank-1)), &
                                     ibool_inner_core, .false.)
     call write_array3dspec_as_1d_hdf5('beta_kernel', offset_nspec_ic_adj(myrank-1), offset_nglob_ic(myrank-1), &
-                                    beta_kl_inner_core, (/sum(offset_nglob_ic(0:myrank-1))/), &
+                                    beta_kl_inner_core, sum(offset_nglob_ic(0:myrank-1)), &
                                     ibool_inner_core, .false.)
   endif
 
@@ -961,16 +958,16 @@
                                             (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
   else
     call write_array3dspec_as_1d_hdf5('hess_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    hess_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    hess_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
     call write_array3dspec_as_1d_hdf5('hess_rho_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    hess_rho_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    hess_rho_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
     call write_array3dspec_as_1d_hdf5('hess_kappa_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    hess_kappa_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    hess_kappa_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
     call write_array3dspec_as_1d_hdf5('hess_mu_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
-                                    hess_mu_kl_crust_mantle, (/sum(offset_nglob_cm(0:myrank-1))/), &
+                                    hess_mu_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
   endif
 
@@ -1005,9 +1002,9 @@
 
 #ifdef USE_HDF5
   ! local parameters
-  integer :: ipoints_3dmovie,ispec,i,j,k,iNIT,nelems_3dmovie
-  integer :: iglob,iglob_center
-  real(kind=CUSTOM_REAL) :: rval,thetaval,phival,xval,yval,zval,st,ct,sp,cp
+  integer :: ispec,i,j,k
+  integer :: iglob
+  real(kind=CUSTOM_REAL) :: rval,thetaval,phival,xval,yval,zval
   real(kind=CUSTOM_REAL), dimension(NGLOB_CRUST_MANTLE)  :: store_val3D_x_cm, store_val3D_y_cm, store_val3D_z_cm
   real(kind=CUSTOM_REAL), dimension(NGLOB_OUTER_CORE)    :: store_val3D_x_oc, store_val3D_y_oc, store_val3D_z_oc
   real(kind=CUSTOM_REAL), dimension(NGLOB_INNER_CORE)    :: store_val3D_x_ic, store_val3D_y_ic, store_val3D_z_ic
