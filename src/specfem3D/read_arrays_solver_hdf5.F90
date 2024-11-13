@@ -1261,7 +1261,7 @@
 
     ! open the group
     write(gname_region, "('reg',i1)") IREGION_CRUST_MANTLE
-    call h5_open_group(gname_region)
+    call h5_open_group_p(gname_region)
 
     ! read the offset_num_abs_boundary_faces
     call h5_read_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", offset_num_abs_boundary_faces, (/0/), H5_COL)
@@ -1323,7 +1323,7 @@
   if (NSPEC_OUTER_CORE > 0) then
     ! open the group
     write(gname_region, "('reg',i1)") IREGION_OUTER_CORE
-    call h5_open_group(gname_region)
+    call h5_open_group_p(gname_region)
 
     ! read the offset_num_abs_boundary_faces
     call h5_read_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", offset_num_abs_boundary_faces, (/0/), H5_COL)
