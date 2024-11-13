@@ -1255,13 +1255,13 @@
   name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/stacey.h5'
 
   ! open the hdf5 file
-  call h5_open_file_p_collect(name_database_hdf5)
+  call h5_open_file_p(name_database_hdf5)
 
   if (NSPEC_CRUST_MANTLE > 0) then
 
     ! open the group
     write(gname_region, "('reg',i1)") IREGION_CRUST_MANTLE
-    call h5_open_group_p(gname_region)
+    call h5_open_group(gname_region)
 
     ! read the offset_num_abs_boundary_faces
     call h5_read_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", offset_num_abs_boundary_faces, (/0/), H5_COL)
@@ -1323,7 +1323,7 @@
   if (NSPEC_OUTER_CORE > 0) then
     ! open the group
     write(gname_region, "('reg',i1)") IREGION_OUTER_CORE
-    call h5_open_group_p(gname_region)
+    call h5_open_group(gname_region)
 
     ! read the offset_num_abs_boundary_faces
     call h5_read_dataset_collect_hyperslab_in_group("num_abs_boundary_faces", offset_num_abs_boundary_faces, (/0/), H5_COL)
