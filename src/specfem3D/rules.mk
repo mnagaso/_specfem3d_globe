@@ -457,6 +457,8 @@ $O/SIEM_solver_mpi.solverstatic.o: $O/SIEM_math_library.shared.o
 $O/SIEM_solver_petsc.solverstatic.o: $O/SIEM_math_library.shared.o
 $O/SIEM_compute_seismograms.solverstatic.o: $O/SIEM_math_library.shared.o
 
+$O/finalize_simulation.solverstatic.o: $O/hdf5_io_server.solverstatic.o
+
 ###
 ### specfem3D - optimized flags and dependence on values from mesher here
 ###

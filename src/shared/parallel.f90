@@ -85,6 +85,7 @@ end module my_mpi
 
   use my_mpi
   use shared_parameters, only: NUMBER_OF_SIMULTANEOUS_RUNS,BROADCAST_SAME_MESH_AND_MODEL
+  use constants, only: my_status_size, my_status_source, my_status_tag
 
   implicit none
 
@@ -94,6 +95,11 @@ end module my_mpi
   ! initialize the MPI communicator and start the NPROCTOT MPI processes.
   call MPI_INIT(ier)
   if (ier /= 0) stop 'Error initializing MPI'
+
+  ! initialize status size
+  my_status_size   = MPI_STATUS_SIZE
+  my_status_source = MPI_SOURCE
+  my_status_tag    = MPI_TAG
 
   call MPI_COMM_RANK(MPI_COMM_WORLD,myrank,ier)
   if (ier /= 0) stop 'Error getting MPI rank'
@@ -2268,3 +2274,157 @@ end module my_mpi
 !
 !-------------------------------------------------------------------------------------------------
 !
+
+  subroutine send_i_inter(sendbuf, sendcount, dest, sendtag)
+
+    use my_mpi
+
+    implicit none
+
+    integer :: dest,sendtag
+    integer :: sendcount
+    integer,dimension(sendcount):: sendbuf
+
+    integer :: ier
+
+    call MPI_SEND(sendbuf,sendcount,MPI_INTEGER,dest,sendtag,my_local_mpi_comm_inter,ier)
+
+  end subroutine send_i_inter
+
+  !
+  !-------------------------------------------------------------------------------------------------
+  !
+
+
+  subroutine isend_i_inter(sendbuf, sendcount, dest, sendtag, req)
+
+    use my_mpi
+
+    implicit none
+
+    integer :: sendcount, dest, sendtag, req
+    integer, dimension(sendcount) :: sendbuf
+
+    integer :: ier
+
+    call MPI_ISEND(sendbuf,sendcount,MPI_INTEGER,dest,sendtag,my_local_mpi_comm_inter,req,ier)
+
+  end subroutine isend_i_inter
+
+  !
+  !-------------------------------------------------------------------------------------------------
+  !
+
+  subroutine isend_cr_inter(sendbuf, sendcount, dest, sendtag, req)
+
+    use my_mpi
+    use constants, only: CUSTOM_REAL
+
+    implicit none
+
+    integer :: sendcount, dest, sendtag, req
+    real(kind=CUSTOM_REAL), dimension(sendcount) :: sendbuf
+
+    integer :: ier
+
+    call MPI_ISEND(sendbuf,sendcount,CUSTOM_MPI_TYPE,dest,sendtag,my_local_mpi_comm_inter,req,ier)
+
+  end subroutine isend_cr_inter
+
+  !
+  !-------------------------------------------------------------------------------------------------
+  !
+
+  subroutine recv_i_inter(recvbuf, recvcount, dest, recvtag)
+
+   use my_mpi
+
+   implicit none
+
+   integer :: dest,recvtag
+   integer :: recvcount
+   integer,dimension(recvcount):: recvbuf
+
+   integer :: ier
+
+   call MPI_RECV(recvbuf,recvcount,MPI_INTEGER,dest,recvtag, &
+                 my_local_mpi_comm_inter,MPI_STATUS_IGNORE,ier)
+
+  end subroutine recv_i_inter
+
+  !
+  !-------------------------------------------------------------------------------------------------
+  !
+
+  subroutine irecv_i_inter(recvbuf, recvcount, dest, recvtag, req)
+
+    use my_mpi
+
+    implicit none
+
+    integer :: recvcount, dest, recvtag, req
+    integer, dimension(recvcount) :: recvbuf
+
+    integer :: ier
+
+    call MPI_IRECV(recvbuf,recvcount,MPI_INTEGER,dest,recvtag, &
+                   my_local_mpi_comm_inter,req,ier)
+
+  end subroutine irecv_i_inter
+
+  !
+  !-------------------------------------------------------------------------------------------------
+  !
+  subroutine irecvv_cr_inter(recvbuf, recvcount, dest, recvtag, req)
+
+    use my_mpi
+    use constants, only: CUSTOM_REAL
+
+    implicit none
+
+    integer :: recvcount,dest,recvtag,req
+    real(kind=CUSTOM_REAL),dimension(recvcount) :: recvbuf
+
+    integer :: ier
+
+    call MPI_IRECV(recvbuf,recvcount,CUSTOM_MPI_TYPE,dest,recvtag, &
+                   my_local_mpi_comm_inter,req,ier)
+
+  end subroutine irecvv_cr_inter
+
+  !
+  !-------------------------------------------------------------------------------------------------
+  !
+
+  subroutine world_get_size_msg(status,size)
+
+    use my_mpi
+
+    implicit none
+
+    integer, intent(in) :: status(MPI_STATUS_SIZE)
+    integer, intent(out) :: size
+    integer :: ier
+
+    call MPI_GET_COUNT(status, MPI_INT, size, ier)
+
+  end subroutine world_get_size_msg
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+  subroutine world_probe_any_inter(status)
+
+    ! wait for an arrival of any MPI message
+
+    use my_mpi
+
+    implicit none
+    integer, intent(inout) :: status(MPI_STATUS_SIZE)
+
+    integer :: ier
+
+    call MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, my_local_mpi_comm_inter, status, ier)
+
+  end subroutine world_probe_any_inter

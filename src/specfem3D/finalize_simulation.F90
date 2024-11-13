@@ -35,12 +35,12 @@
 
   use manager_adios
 
-  ! hdf5, i/o server
-  use io_server_hdf5, only: finalize_io_server
-
 #ifdef USE_XSMM
   use my_libxsmm
 #endif
+
+  ! hdf5, i/o server
+  use io_server_hdf5, only: finalize_io_server, finalize_hdf5_solver
 
   implicit none
 
@@ -51,7 +51,7 @@
   ! checks if anything to do
   if (.not. IO_compute_task) then
     ! finalizes MPI subgroup for intercommunication
-    if (HDF5_IO_NODES > 0) call finalize_io_server() !!!!!!! stack synchronize_inter in here
+    if (HDF5_IO_NODES > 0) call finalize_io_server()
     ! all done
     return
   endif
@@ -101,6 +101,11 @@
   ! adios finalizes
   if (ADIOS_ENABLED) then
     call finalize_adios()
+  endif
+
+  if (HDF5_ENABLED) then
+    ! finalize hdf5
+    call finalize_hdf5_solver()
   endif
 
   ! asdf finalizes

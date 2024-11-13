@@ -434,5 +434,11 @@ ADIOS_FOR_UNDO_ATTENUATION      = .true.
 # HDF5 Database I/O
 # (note the flags for HDF5 and ADIOS are mutually exclusive, only one can be used)
 HDF5_ENABLED                    = .false.
-HDF5_IO_NODES                   = 0   # HDF5 IO server with number of IO dedicated procs
+# HDF5 IO server with number of IO dedicated procs
+# this number is multiplied by the number of simultaneous runs for the total number of IO procs
+HDF5_IO_NODES                   = 0
+# write out kernels and header files (xdmf) for visualization (GLL point based 1d arrays)
+HDF5_KERNEL_VIS                 = .false.
+# write out snapshot files for visualization (GLL point based 1d arrays)
+HDF5_SNAPSHOT_VIS               = .false.
 

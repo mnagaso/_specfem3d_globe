@@ -387,6 +387,10 @@
     call read_value_logical(HDF5_FOR_MOVIES, 'HDF5_FOR_MOVIES', ier); ier = 0
     ! (optional) number of io dedicated nodes
     call read_value_integer(HDF5_IO_NODES, 'HDF5_IO_NODES', ier); ier = 0
+    ! (optional) kernel output option
+    call read_value_logical(HDF5_KERNEL_VIS, 'HDF5_KERNEL_VIS', ier); ier = 0
+    ! (optional) snapshot output option
+    call read_value_logical(HDF5_SNAPSHOT_VIS, 'HDF5_SNAPSHOT_VIS', ier); ier = 0
   endif
 
   ! closes parameter file

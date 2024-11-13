@@ -36,7 +36,7 @@
   use constants_solver, only: SAVE_KERNELS_BOUNDARY,SAVE_KERNELS_OC,SAVE_KERNELS_IC
 
   use specfem_par, only: NOISE_TOMOGRAPHY,SIMULATION_TYPE,nrec_local, &
-    APPROXIMATE_HESS_KL,ADIOS_FOR_KERNELS
+    APPROXIMATE_HESS_KL,ADIOS_FOR_KERNELS, HDF5_ENABLED, HDF5_KERNEL_VIS
 
   use specfem_par_innercore, only: rhostore_inner_core,muvstore_inner_core,kappavstore_inner_core, &
     rho_kl_inner_core,alpha_kl_inner_core,beta_kl_inner_core
@@ -56,6 +56,11 @@
 
   ! dump kernel arrays
   if (SIMULATION_TYPE == 3) then
+
+    if (HDF5_ENABLED .and. HDF5_KERNEL_VIS) then
+      ! prepare mesh info in kernel.h5
+      call write_mesh_info_kernel_h5()
+    endif
 
     ! restores original reference moduli (before shifting and unrelaxing)
     call restore_original_moduli()
@@ -1959,9 +1964,10 @@
   ! writes out kernels to file
   if (ADIOS_FOR_KERNELS) then
     call write_kernels_source_derivatives_adios()
-  !else if (HDF5_ENABLED) then
-  !  ! TODO ADD HDF5
-  !  call write_kernels_source_derivatives_hdf5()
+  else if (HDF5_ENABLED) then
+    ! TODO ADD HDF5
+    !call write_kernels_source_derivatives_hdf5()
+    call exit_MPI(myrank,'HDF5 not supported for source derivatives')
   else
     ! kernel file output
     do irec_local = 1, nrec_local

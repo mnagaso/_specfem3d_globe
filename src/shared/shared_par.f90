@@ -36,6 +36,11 @@
   ! (i.e. sub-communicators, one per run) are off by default
   integer :: mygroup = -1
 
+  ! MPI status size (will be set in init_mpi()
+  integer :: my_status_size   = 1
+  integer :: my_status_source = 1
+  integer :: my_status_tag    = 1
+
   ! if doing simultaneous runs for the same mesh and model, see who
   ! should read the mesh and the model and broadcast it to others
   ! we put a default value here
@@ -209,8 +214,10 @@
   double precision :: FILESYSTEM_IO_BANDWIDTH = 0.d0
 
   ! HDF5 file i/o
-  logical :: HDF5_ENABLED    = .false. ! for all databases i/o in hdf5
-  logical :: HDF5_FOR_MOVIES = .false. ! for movies (shakemap, surface movies, volume movies) ! TODO: HDF5 not used
+  logical :: HDF5_ENABLED      = .false. ! for all databases i/o in hdf5
+  logical :: HDF5_FOR_MOVIES   = .false. ! for movies (shakemap, surface movies, volume movies) ! TODO: HDF5 not used
+  logical :: HDF5_KERNEL_VIS   = .false. ! output kernels for visualization
+  logical :: HDF5_SNAPSHOT_VIS = .false. ! output snapshots for visualization
 
   ! HDF5 IO server
   ! number of io dedicated nodes

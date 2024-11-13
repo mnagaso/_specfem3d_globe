@@ -119,9 +119,20 @@
   ! synchronizes processes
   call synchronize_all()
 
-    ! hdf5 i/o server
+  ! hdf5 i/o server
   ! HDF5 separate nodes for i/o server
   if (HDF5_IO_NODES > 0) call initialize_io_server()
+
+  ! HDF5 allocate offset arrays
+  if (HDF5_ENABLED) then
+    if (IO_compute_task) then
+      call initialize_hdf5_solver()
+    else
+      call allocate_offset_arrays()
+    endif
+  endif
+
+
   ! checks if anything to do
   if (.not. IO_compute_task) then
     ! i/o server synchronization
@@ -632,6 +643,21 @@
         call exit_MPI(myrank, 'improper dimensions of adjoint arrays for infinite regions, please recompile solver')
     endif
   endif
+
+  ! IO server checks
+  if (HDF5_IO_NODES > 1) then
+    ! currently only one IO server is supported
+    call exit_MPI(myrank,'HDF5_IO_NODES > 1 not supported yet')
+  endif
+  if (HDF5_IO_NODES /= 0 .and. .not. HDF5_ENABLED) then
+    ! IO server is enabled but HDF5 is not
+    call exit_MPI(myrank,'HDF5_IO_NODES > 0 but HDF5_ENABLED == .false.')
+  endif
+  if (HDF5_IO_NODES /= 0 .and. SIMULATION_TYPE == 3) then
+    ! IO server is not implemented yet for kernel simulations
+    call exit_MPI(myrank,'HDF5_IO_NODES > 0 not implemented yet for kernel simulations')
+  endif
+
 
   end subroutine initialize_simulation_check
 

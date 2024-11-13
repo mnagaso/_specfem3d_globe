@@ -37,7 +37,7 @@
   integer, parameter :: nparam_i = 51
   integer, dimension(nparam_i) :: bcast_integer
 
-  integer, parameter :: nparam_l = 77
+  integer, parameter :: nparam_l = 79
   logical, dimension(nparam_l) :: bcast_logical
 
   integer, parameter :: nparam_dp = 42
@@ -113,7 +113,8 @@
             REGIONAL_MESH_CUTOFF,REGIONAL_MESH_ADD_2ND_DOUBLING, &
             EMC_MODEL, &
             FULL_GRAVITY, &
-            HDF5_ENABLED, HDF5_FOR_MOVIES, OUTPUT_SEISMOS_HDF5 /)
+            HDF5_ENABLED, HDF5_FOR_MOVIES, OUTPUT_SEISMOS_HDF5, &
+            HDF5_KERNEL_VIS, HDF5_SNAPSHOT_VIS /)
 
     bcast_double_precision = (/ &
             DT, &

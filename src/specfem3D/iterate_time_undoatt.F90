@@ -65,23 +65,6 @@
   ! checks
   if (.not. UNDO_ATTENUATION) return
 
-  if (HDF5_IO_NODES > 0) then
-    ! start io server
-    if (IO_storage_task) then
-      call do_io_start_idle()
-    else
-      ! compute node passes necessary info to io node
-      call pass_info_to_io()
-    endif
-    ! checks if anything to do
-    if (.not. IO_compute_task) then
-      ! i/o server synchronization
-      call synchronize_inter()
-      ! all done
-      return
-    endif
-  endif
-
   ! checks with undo_attenuation
   if (UNDO_ATTENUATION) then
     ! note: NSTEP must not be a multiple of NT_DUMP_ATTENUATION, but should be equal or larger
@@ -108,6 +91,26 @@
     NSUBSET_ITERATIONS = ceiling( dble(NSTEP_STEADY_STATE)/dble(NT_DUMP_ATTENUATION) )
   else
     NSUBSET_ITERATIONS = ceiling( dble(NSTEP)/dble(NT_DUMP_ATTENUATION) )
+  endif
+
+  ! IO server initialization
+  if (HDF5_IO_NODES > 0) then
+    ! start io server
+    if (IO_storage_task) then
+      call get_info_from_comp() ! <-> pass_info_to_io()
+
+      call do_io_start_idle() ! wait/do io till the end of whole time iterations
+    else
+      ! compute node passes necessary info to io node
+      call pass_info_to_io() ! <-> get_info_from_comp()
+    endif
+    ! checks if anything to do
+    if (.not. IO_compute_task) then
+      ! i/o server synchronization
+      call synchronize_inter()
+      ! all done
+      return
+    endif
   endif
 
   ! checks
@@ -370,6 +373,11 @@
       do it_of_this_subset = 1, it_subset_end
 
         it = it + 1
+
+        ! print it each 100
+        !if (mod(it,100) == 0) then
+        !  if (myrank == 0) print*, 'it = ',it
+        !endif
 
         ! simulation status output and stability check
         if (mod(it,NTSTEP_BETWEEN_OUTPUT_INFO) == 0 .or. it == it_begin + 4 .or. it == it_end) then

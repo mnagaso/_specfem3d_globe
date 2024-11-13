@@ -35,34 +35,13 @@
 
     integer :: ier
 
-    ! nglobs
     allocate(offset_poin_vol(0:NPROCTOT_VAL-1),stat=ier)
     if (ier /= 0 ) call exit_MPI(myrank,'Error allocating offset_poin_vol')
-    allocate(offset_poin_vol_cm(0:NPROCTOT_VAL-1),stat=ier)
-    if (ier /= 0 ) call exit_MPI(myrank,'Error allocating offset_poin_vol_cm')
-    allocate(offset_poin_vol_oc(0:NPROCTOT_VAL-1),stat=ier)
-    if (ier /= 0 ) call exit_MPI(myrank,'Error allocating offset_poin_vol_oc')
-    allocate(offset_poin_vol_ic(0:NPROCTOT_VAL-1),stat=ier)
-    if (ier /= 0 ) call exit_MPI(myrank,'Error allocating offset_poin_vol_ic')
     allocate(offset_nspec_vol(0:NPROCTOT_VAL-1),stat=ier)
     if (ier /= 0 ) call exit_MPI(myrank,'Error allocating offset_nspec_vol')
-    allocate(offset_nspec_vol_cm(0:NPROCTOT_VAL-1),stat=ier)
-    if (ier /= 0 ) call exit_MPI(myrank,'Error allocating offset_nspec_vol_cm')
-    allocate(offset_nspec_vol_oc(0:NPROCTOT_VAL-1),stat=ier)
-    if (ier /= 0 ) call exit_MPI(myrank,'Error allocating offset_nspec_vol_oc')
-    allocate(offset_nspec_vol_ic(0:NPROCTOT_VAL-1),stat=ier)
-    if (ier /= 0 ) call exit_MPI(myrank,'Error allocating offset_nspec_vol_ic')
 
     npoints_vol_mov_all_proc = 0
-    npoints_vol_mov_all_proc_cm = 0
-    npoints_vol_mov_all_proc_oc = 0
-    npoints_vol_mov_all_proc_ic = 0
-
     nspec_vol_mov_all_proc = 0
-    nspec_vol_mov_all_proc_cm = 0
-    nspec_vol_mov_all_proc_oc = 0
-    nspec_vol_mov_all_proc_ic = 0
-
     nspec_vol_mov_all_proc_cm_conn = 0
     nspec_vol_mov_all_proc_oc_conn = 0
     nspec_vol_mov_all_proc_ic_conn = 0
@@ -121,14 +100,9 @@
 #ifdef USE_HDF5
     use specfem_par_movie_hdf5
 
+    ! moved to hdf5_io_server.F90
     deallocate(offset_poin_vol)
-    deallocate(offset_poin_vol_cm)
-    deallocate(offset_poin_vol_oc)
-    deallocate(offset_poin_vol_ic)
     deallocate(offset_nspec_vol)
-    deallocate(offset_nspec_vol_cm)
-    deallocate(offset_nspec_vol_oc)
-    deallocate(offset_nspec_vol_ic)
 
 #else
     write (*,*) 'Error: HDF5 is not enabled in this version of the code.'
@@ -186,7 +160,7 @@
 
   integer, dimension(:,:), allocatable :: elm_conn, elm_conn_cm, elm_conn_oc, elm_conn_ic
 
-  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_vol_cm_conn, offset_nspec_vol_oc_conn, offset_nspec_vol_ic_conn
+  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_cm_conn, offset_nspec_oc_conn, offset_nspec_ic_conn
 
   integer :: nelems_3dmovie_cm, nelems_3dmovie_oc, nelems_3dmovie_ic
 
@@ -216,51 +190,21 @@
   allocate(elm_conn_oc(9,nelems_3dmovie_oc))
   allocate(elm_conn_ic(9,nelems_3dmovie_ic))
 
-  ! prepare offset array
+  ! prepare offset array for movie volume
   call gather_all_all_singlei(npoints_3dmovie,    offset_poin_vol,    NPROCTOT_VAL)
-  call gather_all_all_singlei(NGLOB_CRUST_MANTLE, offset_poin_vol_cm, NPROCTOT_VAL)
-  call gather_all_all_singlei(NGLOB_OUTER_CORE,   offset_poin_vol_oc, NPROCTOT_VAL)
-  call gather_all_all_singlei(NGLOB_INNER_CORE,   offset_poin_vol_ic, NPROCTOT_VAL)
-
   call gather_all_all_singlei(nelems_3dmovie,    offset_nspec_vol,    NPROCTOT_VAL)
-  call gather_all_all_singlei(NSPEC_CRUST_MANTLE, offset_nspec_vol_cm, NPROCTOT_VAL)
-  call gather_all_all_singlei(NSPEC_OUTER_CORE,   offset_nspec_vol_oc, NPROCTOT_VAL)
-  call gather_all_all_singlei(NSPEC_INNER_CORE,   offset_nspec_vol_ic, NPROCTOT_VAL)
 
   ! offset arrays for element connectivity
-  call gather_all_all_singlei(nelems_3dmovie_cm, offset_nspec_vol_cm_conn, NPROCTOT_VAL)
-  call gather_all_all_singlei(nelems_3dmovie_oc, offset_nspec_vol_oc_conn, NPROCTOT_VAL)
-  call gather_all_all_singlei(nelems_3dmovie_ic, offset_nspec_vol_ic_conn, NPROCTOT_VAL)
+  call gather_all_all_singlei(nelems_3dmovie_cm, offset_nspec_cm_conn, NPROCTOT_VAL)
+  call gather_all_all_singlei(nelems_3dmovie_oc, offset_nspec_oc_conn, NPROCTOT_VAL)
+  call gather_all_all_singlei(nelems_3dmovie_ic, offset_nspec_ic_conn, NPROCTOT_VAL)
 
-  npoints_vol_mov_all_proc    = sum(offset_poin_vol)
-  npoints_vol_mov_all_proc_cm = sum(offset_poin_vol_cm)
-  npoints_vol_mov_all_proc_oc = sum(offset_poin_vol_oc)
-  npoints_vol_mov_all_proc_ic = sum(offset_poin_vol_ic)
-
+  npoints_vol_mov_all_proc  = sum(offset_poin_vol)
   nspec_vol_mov_all_proc    = sum(offset_nspec_vol)
-  nspec_vol_mov_all_proc_cm = sum(offset_nspec_vol_cm)
-  nspec_vol_mov_all_proc_oc = sum(offset_nspec_vol_oc)
-  nspec_vol_mov_all_proc_ic = sum(offset_nspec_vol_ic)
 
-  nspec_vol_mov_all_proc_cm_conn = sum(offset_nspec_vol_cm_conn)
-  nspec_vol_mov_all_proc_oc_conn = sum(offset_nspec_vol_oc_conn)
-  nspec_vol_mov_all_proc_ic_conn = sum(offset_nspec_vol_ic_conn)
-
-  !if (myrank == 0) then
-  !  print *, 'npoints_vol_mov_all_proc = ',    npoints_vol_mov_all_proc
-  !  print *, 'npoints_vol_mov_all_proc_cm = ', npoints_vol_mov_all_proc_cm
-  !  print *, 'npoints_vol_mov_all_proc_oc = ', npoints_vol_mov_all_proc_oc
-  !  print *, 'npoints_vol_mov_all_proc_ic = ', npoints_vol_mov_all_proc_ic
-
-  !  print *, 'nspec_vol_mov_all_proc = ',    nspec_vol_mov_all_proc
-  !  print *, 'nspec_vol_mov_all_proc_cm = ', nspec_vol_mov_all_proc_cm
-  !  print *, 'nspec_vol_mov_all_proc_oc = ', nspec_vol_mov_all_proc_oc
-  !  print *, 'nspec_vol_mov_all_proc_ic = ', nspec_vol_mov_all_proc_ic
-
-  !  print *, 'nspec_vol_mov_all_proc_cm_conn = ', nspec_vol_mov_all_proc_cm_conn
-  !  print *, 'nspec_vol_mov_all_proc_oc_conn = ', nspec_vol_mov_all_proc_oc_conn
-  !  print *, 'nspec_vol_mov_all_proc_ic_conn = ', nspec_vol_mov_all_proc_ic_conn
-  !endif
+  nspec_vol_mov_all_proc_cm_conn = sum(offset_nspec_cm_conn)
+  nspec_vol_mov_all_proc_oc_conn = sum(offset_nspec_oc_conn)
+  nspec_vol_mov_all_proc_ic_conn = sum(offset_nspec_ic_conn)
 
   !
   ! create the xyz arrays for crust and mantle and strain and vector output
@@ -429,13 +373,13 @@
   if (output_sv) call get_conn_for_movie(elm_conn,    sum(offset_poin_vol(0:myrank-1)), iNIT, nelems_3dmovie, &
                         npoints_3dmovie, NSPEC_CRUST_MANTLE, num_ibool_3dmovie, mask_ibool_3dmovie, ibool_crust_mantle)
   ! for crust and mantle (not strain or vector output)
-  if (output_cm) call get_conn_for_movie(elm_conn_cm, sum(offset_poin_vol_cm(0:myrank-1)), 1, nelems_3dmovie_cm, &
+  if (output_cm) call get_conn_for_movie(elm_conn_cm, sum(offset_nglob_cm(0:myrank-1)), 1, nelems_3dmovie_cm, &
                         NGLOB_CRUST_MANTLE, NSPEC_CRUST_MANTLE, num_ibool_3dmovie_cm, mask_ibool_3dmovie_cm, ibool_crust_mantle)
   ! for outer core
-  if (output_oc) call get_conn_for_movie(elm_conn_oc, sum(offset_poin_vol_oc(0:myrank-1)), 1, nelems_3dmovie_oc, &
+  if (output_oc) call get_conn_for_movie(elm_conn_oc, sum(offset_nglob_oc(0:myrank-1)), 1, nelems_3dmovie_oc, &
                         NGLOB_OUTER_CORE, NSPEC_OUTER_CORE, num_ibool_3dmovie_oc, mask_ibool_3dmovie_oc, ibool_outer_core)
   ! for inner core
-  if (output_ic) call get_conn_for_movie(elm_conn_ic, sum(offset_poin_vol_ic(0:myrank-1)), 1, nelems_3dmovie_ic, &
+  if (output_ic) call get_conn_for_movie(elm_conn_ic, sum(offset_nglob_ic(0:myrank-1)), 1, nelems_3dmovie_ic, &
                         NGLOB_INNER_CORE, NSPEC_INNER_CORE, num_ibool_3dmovie_ic, mask_ibool_3dmovie_ic, ibool_inner_core)
 
   ! TODO ADD IOSERVER
@@ -510,26 +454,26 @@
   ! for crust and mantle (not strain or vector output)
   if (output_cm) then
     call h5_write_dataset_collect_hyperslab_in_group('elm_conn_cm', elm_conn_cm, &
-                                                     (/0, sum(offset_nspec_vol_cm_conn(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('x_cm', store_val3D_x_cm, (/sum(offset_poin_vol_cm(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('y_cm', store_val3D_y_cm, (/sum(offset_poin_vol_cm(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('z_cm', store_val3D_z_cm, (/sum(offset_poin_vol_cm(0:myrank-1))/), H5_COL)
+                                                     (/0, sum(offset_nspec_cm_conn(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('x_cm', store_val3D_x_cm, (/sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('y_cm', store_val3D_y_cm, (/sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('z_cm', store_val3D_z_cm, (/sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
   endif
   ! for outer core
   if (output_oc) then
     call h5_write_dataset_collect_hyperslab_in_group('elm_conn_oc', elm_conn_oc, &
-                                                     (/0, sum(offset_nspec_vol_oc_conn(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('x_oc', store_val3D_x_oc, (/sum(offset_poin_vol_oc(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('y_oc', store_val3D_y_oc, (/sum(offset_poin_vol_oc(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('z_oc', store_val3D_z_oc, (/sum(offset_poin_vol_oc(0:myrank-1))/), H5_COL)
+                                                     (/0, sum(offset_nspec_oc_conn(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('x_oc', store_val3D_x_oc, (/sum(offset_nglob_oc(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('y_oc', store_val3D_y_oc, (/sum(offset_nglob_oc(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('z_oc', store_val3D_z_oc, (/sum(offset_nglob_oc(0:myrank-1))/), H5_COL)
   endif
   ! for inner core
   if (output_ic) then
     call h5_write_dataset_collect_hyperslab_in_group('elm_conn_ic', elm_conn_ic, &
-                                                     (/0, sum(offset_nspec_vol_ic_conn(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('x_ic', store_val3D_x_ic, (/sum(offset_poin_vol_ic(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('y_ic', store_val3D_y_ic, (/sum(offset_poin_vol_ic(0:myrank-1))/), H5_COL)
-    call h5_write_dataset_collect_hyperslab_in_group('z_ic', store_val3D_z_ic, (/sum(offset_poin_vol_ic(0:myrank-1))/), H5_COL)
+                                                     (/0, sum(offset_nspec_ic_conn(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('x_ic', store_val3D_x_ic, (/sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('y_ic', store_val3D_y_ic, (/sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
+    call h5_write_dataset_collect_hyperslab_in_group('z_ic', store_val3D_z_ic, (/sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
   endif
 
   ! close the group
@@ -774,7 +718,7 @@
 
 #ifdef USE_HDF5
   use shared_parameters, only: OUTPUT_FILES
-  use specfem_par, only: it
+  use specfem_par, only: it, H5_COL
   use specfem_par_crustmantle, only: ibool_crust_mantle
   use specfem_par_innercore, only: ibool_inner_core
   use specfem_par_movie_hdf5
@@ -858,12 +802,14 @@
   call h5_open_group(group_name)
 
   if (MOVIE_OUTPUT_DIV) then
-    call write_array3dspec_as_1d_hdf5('reg1_div_displ', offset_nspec_vol_cm(myrank), offset_poin_vol_cm(myrank), &
-                                      eps_trace_over_3_crust_mantle, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
+    call write_array3dspec_as_1d_hdf5('reg1_div_displ', offset_nspec_cm(myrank), offset_nglob_cm(myrank), &
+                                      eps_trace_over_3_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
+                                      ibool_crust_mantle, .true.)
 
     if (NSPEC_OUTER_CORE_3DMOVIE > 1) then
-      call write_array3dspec_as_1d_hdf5('reg2_div_displ', offset_nspec_vol_oc(myrank), offset_poin_vol_oc(myrank), &
-                                        div_displ_outer_core, sum(offset_poin_vol_oc(0:myrank-1)), ibool_outer_core)
+      call write_array3dspec_as_1d_hdf5('reg2_div_displ', offset_nspec_oc(myrank), offset_nglob_oc(myrank), &
+                                        div_displ_outer_core, sum(offset_nglob_oc(0:myrank-1)), &
+                                        ibool_outer_core, .true.)
     else
       allocate(div_s_outer_core(NGLLX,NGLLY,NGLLZ,NSPEC_OUTER_CORE),stat=ier)
       if (ier /= 0 ) call exit_MPI(myrank,'Error allocating temporary array div_s_outer_core')
@@ -879,37 +825,39 @@
           enddo
         enddo
       enddo
-      call write_array3dspec_as_1d_hdf5('reg2_div_displ', offset_nspec_vol_oc(myrank), offset_poin_vol_oc(myrank), &
-                                        div_s_outer_core, sum(offset_poin_vol_oc(0:myrank-1)), ibool_outer_core)
+      call write_array3dspec_as_1d_hdf5('reg2_div_displ', offset_nspec_oc(myrank), offset_nglob_oc(myrank), &
+                                        div_s_outer_core, sum(offset_nglob_oc(0:myrank-1)), ibool_outer_core, &
+                                        .true.)
       deallocate(div_s_outer_core)
     endif
 
-    call write_array3dspec_as_1d_hdf5('reg3_div_displ', offset_nspec_vol_ic(myrank), offset_poin_vol_ic(myrank), &
-                                      eps_trace_over_3_inner_core, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
+    call write_array3dspec_as_1d_hdf5('reg3_div_displ', offset_nspec_ic(myrank), offset_nglob_ic(myrank), &
+                                      eps_trace_over_3_inner_core, sum(offset_nglob_ic(0:myrank-1)), &
+                                      ibool_inner_core, .true.)
   endif
 
   if (MOVIE_OUTPUT_CURL) then
-    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_xx', offset_nspec_vol_cm(myrank), offset_poin_vol_cm(myrank), &
-                                      epsilondev_xx_crust_mantle, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
-    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_yy', offset_nspec_vol_cm(myrank), offset_poin_vol_cm(myrank), &
-                                      epsilondev_yy_crust_mantle, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
-    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_xy', offset_nspec_vol_cm(myrank), offset_poin_vol_cm(myrank), &
-                                      epsilondev_xy_crust_mantle, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
-    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_xz', offset_nspec_vol_cm(myrank), offset_poin_vol_cm(myrank), &
-                                      epsilondev_xz_crust_mantle, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
-    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_yz', offset_nspec_vol_cm(myrank), offset_poin_vol_cm(myrank), &
-                                      epsilondev_yz_crust_mantle, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
+    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_xx', offset_nspec_cm(myrank), offset_nglob_cm(myrank), &
+                                      epsilondev_xx_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), ibool_crust_mantle, .true.)
+    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_yy', offset_nspec_cm(myrank), offset_nglob_cm(myrank), &
+                                      epsilondev_yy_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), ibool_crust_mantle, .true.)
+    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_xy', offset_nspec_cm(myrank), offset_nglob_cm(myrank), &
+                                      epsilondev_xy_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), ibool_crust_mantle, .true.)
+    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_xz', offset_nspec_cm(myrank), offset_nglob_cm(myrank), &
+                                      epsilondev_xz_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), ibool_crust_mantle, .true.)
+    call write_array3dspec_as_1d_hdf5('crust_mantle_epsdev_displ_yz', offset_nspec_cm(myrank), offset_nglob_cm(myrank), &
+                                      epsilondev_yz_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), ibool_crust_mantle, .true.)
 
-    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_xx', offset_nspec_vol_ic(myrank), offset_poin_vol_ic(myrank), &
-                                      epsilondev_xx_inner_core, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
-    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_yy', offset_nspec_vol_ic(myrank), offset_poin_vol_ic(myrank), &
-                                      epsilondev_yy_inner_core, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
-    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_xy', offset_nspec_vol_ic(myrank), offset_poin_vol_ic(myrank), &
-                                      epsilondev_xy_inner_core, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
-    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_xz', offset_nspec_vol_ic(myrank), offset_poin_vol_ic(myrank), &
-                                      epsilondev_xz_inner_core, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
-    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_yz', offset_nspec_vol_ic(myrank), offset_poin_vol_ic(myrank), &
-                                      epsilondev_yz_inner_core, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
+    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_xx', offset_nspec_ic(myrank), offset_nglob_ic(myrank), &
+                                      epsilondev_xx_inner_core, sum(offset_nglob_ic(0:myrank-1)), ibool_inner_core, .true.)
+    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_yy', offset_nspec_ic(myrank), offset_nglob_ic(myrank), &
+                                      epsilondev_yy_inner_core, sum(offset_nglob_ic(0:myrank-1)), ibool_inner_core, .true.)
+    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_xy', offset_nspec_ic(myrank), offset_nglob_ic(myrank), &
+                                      epsilondev_xy_inner_core, sum(offset_nglob_ic(0:myrank-1)), ibool_inner_core, .true.)
+    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_xz', offset_nspec_ic(myrank), offset_nglob_ic(myrank), &
+                                      epsilondev_xz_inner_core, sum(offset_nglob_ic(0:myrank-1)), ibool_inner_core, .true.)
+    call write_array3dspec_as_1d_hdf5('inner_core_epsdev_displ_yz', offset_nspec_ic(myrank), offset_nglob_ic(myrank), &
+                                      epsilondev_yz_inner_core, sum(offset_nglob_ic(0:myrank-1)), ibool_inner_core, .true.)
   endif
 
   if (MOVIE_OUTPUT_CURLNORM) then
@@ -930,8 +878,10 @@
         enddo
       enddo
     enddo
-    call write_array3dspec_as_1d_hdf5('reg1_epsdev_displ_norm', offset_nspec_vol_cm(myrank), offset_poin_vol_cm(myrank), &
-                                      tmp_data, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
+    call h5_write_dataset_collect_hyperslab_in_group('reg1_epsdev_displ_norm', tmp_data, &
+                                                   (/sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg1_epsdev_displ_norm', offset_nspec_cm(myrank), offset_nglob_cm(myrank), &
+    !                                  tmp_data, sum(offset_nglob_cm(0:myrank-1)), ibool_crust_mantle)
     deallocate(tmp_data)
 
     ! Frobenius norm
@@ -951,8 +901,10 @@
         enddo
       enddo
     enddo
-    call write_array3dspec_as_1d_hdf5('reg3_epsdev_displ_norm', offset_nspec_vol_ic(myrank), offset_poin_vol_ic(myrank), &
-                                      tmp_data, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
+    call h5_write_dataset_collect_hyperslab_in_group('reg3_epsdev_displ_norm', tmp_data, &
+                                                   (/sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg3_epsdev_displ_norm', offset_nspec_ic(myrank), offset_nglob_ic(myrank), &
+    !                                  tmp_data, sum(offset_nglob_ic(0:myrank-1)), ibool_inner_core)
     deallocate(tmp_data)
   endif
 
@@ -1161,7 +1113,7 @@
 
 #ifdef USE_HDF5
   use shared_parameters, only: OUTPUT_FILES
-  use specfem_par, only: it, scale_displ
+  use specfem_par, only: it, scale_displ, H5_COL
   use specfem_par_movie_hdf5
 #endif
 
@@ -1235,9 +1187,10 @@
         enddo
       enddo
     enddo
-
-    call write_array3dspec_as_1d_hdf5('reg1_displ', offset_nspec_vol_cm(myrank-1), offset_poin_vol_cm(myrank-1), &
-                                      tmp_data, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
+    call h5_write_dataset_collect_hyperslab_in_group('reg1_displ', tmp_data, &
+                                                   (/sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg1_displ', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
+    !                                  tmp_data, sum(offset_nglob_cm(0:myrank-1)), ibool_crust_mantle)
 
     deallocate(tmp_data)
   endif
@@ -1260,9 +1213,10 @@
         enddo
       enddo
     enddo
-
-    call write_array3dspec_as_1d_hdf5('reg2_displ', offset_nspec_vol_oc(myrank-1), offset_poin_vol_oc(myrank-1), &
-                                      tmp_data, sum(offset_poin_vol_oc(0:myrank-1)), ibool_outer_core)
+    call h5_write_dataset_collect_hyperslab_in_group('reg2_displ', tmp_data, &
+                                           (/sum(offset_nglob_oc(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg2_displ', offset_nspec_oc(myrank-1), offset_nglob_oc(myrank-1), &
+    !                                  tmp_data, sum(offset_nglob_oc(0:myrank-1)), ibool_outer_core)
 
     deallocate(tmp_data)
   endif
@@ -1285,9 +1239,10 @@
         enddo
       enddo
     enddo
-
-    call write_array3dspec_as_1d_hdf5('reg3_displ', offset_nspec_vol_ic(myrank-1), offset_poin_vol_ic(myrank-1), &
-                                      tmp_data, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
+    call h5_write_dataset_collect_hyperslab_in_group('reg3_displ', tmp_data, &
+                                           (/sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg3_displ', offset_nspec_ic(myrank-1), offset_nglob_ic(myrank-1), &
+    !                                  tmp_data, sum(offset_nglob_ic(0:myrank-1)), ibool_inner_core)
 
     deallocate(tmp_data)
   endif
@@ -1330,7 +1285,7 @@
 
 #ifdef USE_HDF5
   use shared_parameters, only: OUTPUT_FILES
-  use specfem_par, only: it, scale_veloc
+  use specfem_par, only: it, scale_veloc, H5_COL
   use specfem_par_movie_hdf5
 #endif
 
@@ -1404,9 +1359,10 @@
         enddo
       enddo
     enddo
-
-    call write_array3dspec_as_1d_hdf5('reg1_veloc', offset_nspec_vol_cm(myrank-1), offset_poin_vol_cm(myrank-1), &
-                                      tmp_data, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
+    call h5_write_dataset_collect_hyperslab_in_group('reg1_veloc', tmp_data, &
+                                                   (/sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg1_veloc', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
+    !                                  tmp_data, sum(offset_nglob_cm(0:myrank-1)), ibool_crust_mantle)
 
     deallocate(tmp_data)
   endif
@@ -1429,9 +1385,10 @@
         enddo
       enddo
     enddo
-
-    call write_array3dspec_as_1d_hdf5('reg2_veloc', offset_nspec_vol_oc(myrank-1), offset_poin_vol_oc(myrank-1), &
-                                      tmp_data, sum(offset_poin_vol_oc(0:myrank-1)), ibool_outer_core)
+    call h5_write_dataset_collect_hyperslab_in_group('reg2_veloc', tmp_data, &
+                                           (/sum(offset_nglob_oc(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg2_veloc', offset_nspec_oc(myrank-1), offset_nglob_oc(myrank-1), &
+    !                                  tmp_data, sum(offset_nglob_oc(0:myrank-1)), ibool_outer_core)
 
     deallocate(tmp_data)
   endif
@@ -1454,9 +1411,11 @@
         enddo
       enddo
     enddo
-
-    call write_array3dspec_as_1d_hdf5('reg3_veloc', offset_nspec_vol_ic(myrank-1), offset_poin_vol_ic(myrank-1), &
-                                      tmp_data, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
+    ! TODO: no need to 3d to 1d conversion as the data is already 1d
+    call h5_write_dataset_collect_hyperslab_in_group('reg3_veloc', tmp_data, &
+                                           (/sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg3_veloc', offset_nspec_ic(myrank-1), offset_nglob_ic(myrank-1), &
+    !                                  tmp_data, sum(offset_nglob_ic(0:myrank-1)), ibool_inner_core)
 
     deallocate(tmp_data)
   endif
@@ -1498,7 +1457,7 @@
 
 #ifdef USE_HDF5
   use shared_parameters, only: OUTPUT_FILES
-  use specfem_par, only: it, scale_t_inv,scale_veloc
+  use specfem_par, only: it, scale_t_inv,scale_veloc, H5_COL
   use specfem_par_movie_hdf5
 #endif
 
@@ -1576,8 +1535,11 @@
       enddo
     enddo
 
-    call write_array3dspec_as_1d_hdf5('reg1_accel', offset_nspec_vol_cm(myrank-1), offset_poin_vol_cm(myrank-1), &
-                                      tmp_data, sum(offset_poin_vol_cm(0:myrank-1)), ibool_crust_mantle)
+     ! TODO: no need to 3d to 1d conversion as the data is already 1d
+    call h5_write_dataset_collect_hyperslab_in_group('reg1_accel', tmp_data, &
+                                                   (/sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg1_accel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
+    !                                  tmp_data, sum(offset_nglob_cm(0:myrank-1)), ibool_crust_mantle)
 
     deallocate(tmp_data)
   endif
@@ -1601,8 +1563,11 @@
       enddo
     enddo
 
-    call write_array3dspec_as_1d_hdf5('reg2_accel', offset_nspec_vol_oc(myrank-1), offset_poin_vol_oc(myrank-1), &
-                                      tmp_data, sum(offset_poin_vol_oc(0:myrank-1)), ibool_outer_core)
+    ! TODO: no need to 3d to 1d conversion as the data is already 1d
+    call h5_write_dataset_collect_hyperslab_in_group('reg2_accel', tmp_data, &
+                                           (/sum(offset_nglob_oc(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg2_accel', offset_nspec_oc(myrank-1), offset_nglob_oc(myrank-1), &
+    !                                  tmp_data, sum(offset_nglob_oc(0:myrank-1)), ibool_outer_core)
 
     deallocate(tmp_data)
   endif
@@ -1625,12 +1590,17 @@
         enddo
       enddo
     enddo
-
-    call write_array3dspec_as_1d_hdf5('reg3_accel', offset_nspec_vol_ic(myrank-1), offset_poin_vol_ic(myrank-1), &
-                                      tmp_data, sum(offset_poin_vol_ic(0:myrank-1)), ibool_inner_core)
+    ! TODO: no need to 3d to 1d conversion as the data is already 1d
+    call h5_write_dataset_collect_hyperslab_in_group('reg3_accel', tmp_data, &
+                                           (/sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
+    !call write_array3dspec_as_1d_hdf5('reg3_accel', offset_nspec_ic(myrank-1), offset_nglob_ic(myrank-1), &
+    !                                  tmp_data, sum(offset_nglob_ic(0:myrank-1)), ibool_inner_core)
 
     deallocate(tmp_data)
   endif
+
+  call h5_close_group()
+  call h5_close_file_p()
 
 #else
   ! no HDF5 support
@@ -1798,7 +1768,8 @@
 
 #ifdef USE_HDF5
 
-  subroutine write_array3dspec_as_1d_hdf5(dset_name, nelms, npoints, array_3dspec, offset1d, ibool_of_the_section)
+  subroutine write_array3dspec_as_1d_hdf5(dset_name, nelms, npoints, array_3dspec, offset1d, &
+                                          ibool_of_the_section, in_group)
 
   use specfem_par
   use specfem_par_movie_hdf5
@@ -1810,6 +1781,7 @@
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,nelms), intent(in) :: array_3dspec
   integer, intent(in) :: offset1d
   integer, dimension(NGLLX,NGLLY,NGLLZ,nelms), intent(in) :: ibool_of_the_section
+  logical, intent(in) :: in_group
 
   ! local parameters
   real(kind=CUSTOM_REAL), dimension(npoints) :: array_1dmovie
@@ -1818,7 +1790,11 @@
   call elm2node_base(array_3dspec, array_1dmovie, nelms, npoints, ibool_of_the_section)
 
   ! write 1d array to hdf5
-  call h5_write_dataset_collect_hyperslab_in_group(dset_name, array_1dmovie, (/offset1d/), H5_COL)
+  if (in_group) then
+    call h5_write_dataset_collect_hyperslab_in_group(dset_name, array_1dmovie, (/offset1d/), H5_COL)
+  else
+    call h5_write_dataset_collect_hyperslab(dset_name, array_1dmovie, (/offset1d/), H5_COL)
+  endif
 
   end subroutine write_array3dspec_as_1d_hdf5
 

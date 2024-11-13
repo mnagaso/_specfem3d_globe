@@ -1560,25 +1560,44 @@ end module my_libxsmm
   integer :: npoints_vol_mov_all_proc_cm
   integer :: npoints_vol_mov_all_proc_oc
   integer :: npoints_vol_mov_all_proc_ic
+  !integer :: npoints_vol_mov_all_proc_cm_soa
+  !integer :: npoints_vol_mov_all_proc_ic_soa
+  !integer :: npoints_vol_mov_all_proc_oc_rot
+  !integer :: npoints_vol_mov_all_proc_cm_att
+  !integer :: npoints_vol_mov_all_proc_ic_att
 
   integer :: nspec_vol_mov_all_proc
   integer :: nspec_vol_mov_all_proc_cm
   integer :: nspec_vol_mov_all_proc_oc
   integer :: nspec_vol_mov_all_proc_ic
+  integer :: nspec_vol_mov_all_proc_cm_soa
+  integer :: nspec_vol_mov_all_proc_ic_soa
+  integer :: nspec_vol_mov_all_proc_oc_rot
+  integer :: nspec_vol_mov_all_proc_cm_att
+  integer :: nspec_vol_mov_all_proc_ic_att
+
+  integer :: n_all_pgrav1
 
   ! number of elements for visualization (nspec * (NGLLX-1) * (NGLLY-1) * (NGLLZ-1))
   integer :: nspec_vol_mov_all_proc_cm_conn, nspec_vol_mov_all_proc_oc_conn, nspec_vol_mov_all_proc_ic_conn
 
-  integer, dimension(:), allocatable :: offset_poin_vol,         offset_nspec_vol
-  integer, dimension(:), allocatable :: offset_poin_vol_oc,      offset_nspec_vol_oc
-  integer, dimension(:), allocatable :: offset_poin_vol_ic,      offset_nspec_vol_ic
-  integer, dimension(:), allocatable :: offset_poin_vol_cm,     offset_nspec_vol_cm
+  integer, dimension(:), allocatable :: offset_poin_vol,      offset_nspec_vol ! NGLOB/NSPEC_CRUST_MANTEL for movie
+  integer, dimension(:), allocatable :: offset_nglob_cm,      offset_nspec_cm ! NGLOB/NSPEC_CRUST_MANTEL
+  integer, dimension(:), allocatable :: offset_nglob_oc,      offset_nspec_oc ! NGLOB/NSPEC_OUTER_CORE
+  integer, dimension(:), allocatable :: offset_nglob_ic,      offset_nspec_ic ! NGLOB/NSPEC_INNER_CORE
+  integer, dimension(:), allocatable :: offset_nspec_cm_soa ! NSPEC_CRUST_MANTEL_STR_OR_ATT
+  integer, dimension(:), allocatable :: offset_nspec_ic_soa ! NSPEC_INNER_CORE_STR_OR_ATT
+  integer, dimension(:), allocatable :: offset_nspec_oc_rot ! NSPEC_OUTER_CORE_ROTATION
+  integer, dimension(:), allocatable :: offset_nspec_cm_att ! NSPEC_CRUST_MANTEL_ATTENUATION
+  integer, dimension(:), allocatable :: offset_nspec_ic_att ! NSPEC_INNER_CORE_ATTENUATION
+  integer, dimension(:), allocatable :: offset_pgrav1 ! neq1 for FULL_GRAVITY
 
   ! xdmf
-  integer :: xdmf_surf = 30000
-  integer :: xdmf_vol  = 30001
+  integer :: xdmf_surf     = 30000
+  integer :: xdmf_vol      = 30001
+  integer :: xdmf_kl       = 30002
   integer :: surf_xdmf_pos = 0
-  integer :: vol_xdmf_pos = 0
+  !integer :: vol_xdmf_pos  = 0
 
 contains
 
