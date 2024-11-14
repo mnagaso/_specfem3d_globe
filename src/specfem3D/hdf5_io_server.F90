@@ -565,6 +565,10 @@ contains
   real(kind=CUSTOM_REAL), dimension(:,:,:,:),   allocatable :: dump_ford_undo_4d
   real(kind=CUSTOM_REAL), dimension(:,:,:,:,:), allocatable :: dump_ford_undo_5d
 
+  ! maximum nglob and nspec in offset arrays
+  integer :: max_nglob, max_nglob_cm, max_nglob_oc, max_nglob_ic
+  integer :: max_nspec, max_nspec_cm, max_nspec_oc, max_nspec_ic
+
   integer :: i_out
 
   ! initialize all counters
