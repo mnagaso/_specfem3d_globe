@@ -150,12 +150,12 @@ contains
 #ifdef USE_HDF5
 
   use constants, only: IMAIN,myrank,MAX_STRING_LEN
-  use shared_parameters, only: NUMBER_OF_SIMULTANEOUS_RUNS,NPROCTOT
+  use shared_parameters, only: NPROCTOT !,NUMBER_OF_SIMULTANEOUS_RUNS
 
   implicit none
 
   integer :: sizeval,irank
-  integer :: mpi_comm,split_comm,inter_comm,ier
+  integer :: mpi_comm,split_comm,inter_comm
   integer :: key,io_start,comp_start
   ! test node name
   character(len=MAX_STRING_LEN), dimension(:), allocatable :: node_names
@@ -564,10 +564,6 @@ contains
   real(kind=CUSTOM_REAL), dimension(:,:),       allocatable :: dump_ford_undo_2d_glob
   real(kind=CUSTOM_REAL), dimension(:,:,:,:),   allocatable :: dump_ford_undo_4d
   real(kind=CUSTOM_REAL), dimension(:,:,:,:,:), allocatable :: dump_ford_undo_5d
-
-  ! maximum nglob and nspec in offset arrays
-  integer :: max_nglob, max_nglob_cm, max_nglob_oc, max_nglob_ic
-  integer :: max_nspec, max_nspec_cm, max_nspec_oc, max_nspec_ic
 
   integer :: i_out
 
@@ -1021,8 +1017,6 @@ contains
 
     implicit none
 
-    integer :: ier
-
     ! allocate offset arrays
     call allocate_offset_arrays()
 
@@ -1128,7 +1122,6 @@ contains
     implicit none
 
     integer, intent(in) :: i_snapshot
-    integer :: ier
 
 #ifdef USE_HDF5
     ! forward undo arrays
