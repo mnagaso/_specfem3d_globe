@@ -374,11 +374,6 @@
 
         it = it + 1
 
-        ! print it each 100
-        !if (mod(it,100) == 0) then
-        !  if (myrank == 0) print*, 'it = ',it
-        !endif
-
         ! simulation status output and stability check
         if (mod(it,NTSTEP_BETWEEN_OUTPUT_INFO) == 0 .or. it == it_begin + 4 .or. it == it_end) then
           call check_stability()

@@ -54,6 +54,11 @@
     endif
   endif
 
+  ! check preexisting kernels.h5
+  if (HDF5_ENABLED) then
+    call initialize_kernels_hdf5()
+  endif
+
   ! dump kernel arrays
   if (SIMULATION_TYPE == 3) then
 

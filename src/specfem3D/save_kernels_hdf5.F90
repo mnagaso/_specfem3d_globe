@@ -25,6 +25,41 @@
 !
 !=====================================================================
 
+  ! initialize the kernels.h5 file
+  subroutine initialize_kernels_hdf5()
+
+    use specfem_par
+    use specfem_par_movie_hdf5
+
+    implicit none
+
+    logical :: file_exists
+    integer :: stat
+
+    file_name = LOCAL_TMP_PATH(1:len_trim(LOCAL_TMP_PATH))//'/kernels.h5'
+
+    ! erase the file if it exists
+    if (myrank == 0) then
+      inquire(file=file_name, exist=file_exists)
+      if (file_exists) then
+        ! remove the file
+        open(unit=10101010, file=file_name, iostat=stat, status='old')
+        if (stat == 0) then
+          close(unit=10101010, status='delete')
+        else
+          print *,'Error: could not delete file ',file_name
+          call exit_mpi(myrank,'Error: could not delete file')
+        end if
+      endif
+    endif
+
+    call synchronize_all()
+
+  end subroutine initialize_kernels_hdf5
+
+!
+!-------------------------------------------------------------------------------------------------
+!
 
   subroutine write_kernels_strength_noise_hdf5()
 
@@ -40,11 +75,6 @@
   implicit none
 
 #ifdef USE_HDF5
-  ! offset array
-  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_cm_adj
-
-  ! gather the number of elements in each region
-  call gather_all_all_singlei(size(sigma_kl_crust_mantle,4), offset_nspec_cm_adj, NPROCTOT_VAL)
 
   ! initialize hdf5
   call world_get_comm(comm)
@@ -59,7 +89,7 @@
     call h5_create_or_open_file(file_name)
     ! create dataset
     if (.not. HDF5_KERNEL_VIS) then
-      call h5_create_dataset_gen('sigma_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('sigma_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
     else
       call h5_create_dataset_gen('sigma_kernel', (/sum(offset_nglob_cm)/), 1, CUSTOM_REAL)
     endif
@@ -75,9 +105,9 @@
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
     call h5_write_dataset_collect_hyperslab('sigma_kernel', sigma_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
   else
-    call write_array3dspec_as_1d_hdf5('sigma_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('sigma_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       sigma_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
   endif
@@ -136,15 +166,8 @@
 
 #ifdef USE_HDF5
 
-  ! offset array
-  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_cm_adj
-
   ! check if anything to do
   if (.not. ANISOTROPIC_KL) return
-
-  ! gather the number of elements in each region
-  !call gather_all_all_singlei(size(alphav_kl_crust_mantle,4), offset_nspec_cm_adj, NPROCTOT_VAL)
-  call gather_all_all_singlei(NSPEC_CRUST_MANTLE_ADJOINT, offset_nspec_cm_adj, NPROCTOT_VAL)
 
   ! initialize hdf5
   call world_get_comm(comm)
@@ -161,65 +184,65 @@
 
     if (.not. HDF5_KERNEL_VIS) then
       if (SAVE_TRANSVERSE_KL_ONLY) then
-        call h5_create_dataset_gen('alphav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('alphah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('betav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('betah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('eta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('alphav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('alphah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('betav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('betah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('eta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
-        call h5_create_dataset_gen('bulk_c_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('bulk_betav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('bulk_betah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('bulk_c_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('bulk_betav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('bulk_betah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
-        call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('bulk_beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('bulk_beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
       else if (SAVE_AZIMUTHAL_ANISO_KL_ONLY) then
-        call h5_create_dataset_gen('alphav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('alphah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('betav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('betah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('alphav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('alphah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('betav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('betah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
-        call h5_create_dataset_gen('bulk_c_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('bulk_betav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('bulk_betah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('bulk_c_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('bulk_betav_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('bulk_betah_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
-        call h5_create_dataset_gen('eta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('eta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
-        call h5_create_dataset_gen('Gc_prime_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('Gs_prime_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('Gc_prime_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('Gs_prime_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
         ! check isotropic kernel
         if (.false.) then
-          call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('bulk_beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('bulk_beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
         endif
         ! check anisotropic kernels
         if (.false.) then
-          call h5_create_dataset_gen('A_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('C_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('L_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('N_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('F_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('Gc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('Gs_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('Jc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('Kc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('Mc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('Bc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('Hc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('Ec_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-          call h5_create_dataset_gen('Dc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('A_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('C_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('L_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('N_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('F_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('Gc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('Gs_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('Jc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('Kc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('Mc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('Bc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('Hc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('Ec_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+          call h5_create_dataset_gen('Dc_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
         endif
 
       else
         ! fully anisotropic kernels
-        call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        call h5_create_dataset_gen('cijkl_kernel', (/21,NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 5, CUSTOM_REAL)
+        call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        call h5_create_dataset_gen('cijkl_kernel', (/21,NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 5, CUSTOM_REAL)
 
       endif
 
@@ -258,8 +281,8 @@
 
       else
         ! fully anisotropic kernels
-        !call h5_create_dataset_gen('rho_kernel',      (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-        !call h5_create_dataset_gen('cijkl_kernel', (/21,NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 5, CUSTOM_REAL)
+        !call h5_create_dataset_gen('rho_kernel',      (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+        !call h5_create_dataset_gen('cijkl_kernel', (/21,NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 5, CUSTOM_REAL)
       endif
 
 
@@ -280,168 +303,168 @@
 
     if (SAVE_TRANSVERSE_KL_ONLY) then
       call h5_write_dataset_collect_hyperslab('alphav_kernel', alphav_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('alphah_kernel', alphah_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('betav_kernel', betav_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('betah_kernel', betah_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('eta_kernel', eta_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
       call h5_write_dataset_collect_hyperslab('bulk_c_kernel', bulk_c_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('bulk_betav_kernel', bulk_betav_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('bulk_betah_kernel', bulk_betah_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
       call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('bulk_beta_kernel', bulk_beta_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
     else if (SAVE_AZIMUTHAL_ANISO_KL_ONLY) then
       call h5_write_dataset_collect_hyperslab('alphav_kernel', alphav_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('alphah_kernel', alphah_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('betav_kernel', betav_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('betah_kernel', betah_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
       call h5_write_dataset_collect_hyperslab('bulk_c_kernel', bulk_c_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('bulk_betav_kernel', bulk_betav_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('bulk_betah_kernel', bulk_betah_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
       call h5_write_dataset_collect_hyperslab('eta_kernel', eta_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
       call h5_write_dataset_collect_hyperslab('Gc_prime_kernel', Gc_prime_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('Gs_prime_kernel', Gs_prime_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
       ! check isotropic kernel
       if (.false.) then
         call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_crust_mantle, &
-                                                (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                                (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
         call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_crust_mantle, &
-                                                (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                                (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
         call h5_write_dataset_collect_hyperslab('bulk_beta_kernel', bulk_beta_kl_crust_mantle, &
-                                                (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                                (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       endif
 
       ! check anisotropic kernels
       !if (.false.) then
-      !  call h5_write_dataset_collect_hyperslab('A_kernel', A_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('C_kernel', C_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('L_kernel', L_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('N_kernel', N_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('F_kernel', F_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('Gc_kernel', Gc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('Gs_kernel', Gs_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('Jc_kernel', Jc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('Kc_kernel', Kc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('Mc_kernel', Mc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('Bc_kernel', Bc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('Hc_kernel', Hc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('Ec_kernel', Ec_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
-      !  call h5_write_dataset_collect_hyperslab('Dc_kernel', Dc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('A_kernel', A_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('C_kernel', C_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('L_kernel', L_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('N_kernel', N_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('F_kernel', F_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('Gc_kernel', Gc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('Gs_kernel', Gs_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('Jc_kernel', Jc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('Kc_kernel', Kc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('Mc_kernel', Mc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('Bc_kernel', Bc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('Hc_kernel', Hc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('Ec_kernel', Ec_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
+      !  call h5_write_dataset_collect_hyperslab('Dc_kernel', Dc_kl_crust_mantle, (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       !endif
 
     else
 
       ! fully anisotropic kernels
       call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, &
-                                              (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
       call h5_write_dataset_collect_hyperslab('cijkl_kernel', cijkl_kl_crust_mantle, &
-                                              (/0,0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                              (/0,0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
     endif
 
   else ! HDF5_KERNEL_VIS
     if (SAVE_TRANSVERSE_KL_ONLY) then
-      call write_array3dspec_as_1d_hdf5('alphav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('alphav_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       alphav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('alphah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('alphah_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       alphah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('betav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('betav_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       betav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('betah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('betah_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       betah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('eta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('eta_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       eta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       rho_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('bulk_c_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('bulk_c_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       bulk_c_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('bulk_betav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('bulk_betav_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       bulk_betav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('bulk_betah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('bulk_betah_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       bulk_betah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       alpha_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('beta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('beta_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       beta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('bulk_beta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('bulk_beta_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       bulk_beta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
 
     else if (SAVE_AZIMUTHAL_ANISO_KL_ONLY) then
-      call write_array3dspec_as_1d_hdf5('alphav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('alphav_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       alphav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('alphah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('alphah_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       alphah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('betav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('betav_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       betav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('betah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('betah_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       betah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('bulk_c_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('bulk_c_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       bulk_c_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('bulk_betav_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('bulk_betav_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       bulk_betav_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('bulk_betah_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('bulk_betah_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       bulk_betah_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('eta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('eta_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       eta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       rho_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('Gc_prime_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('Gc_prime_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       Gc_prime_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
-      call write_array3dspec_as_1d_hdf5('Gs_prime_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+      call write_array3dspec_as_1d_hdf5('Gs_prime_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                       Gs_prime_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                       ibool_crust_mantle, .false.)
 
@@ -505,14 +528,9 @@
       bulk_c_kl_crust_mantle,bulk_beta_kl_crust_mantle
 
 #ifdef USE_HDF5
-  ! offset array
-  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_cm_adj
 
   ! checks if anything to do
   if (ANISOTROPIC_KL) return
-
-  ! gather the number of elements in each region
-  call gather_all_all_singlei(NSPEC_CRUST_MANTLE_ADJOINT, offset_nspec_cm_adj, NPROCTOT_VAL)
 
   ! initialize hdf5
   call world_get_comm(comm)
@@ -529,16 +547,16 @@
     ! create dataset
     if (.not. HDF5_KERNEL_VIS) then
 
-      call h5_create_dataset_gen('rhonotprime_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('kappa_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('mu_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('rhonotprime_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('kappa_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('mu_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
-      call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
-      call h5_create_dataset_gen('bulk_c_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('bulk_beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('bulk_c_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('bulk_beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
 
     else ! HDF5_KERNEL_VIS
 
@@ -567,49 +585,55 @@
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
     call h5_write_dataset_collect_hyperslab('rhonotprime_kernel', rhonotprime_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('kappa_kernel', kappa_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('mu_kernel', mu_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
     call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
 
     call h5_write_dataset_collect_hyperslab('bulk_c_kernel', bulk_c_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('bulk_beta_kernel', bulk_beta_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
   else
-
-    call write_array3dspec_as_1d_hdf5('rhonotprime_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+!print*, myrank, 'DEBUG 0002a'
+!print*, myrank, 'DEBUG shape of rhonotprime_kl_crust_mantle', shape(rhonotprime_kl_crust_mantle)
+!print*, myrank, 'DEBUG offset_nspec_cm', offset_nspec_cm
+!print*, myrank, 'DEBUG offset_nglob_cm', offset_nglob_cm
+!print*, myrank, 'DEBUG ibool_crust_mantle', shape(ibool_crust_mantle)
+! access memory ibool_crust_mantle
+!print*, myrank, 'DEBUG ibool_crust_mantle(1)', ibool_crust_mantle(1,1,1,1)
+    call write_array3dspec_as_1d_hdf5('rhonotprime_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     rhonotprime_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.) !!!!!!!!!!!
-    call write_array3dspec_as_1d_hdf5('kappa_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('kappa_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     kappa_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
-    call write_array3dspec_as_1d_hdf5('mu_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('mu_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     mu_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
 
-    call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     rho_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
-    call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     alpha_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
-    call write_array3dspec_as_1d_hdf5('beta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('beta_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     beta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
 
-    call write_array3dspec_as_1d_hdf5('bulk_c_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('bulk_c_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     bulk_c_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
-    call write_array3dspec_as_1d_hdf5('bulk_beta_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('bulk_beta_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     bulk_beta_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
 
@@ -657,11 +681,6 @@
   implicit none
 
 #ifdef USE_HDF5
-  ! offset array
-  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_oc_adj
-
-  ! gather the number of elements in each region
-  call gather_all_all_singlei(NSPEC_OUTER_CORE_ADJOINT, offset_nspec_oc_adj, NPROCTOT_VAL)
 
   ! initialize hdf5
   call world_get_comm(comm)
@@ -676,8 +695,8 @@
     call h5_create_or_open_file(file_name)
     ! create dataset
     if (.not. HDF5_KERNEL_VIS) then
-      call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_oc_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_oc_adj)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_oc)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_oc)/), 4, CUSTOM_REAL)
     else
       call h5_create_dataset_gen('rho_kernel', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
       call h5_create_dataset_gen('alpha_kernel', (/sum(offset_nglob_oc)/), 1, CUSTOM_REAL)
@@ -695,14 +714,14 @@
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
     call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_outer_core, &
-                                            (/0,0,0,sum(offset_nspec_oc_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_oc(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_outer_core, &
-                                            (/0,0,0,sum(offset_nspec_oc_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_oc(0:myrank-1))/), H5_COL)
   else
-    call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_oc_adj(myrank-1), offset_nglob_oc(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_oc(myrank-1), offset_nglob_oc(myrank-1), &
                                     rho_kl_outer_core, sum(offset_nglob_oc(0:myrank-1)), &
                                     ibool_outer_core, .false.)
-    call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_oc_adj(myrank-1), offset_nglob_oc(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_oc(myrank-1), offset_nglob_oc(myrank-1), &
                                     alpha_kl_outer_core, sum(offset_nglob_oc(0:myrank-1)), &
                                     ibool_outer_core, .false.)
   endif
@@ -739,11 +758,7 @@
   implicit none
 
 #ifdef USE_HDF5
-  ! offset array
-  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_ic_adj
 
-  ! gather the number of elements in each region
-  call gather_all_all_singlei(NSPEC_INNER_CORE_ADJOINT, offset_nspec_ic_adj, NPROCTOT_VAL)
 
   ! initialize hdf5
   call world_get_comm(comm)
@@ -759,9 +774,9 @@
 
     ! create dataset
     if (.not. HDF5_KERNEL_VIS) then
-      call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_ic_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_ic_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_ic_adj)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_ic)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('alpha_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_ic)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('beta_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_ic)/), 4, CUSTOM_REAL)
     else
       call h5_create_dataset_gen('rho_kernel', (/sum(offset_nglob_ic)/), 1, CUSTOM_REAL)
       call h5_create_dataset_gen('alpha_kernel', (/sum(offset_nglob_ic)/), 1, CUSTOM_REAL)
@@ -779,19 +794,19 @@
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
     call h5_write_dataset_collect_hyperslab('rho_kernel', rho_kl_inner_core, &
-                                            (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_ic(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('alpha_kernel', alpha_kl_inner_core, &
-                                            (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_ic(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('beta_kernel', beta_kl_inner_core, &
-                                            (/0,0,0,sum(offset_nspec_ic_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_ic(0:myrank-1))/), H5_COL)
   else
-    call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_ic_adj(myrank-1), offset_nglob_ic(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('rho_kernel', offset_nspec_ic(myrank-1), offset_nglob_ic(myrank-1), &
                                     rho_kl_inner_core, sum(offset_nglob_ic(0:myrank-1)), &
                                     ibool_inner_core, .false.)
-    call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_ic_adj(myrank-1), offset_nglob_ic(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('alpha_kernel', offset_nspec_ic(myrank-1), offset_nglob_ic(myrank-1), &
                                     alpha_kl_inner_core, sum(offset_nglob_ic(0:myrank-1)), &
                                     ibool_inner_core, .false.)
-    call write_array3dspec_as_1d_hdf5('beta_kernel', offset_nspec_ic_adj(myrank-1), offset_nglob_ic(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('beta_kernel', offset_nspec_ic(myrank-1), offset_nglob_ic(myrank-1), &
                                     beta_kl_inner_core, sum(offset_nglob_ic(0:myrank-1)), &
                                     ibool_inner_core, .false.)
   endif
@@ -920,11 +935,7 @@
   implicit none
 
 #ifdef USE_HDF5
-  ! offset array
-  integer, dimension(0:NPROCTOT_VAL-1) :: offset_nspec_cm_adj
 
-  ! gather the number of elements in each region
-  call gather_all_all_singlei(NSPEC_CRUST_MANTLE_ADJOINT, offset_nspec_cm_adj, NPROCTOT_VAL)
 
   ! initialize hdf5
   call world_get_comm(comm)
@@ -940,10 +951,10 @@
 
     ! create dataset
     if (.not. HDF5_KERNEL_VIS) then
-      call h5_create_dataset_gen('hess_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('hess_rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('hess_kappa_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
-      call h5_create_dataset_gen('hess_mu_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm_adj)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('hess_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('hess_rho_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('hess_kappa_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
+      call h5_create_dataset_gen('hess_mu_kernel', (/NGLLX,NGLLY,NGLLZ,sum(offset_nspec_cm)/), 4, CUSTOM_REAL)
     else ! HDF5_KERNEL_VIS
       call h5_create_dataset_gen('hess_kernel', (/sum(offset_nglob_cm)/), 1, CUSTOM_REAL)
       call h5_create_dataset_gen('hess_rho_kernel', (/sum(offset_nglob_cm)/), 1, CUSTOM_REAL)
@@ -962,24 +973,24 @@
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
     call h5_write_dataset_collect_hyperslab('hess_kernel', hess_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('hess_rho_kernel', hess_rho_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('hess_kappa_kernel', hess_kappa_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
     call h5_write_dataset_collect_hyperslab('hess_mu_kernel', hess_mu_kl_crust_mantle, &
-                                            (/0,0,0,sum(offset_nspec_cm_adj(0:myrank-1))/), H5_COL)
+                                            (/0,0,0,sum(offset_nspec_cm(0:myrank-1))/), H5_COL)
   else
-    call write_array3dspec_as_1d_hdf5('hess_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('hess_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     hess_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
-    call write_array3dspec_as_1d_hdf5('hess_rho_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('hess_rho_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     hess_rho_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
-    call write_array3dspec_as_1d_hdf5('hess_kappa_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('hess_kappa_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     hess_kappa_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
-    call write_array3dspec_as_1d_hdf5('hess_mu_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
+    call write_array3dspec_as_1d_hdf5('hess_mu_kernel', offset_nspec_cm(myrank-1), offset_nglob_cm(myrank-1), &
                                     hess_mu_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
   endif

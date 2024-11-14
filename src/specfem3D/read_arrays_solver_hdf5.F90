@@ -186,7 +186,7 @@
 
   if (iregion_code == IREGION_TRINFINITE .or. iregion_code == IREGION_INFINITE) then
     call h5_close_group()
-    call h5_close_file()
+    call h5_close_file_p()
     return
   endif
 
@@ -1205,6 +1205,10 @@
       ! close group
       call h5_close_group()
     endif ! NSPEC_CRUST_MANTLE > 0
+
+    ! close file
+    call h5_close_file_p()
+
   endif ! SAVE_BOUNDARY_MESH .and. SIMULATION_TYPE == 3
 
 #else
@@ -1255,7 +1259,7 @@
   name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/stacey.h5'
 
   ! open the hdf5 file
-  call h5_open_file_p(name_database_hdf5)
+  call h5_open_file_p_collect(name_database_hdf5)
 
   if (NSPEC_CRUST_MANTLE > 0) then
 
