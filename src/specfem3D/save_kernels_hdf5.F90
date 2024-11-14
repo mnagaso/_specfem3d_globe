@@ -100,7 +100,13 @@
   call synchronize_all()
 
   ! open hdf5
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
 
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
@@ -296,7 +302,13 @@
   call synchronize_all()
 
   ! write data from all ranks
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
 
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
@@ -580,7 +592,13 @@
   call synchronize_all()
 
   ! open hdf5
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
 
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
@@ -709,7 +727,13 @@
   call synchronize_all()
 
   ! open hdf5
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
 
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
@@ -789,7 +813,13 @@
   call synchronize_all()
 
   ! open hdf5
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
 
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
@@ -892,7 +922,13 @@
   call synchronize_all()
 
   ! open hdf5
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
 
   ! write data
   if (.not. SUPPRESS_CRUSTAL_MESH .and. HONOR_1D_SPHERICAL_MOHO) then
@@ -968,7 +1004,13 @@
   call synchronize_all()
 
   ! open hdf5
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
 
   ! write data
   if (.not. HDF5_KERNEL_VIS) then
@@ -1209,7 +1251,14 @@
   call synchronize_all()
 
   ! write the data
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
+
   call h5_open_group(group_name)
 
   ! write the data

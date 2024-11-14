@@ -124,7 +124,14 @@
   call h5_set_mpi_info(comm, info, myrank, NPROCTOT_VAL)
 
   ! open the hdf5 file
-  call h5_open_file_p_collect(name_database_hdf5)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(name_database_hdf5)
+  else
+    ! open file
+    call h5_open_file_p(name_database_hdf5)
+  endif
+
   ! open the group
   call h5_open_group(gname_region)
 
@@ -457,7 +464,13 @@
   call h5_set_mpi_info(comm, info, myrank, NPROCTOT_VAL)
 
   ! open the hdf5 file
-  call h5_open_file_p_collect(name_database_hdf5)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(name_database_hdf5)
+  else
+    ! open file
+    call h5_open_file_p(name_database_hdf5)
+  endif
   ! open the group
   call h5_open_group(gname_region)
 
@@ -818,7 +831,13 @@
 
   ! open the hdf5 file
   name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/boundary.h5'
-  call h5_open_file_p_collect(name_database_hdf5)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(name_database_hdf5)
+  else
+    ! open file
+    call h5_open_file_p(name_database_hdf5)
+  endif
 
 
   if (NSPEC_CRUST_MANTLE > 0) then
@@ -1139,7 +1158,13 @@
   if (SAVE_BOUNDARY_MESH .and. SIMULATION_TYPE == 3) then
     ! open boundary_disc.h5 file
     name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/boundary_disc.h5'
-    call h5_open_file_p_collect(name_database_hdf5)
+    if (H5_COL) then
+      ! open file
+      call h5_open_file_p_collect(name_database_hdf5)
+    else
+      ! open file
+      call h5_open_file_p(name_database_hdf5)
+    endif
 
     if (NSPEC_CRUST_MANTLE > 0) then
       write(gname_region, "('reg',i1)") IREGION_CRUST_MANTLE
@@ -1259,7 +1284,13 @@
   name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/stacey.h5'
 
   ! open the hdf5 file
-  call h5_open_file_p_collect(name_database_hdf5)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(name_database_hdf5)
+  else
+    ! open file
+    call h5_open_file_p(name_database_hdf5)
+  endif
 
   if (NSPEC_CRUST_MANTLE > 0) then
 
@@ -1447,7 +1478,13 @@
   name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/solver_data.h5'
   write(gname_region, "('reg',i1)") iregion_code
   ! open the hdf5 file
-  call h5_open_file_p_collect(name_database_hdf5)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(name_database_hdf5)
+  else
+    ! open file
+    call h5_open_file_p(name_database_hdf5)
+  endif
   ! open the group
   call h5_open_group(gname_region)
   ! read the offset_nelems
@@ -1459,7 +1496,13 @@
   ! open attenuation.h5 file
   name_database_hdf5 = LOCAL_PATH(1:len_trim(LOCAL_PATH))//'/attenuation.h5'
   ! open the hdf5 file
-  call h5_open_file_p_collect(name_database_hdf5)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(name_database_hdf5)
+  else
+    ! open file
+    call h5_open_file_p(name_database_hdf5)
+  endif
   ! open the group
   call h5_open_group(gname_region)
 

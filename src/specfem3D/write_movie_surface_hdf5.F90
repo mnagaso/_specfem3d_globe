@@ -225,7 +225,13 @@ subroutine write_movie_surface_mesh_hdf5()
   call synchronize_all()
 
   ! write data to h5 file
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
   call h5_open_group("surf_coord")
 
   ! write x, y, z
@@ -423,7 +429,14 @@ subroutine write_movie_surface_hdf5()
   call synchronize_all()
 
   ! write data to h5 file
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
+
   call h5_open_group(group_name)
 
   ! write ux, uy, uz

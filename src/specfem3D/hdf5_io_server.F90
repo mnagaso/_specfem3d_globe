@@ -1297,8 +1297,13 @@ contains
     !! set MPI
     !call h5_set_mpi_info(comm, info, myrank, NPROCTOT_VAL)
 
-    call h5_open_file_p_collect(file_name)
-    !call h5_open_file(file_name)
+    if (H5_COL) then
+      ! open file
+      call h5_open_file_p_collect(file_name)
+    else
+      ! open file
+      call h5_open_file_p(file_name)
+    endif
 
     ! receive the data
     if (tag == io_tag_ford_undo_d_cm) then

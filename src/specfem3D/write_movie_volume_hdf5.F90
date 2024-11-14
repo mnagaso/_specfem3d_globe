@@ -440,7 +440,13 @@
   call synchronize_all()
 
   ! write the data
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
   call h5_open_group(group_name)
 
   ! write the data
@@ -655,7 +661,13 @@
   endif
 
   ! write the data
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
   call h5_open_group(group_name)
 
   call h5_write_dataset_collect_hyperslab_in_group(trim(movie_prefix)//'NN', store_val3d_NN, &
@@ -798,7 +810,13 @@
   call synchronize_all()
 
   ! write the data
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
   call h5_open_group(group_name)
 
   if (MOVIE_OUTPUT_DIV) then
@@ -1063,7 +1081,13 @@
   call synchronize_all()
 
   ! write the data
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
   call h5_open_group(group_name)
 
   call h5_write_dataset_collect_hyperslab_in_group(trim(movie_prefix)//'N', store_val3d_N(1:npoints_3dmovie), &
@@ -1164,7 +1188,13 @@
   call synchronize_all()
 
   ! write the data
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
   call h5_open_group(group_name)
 
   ! outputs norm of displacement
@@ -1336,7 +1366,13 @@
   call synchronize_all()
 
   ! write the data
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
   call h5_open_group(group_name)
 
   ! outputs norm of velocity
@@ -1511,7 +1547,13 @@
   call synchronize_all()
 
   ! write the data
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
   call h5_open_group(group_name)
 
   ! outputs norm of acceleration

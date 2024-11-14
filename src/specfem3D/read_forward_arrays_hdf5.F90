@@ -91,7 +91,13 @@
   call h5_set_mpi_info(comm, info, myrank, NPROCTOT_VAL)
 
   ! open the file
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
 
   ! read the arrays
   call h5_read_dataset_collect_hyperslab('displ_crust_mantle', displ_crust_mantle, (/0,sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
@@ -242,7 +248,13 @@
   call h5_set_mpi_info(comm, info, myrank, NPROCTOT_VAL)
 
   ! open the file
-  call h5_open_file_p_collect(file_name)
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
 
   ! read the arrays
   call h5_read_dataset_collect_hyperslab('displ_crust_mantle', b_displ_crust_mantle, (/0,sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
@@ -409,8 +421,13 @@
   call h5_set_mpi_info(comm, info, myrank, NPROCTOT_VAL)
 
   ! open the file
-  call h5_open_file_p_collect(file_name)
-
+  if (H5_COL) then
+    ! open file
+    call h5_open_file_p_collect(file_name)
+  else
+    ! open file
+    call h5_open_file_p(file_name)
+  endif
   ! read the arrays
   call h5_read_dataset_collect_hyperslab('displ_crust_mantle', b_displ_crust_mantle, (/0,sum(offset_nglob_cm(0:myrank-1))/), H5_COL)
   call h5_read_dataset_collect_hyperslab('displ_outer_core',   b_displ_outer_core,   (/sum(offset_nglob_oc(0:myrank-1))/), H5_COL)

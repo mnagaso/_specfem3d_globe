@@ -123,7 +123,13 @@
     call synchronize_all()
 
     ! write data from all ranks
-    call h5_open_file_p_collect(file_name)
+    if (H5_COL) then
+      ! open file
+      call h5_open_file_p_collect(file_name)
+    else
+      ! open file
+      call h5_open_file_p(file_name)
+    endif
 
     ! write datasets
     call h5_write_dataset_collect_hyperslab('displ_crust_mantle',displ_crust_mantle,(/0,sum(offset_nglob_cm(0:myrank-1))/),H5_COL)
@@ -313,7 +319,13 @@
     call synchronize_all()
 
     ! write data from all ranks
-    call h5_open_file_p_collect(file_name)
+    if (H5_COL) then
+      ! open file
+      call h5_open_file_p_collect(file_name)
+    else
+      ! open file
+      call h5_open_file_p(file_name)
+    endif
 
     ! write datasets
     call h5_write_dataset_collect_hyperslab('displ_crust_mantle',displ_crust_mantle,(/0,sum(offset_nglob_cm(0:myrank-1))/),H5_COL)
@@ -617,7 +629,13 @@
     call synchronize_all()
 
     ! write data from all ranks
-    call h5_open_file_p_collect(file_name)
+    if (H5_COL) then
+      ! open file
+      call h5_open_file_p_collect(file_name)
+    else
+      ! open file
+      call h5_open_file_p(file_name)
+    endif
 
     ! write datasets
     call h5_write_dataset_collect_hyperslab('displ_crust_mantle',displ_crust_mantle,(/0,sum(offset_nglob_cm(0:myrank-1))/),H5_COL)
@@ -827,7 +845,13 @@
     !
     ! write data from all ranks
     !
-    call h5_open_file_p_collect(file_name)
+    if (H5_COL) then
+      ! open file
+      call h5_open_file_p_collect(file_name)
+    else
+      ! open file
+      call h5_open_file_p(file_name)
+    endif
 
     ! scaling factors to re-dimensionalize units
     scaleval1 = real( sqrt(PI*GRAV*RHOAV)*(R_PLANET/1000.0d0), kind=CUSTOM_REAL)  ! velocities
