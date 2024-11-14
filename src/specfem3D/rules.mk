@@ -88,6 +88,7 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/get_attenuation.solverstatic.o \
 	$O/hdf5_io_server.solverstatic.o \
 	$O/initialize_simulation.solverstatic.o \
+	$O/io_tester.solverstatic.o \
 	$O/iterate_time.solverstatic.o \
 	$O/iterate_time_undoatt.solverstatic.o \
 	$O/locate_point.solverstatic.o \
@@ -152,6 +153,7 @@ specfem3D_SOLVER_OBJECTS += \
 specfem3D_MODULES = \
 	$(FC_MODDIR)/asdf_data.$(FC_MODEXT) \
 	$(FC_MODDIR)/constants_solver.$(FC_MODEXT) \
+	$(FC_MODDIR)/io_bandwidth.$(FC_MODEXT) \
 	$(FC_MODDIR)/io_server_hdf5.$(FC_MODEXT) \
 	$(FC_MODDIR)/manager_adios.$(FC_MODEXT) \
 	$(FC_MODDIR)/mod_element.$(FC_MODEXT) \

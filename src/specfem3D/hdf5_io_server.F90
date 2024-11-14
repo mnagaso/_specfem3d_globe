@@ -136,7 +136,7 @@ module io_server_hdf5
   integer :: my_io_id
 
   ! verbose output (for debugging)
-  logical, parameter :: VERBOSE = .true.
+  logical, parameter :: VERBOSE = .false.
 
 
 ! USE_HDF5
@@ -548,6 +548,8 @@ contains
   use specfem_par_movie_hdf5
   use constants, only: myrank, my_status_size, my_status_source, my_status_tag
 
+  use io_bandwidth
+
   implicit none
 
   integer :: status(my_status_size)
@@ -609,6 +611,10 @@ contains
 
   endif ! UNDO_ATTENUATION
 
+
+  ! initialize timer
+  call initialize_bytes_written()
+
   !
   ! idling loop
   !
@@ -650,6 +656,13 @@ contains
       ford_undo_out_count = ford_undo_out_count + 1
       ! reset the receive counter
       n_recv_msg_ford_undo = 0
+
+      ! write out the times
+      call calculate_bandwidth_all_procs()
+
+      ! re-initialize timer
+      call initialize_bytes_written()
+
     endif
 
 
@@ -1266,6 +1279,7 @@ contains
     use specfem_par_movie_hdf5
     use manager_hdf5
     use constants, only: CUSTOM_REAL, my_status_size, my_status_source, my_status_tag
+    use io_bandwidth
 
     implicit none
 
@@ -1279,6 +1293,11 @@ contains
 
     integer :: msg_size, ista, iend, req_dummy, data_len
     integer :: neq, neq1
+
+    integer :: data_size ! size of one data element in bytes
+
+    ! default datasize is for CUSTOM_REAL
+    data_size = CUSTOM_REAL ! 8 for double precision, 4 for single precision
 
     ! get message size
     call world_get_size_msg(status, msg_size)
@@ -1314,7 +1333,9 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_2d_glob(:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('displ_crust_mantle', dump_ford_undo_2d_glob(:,1:data_len), (/0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_v_cm) then
       ! veloc_crust_mantle
@@ -1324,7 +1345,9 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_2d_glob(:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('veloc_crust_mantle', dump_ford_undo_2d_glob(:,1:data_len), (/0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_a_cm) then
       ! accel_crust_mantle
@@ -1334,7 +1357,9 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_2d_glob(:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('accel_crust_mantle', dump_ford_undo_2d_glob(:,1:data_len), (/0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_d_oc) then
       ! displ_outer_core
@@ -1344,7 +1369,9 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_1d_glob(1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('displ_outer_core', dump_ford_undo_1d_glob(1:data_len), (/ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_v_oc) then
       ! veloc_outer_core
@@ -1354,7 +1381,9 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_1d_glob(1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('veloc_outer_core', dump_ford_undo_1d_glob(1:data_len), (/ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_a_oc) then
       ! accel_outer_core
@@ -1364,8 +1393,9 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_1d_glob(1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('accel_outer_core', dump_ford_undo_1d_glob(1:data_len), (/ista/), H5_COL)
-
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_d_ic) then
       ! displ_inner_core
@@ -1375,7 +1405,9 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_2d_glob(:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('displ_inner_core', dump_ford_undo_2d_glob(:,1:data_len), (/0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_v_ic) then
       ! veloc_inner_core
@@ -1385,7 +1417,9 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_2d_glob(:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('veloc_inner_core', dump_ford_undo_2d_glob(:,1:data_len), (/0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_a_ic) then
       ! accel_inner_core
@@ -1395,7 +1429,9 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_2d_glob(:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('accel_inner_core', dump_ford_undo_2d_glob(:,1:data_len), (/0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_xx_cm) then
       ! epsilondev_xx_crust_mantle
@@ -1405,8 +1441,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_xx_crust_mantle', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                               (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_yy_cm) then
       ! epsilondev_yy_crust_mantle
@@ -1416,8 +1454,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_yy_crust_mantle', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                               (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_xy_cm) then
       ! epsilondev_xy_crust_mantle
@@ -1427,8 +1467,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_xy_crust_mantle', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                               (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_xz_cm) then
       ! epsilondev_xz_crust_mantle
@@ -1438,8 +1480,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_xz_crust_mantle', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                               (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_yz_cm) then
       ! epsilondev_yz_crust_mantle
@@ -1449,8 +1493,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_yz_crust_mantle', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                               (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_xx_ic) then
       ! epsilondev_xx_inner_core
@@ -1460,8 +1506,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_xx_inner_core', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                             (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_yy_ic) then
       ! epsilondev_yy_inner_core
@@ -1471,8 +1519,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_yy_inner_core', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                             (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_xy_ic) then
       ! epsilondev_xy_inner_core
@@ -1482,8 +1532,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_xy_inner_core', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                             (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_xz_ic) then
       ! epsilondev_xz_inner_core
@@ -1493,8 +1545,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_xz_inner_core', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                             (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_eps_yz_ic) then
       ! epsilondev_yz_inner_core
@@ -1504,8 +1558,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('epsilondev_yz_inner_core', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                             (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_A_rot) then
       ! A_array_rotation
@@ -1515,8 +1571,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('A_array_rotation', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                     (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_B_rot) then
       ! B_array_rotation
@@ -1526,8 +1584,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_4d(:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('B_array_rotation', dump_ford_undo_4d(:,:,:,1:data_len), &
                                                                                     (/0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_xx_cm) then
       ! R_xx_crust_mantle
@@ -1537,8 +1597,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_xx_crust_mantle', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                     (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_yy_cm) then
       ! R_yy_crust_mantle
@@ -1548,8 +1610,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_yy_crust_mantle', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                     (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_xy_cm) then
       ! R_xy_crust_mantle
@@ -1559,8 +1623,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_xy_crust_mantle', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                     (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_xz_cm) then
       ! R_xz_crust_mantle
@@ -1570,8 +1636,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_xz_crust_mantle', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                     (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_yz_cm) then
       ! R_yz_crust_mantle
@@ -1581,8 +1649,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_yz_crust_mantle', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                     (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_xx_ic) then
       ! R_xx_inner_core
@@ -1592,8 +1662,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_xx_inner_core', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                   (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_yy_ic) then
       ! R_yy_inner_core
@@ -1603,8 +1675,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_yy_inner_core', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                   (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_xy_ic) then
       ! R_xy_inner_core
@@ -1614,8 +1688,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_xy_inner_core', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                   (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_xz_ic) then
       ! R_xz_inner_core
@@ -1625,8 +1701,10 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_xz_inner_core', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                   (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_R_yz_ic) then
       ! R_yz_inner_core
@@ -1636,22 +1714,34 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_5d(:,:,:,:,1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('R_yz_inner_core', dump_ford_undo_5d(:,:,:,:,1:data_len), &
                                                                                   (/0, 0, 0, 0, ista/), H5_COL)
+      call stop_timer()
 
     else if (tag == io_tag_ford_undo_neq) then
       ! neq
       ! receive
       call irecv_i_inter((/neq/), 1, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('neq', (/neq/), (/tag_src/), H5_COL)
+      call stop_timer()
+
+      ! data size if for integer
+      data_size = 4
 
     else if (tag == io_tag_ford_undo_neq1) then
       ! neq1
       ! receive
       call irecv_i_inter((/neq1/), 1, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('neq1', (/neq1/), (/tag_src/), H5_COL)
+      call stop_timer()
+
+      ! data size if for integer
+      data_size = 4
 
     else if (tag == io_tag_ford_undo_pgrav1) then
       ! pgrav1
@@ -1661,14 +1751,19 @@ contains
       ! receive
       call irecvv_cr_inter(dump_ford_undo_1d_glob(1:data_len), msg_size, tag_src, tag, req_dummy)
       ! write
+      call start_timer()
       call h5_write_dataset_collect_hyperslab('pgrav1', dump_ford_undo_1d_glob(1:data_len), (/ista/), H5_COL)
-
+      call stop_timer()
     else
       ! unknown tag
       print *, 'Error: unknown tag in recv_and_write_ford_undo'
       stop 'Error: unknown tag in recv_and_write_ford_undo'
 
     end if
+
+
+    ! count the bytes written
+    call set_bytes_written_from_array(data_size, msg_size)
 
     ! close file
     call h5_close_file_p()
