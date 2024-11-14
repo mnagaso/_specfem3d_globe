@@ -82,6 +82,8 @@
                                       ibool_crust_mantle, .false.)
   endif
 
+  call synchronize_all()
+
   ! close hdf5
   call h5_close_file_p()
 
@@ -449,6 +451,8 @@
 
   endif
 
+  call synchronize_all()
+
   ! close hdf5
   call h5_close_file_p()
 
@@ -584,7 +588,7 @@
 
     call write_array3dspec_as_1d_hdf5('rhonotprime_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
                                     rhonotprime_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
-                                    ibool_crust_mantle, .false.)
+                                    ibool_crust_mantle, .false.) !!!!!!!!!!!
     call write_array3dspec_as_1d_hdf5('kappa_kernel', offset_nspec_cm_adj(myrank-1), offset_nglob_cm(myrank-1), &
                                     kappa_kl_crust_mantle, sum(offset_nglob_cm(0:myrank-1)), &
                                     ibool_crust_mantle, .false.)
@@ -610,6 +614,8 @@
                                     ibool_crust_mantle, .false.)
 
   endif
+
+  call synchronize_all()
 
   ! close hdf5
   call h5_close_file_p()
@@ -700,6 +706,9 @@
                                     alpha_kl_outer_core, sum(offset_nglob_oc(0:myrank-1)), &
                                     ibool_outer_core, .false.)
   endif
+
+  call synchronize_all()
+
   ! close hdf5
   call h5_close_file_p()
 
@@ -786,6 +795,8 @@
                                     beta_kl_inner_core, sum(offset_nglob_ic(0:myrank-1)), &
                                     ibool_inner_core, .false.)
   endif
+
+  call synchronize_all()
 
   ! close hdf5
   call h5_close_file_p()
@@ -876,6 +887,8 @@
   call h5_write_dataset_collect_hyperslab('d670_kernel', d670_kl, (/0,0,sum(offset_nspec2d_670(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab('CMB_kernel', CMB_kl, (/0,0,sum(offset_nspec2d_CMB(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab('ICB_kernel', ICB_kl, (/0,0,sum(offset_nspec2d_ICB(0:myrank-1))/), H5_COL)
+
+  call synchronize_all()
 
   ! close hdf5
   call h5_close_file_p()
@@ -971,8 +984,11 @@
                                     ibool_crust_mantle, .false.)
   endif
 
+  call synchronize_all()
+
   ! close hdf5
   call h5_close_file_p()
+
 
 #else
 
@@ -1041,9 +1057,6 @@
   call gather_all_all_singlei(nelems_3dmovie_cm, offset_nspec_cm_conn, NPROCTOT_VAL)
   call gather_all_all_singlei(nelems_3dmovie_oc, offset_nspec_oc_conn, NPROCTOT_VAL)
   call gather_all_all_singlei(nelems_3dmovie_ic, offset_nspec_ic_conn, NPROCTOT_VAL)
-
-  npoints_vol_mov_all_proc  = sum(offset_poin_vol)
-  nspec_vol_mov_all_proc    = sum(offset_nspec_vol)
 
   nspec_vol_mov_all_proc_cm_conn = sum(offset_nspec_cm_conn)
   nspec_vol_mov_all_proc_oc_conn = sum(offset_nspec_oc_conn)
@@ -1208,6 +1221,8 @@
   call h5_write_dataset_collect_hyperslab_in_group('y_ic', store_val3D_y_ic, (/sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
   call h5_write_dataset_collect_hyperslab_in_group('z_ic', store_val3D_z_ic, (/sum(offset_nglob_ic(0:myrank-1))/), H5_COL)
 
+  call synchronize_all()
+
   ! close the group
   call h5_close_group()
   ! close the file
@@ -1318,8 +1333,6 @@
     write(target_unit,*) '</DataItem>'
     write(target_unit,*) '</Geometry>'
 
-    write(target_unit,*) '<Grid Name="time_col" GridType="Collection" CollectionType="Temporal">'
-
   end subroutine write_xdmf_kernel_hdf5_header
 
 !
@@ -1333,7 +1346,6 @@
     integer, intent(in) :: target_unit
 
     ! file finish
-    write(target_unit,*) '</Grid>'
     write(target_unit,*) '</Domain>'
     write(target_unit,*) '</Xdmf>'
 
@@ -1399,7 +1411,7 @@
   ! write out the crust and mantle xdmf file
   !
   fname_xdmf_kl = LOCAL_TMP_PATH(1:len_trim(LOCAL_TMP_PATH)) // "/kernel_cm.xmf"
-  fname_h5_data_kl_xdmf = "./kernel.h5"  ! relative to movie_volume_cm.xmf file
+  fname_h5_data_kl_xdmf = "./kernels.h5"  ! relative to movie_volume_cm.xmf file
 
   ! open xdmf file
   open(unit=xdmf_kl, file=trim(fname_xdmf_kl), recl=256)
@@ -1544,7 +1556,7 @@
                                       npoints_vol_mov_all_proc_cm, xdmf_kl, .true.) ! value on node
   endif
 
-  call write_xdmf_kernel_hdf5_footer(xdmf_vol)
+  call write_xdmf_kernel_hdf5_footer(xdmf_kl)
 
   ! close xdmf file
   close(xdmf_kl)
@@ -1555,7 +1567,7 @@
   if (SAVE_KERNELS_OC) then
 
     fname_xdmf_kl_oc = LOCAL_TMP_PATH(1:len_trim(LOCAL_TMP_PATH)) // "/kernel_oc.xmf"
-    fname_h5_data_kl_xdmf = "./kernel.h5"  ! relative to movie_volume_oc.xmf file
+    fname_h5_data_kl_xdmf = "./kernels.h5"  ! relative to movie_volume_oc.xmf file
 
     ! open xdmf file
     open(unit=xdmf_kl, file=trim(fname_xdmf_kl_oc), recl=256)
@@ -1584,7 +1596,7 @@
   !
   if (SAVE_KERNELS_IC) then
     fname_xdmf_kl_ic = trim(OUTPUT_FILES) // "/kernel_ic.xmf"
-    fname_h5_data_kl_xdmf = "./kernel.h5"  ! relative to movie_volume_ic.xmf file
+    fname_h5_data_kl_xdmf = "./kernels.h5"  ! relative to movie_volume_ic.xmf file
 
     ! open xdmf file
     open(unit=xdmf_kl, file=trim(fname_xdmf_kl_ic), recl=256)

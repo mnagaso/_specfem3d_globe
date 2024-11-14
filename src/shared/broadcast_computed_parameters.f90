@@ -367,6 +367,8 @@
     HDF5_ENABLED = bcast_logical(75)
     HDF5_FOR_MOVIES = bcast_logical(76)
     OUTPUT_SEISMOS_HDF5 = bcast_logical(77)
+    HDF5_KERNEL_VIS = bcast_logical(78)
+    HDF5_SNAPSHOT_VIS = bcast_logical(79)
 
     ! double precisions
     DT = bcast_double_precision(1)

@@ -577,11 +577,8 @@ contains
   max_ford_undo_out    = 0 ! number of iterations when IO happens for undo attenuation
   ford_undo_out_count  = 0 ! count the completed iterations for undo attenuation
 
-  print* ,"DEBUG: do_io_start_idle, NSUBSET_ITERATIONS = ", NSUBSET_ITERATIONS
-
   ! create all the HDF5 files and datasets
   do i_out = 1, NSUBSET_ITERATIONS
-    print*, "DEBUG: do_io_start_idle, create_hdf5_files_and_datasets, i_out = ", i_out
     call create_hdf5_files_and_datasets(i_out)
   enddo
 
