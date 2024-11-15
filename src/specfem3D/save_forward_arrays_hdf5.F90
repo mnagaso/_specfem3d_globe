@@ -630,6 +630,7 @@
     call synchronize_all()
 
     ! initialize timer
+    call initialize_bytes_written()
     call start_timer()
 
     ! write data from all ranks
