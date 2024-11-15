@@ -715,7 +715,6 @@
     ! end timer
     call stop_timer()
     ! calculate the total bytes written to disk
-    call initialize_bytes_written()
     call set_bytes_written_from_array(storage_size(displ_crust_mantle), size(displ_crust_mantle))
     call set_bytes_written_from_array(storage_size(veloc_crust_mantle), size(veloc_crust_mantle))
     call set_bytes_written_from_array(storage_size(accel_crust_mantle), size(accel_crust_mantle))
