@@ -79,7 +79,7 @@ module io_bandwidth
 
         do i = 0, NPROCTOT_VAL-1
           if (myrank == i) then
-            print *, 'mygroup: ', mygroup, ', myrank ', myrank, ', bytes_written: ', bytes_written, ', elapsed_time (s): ', &
+            print *, 'mygroup: ', mygroup, ', myrank: ', myrank, ', bytes_written: ', bytes_written, ', elapsed_time (s): ', &
                         elapsed_time, ', bandwidth: ', bandwidth, ' MB/s'
             !print *, 'process ', myrank, ' bytes_written = ', bytes_written, ' elapsed_time (s) = ', &
             !            elapsed_time, ' bandwidth = ', bandwidth, ' MB/s'
