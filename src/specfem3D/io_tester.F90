@@ -59,8 +59,9 @@ module io_bandwidth
       double precision :: elapsed_time, max_elapsed_time, &
               bandwidth, total_bandwidth
 
-
-      print *, '-------------------------------------------------------------------------------'
+      if (myrank == 0) then
+        print *, '-------------------------------------------------------------------------------'
+      endif
 
       elapsed_time = time_delta
       if (elapsed_time > 0.0) then
@@ -78,17 +79,21 @@ module io_bandwidth
 
         do i = 0, NPROCTOT_VAL-1
           if (myrank == i) then
-            print *, 'process ', myrank, ' bytes_written = ', bytes_written, ' elapsed_time (s) = ', &
-                        elapsed_time, ' bandwidth = ', bandwidth, ' MB/s'
+            print *, 'mygroup: ', mygroup, ', myrank ', myrank, ', bytes_written: ', bytes_written, ', elapsed_time (s): ', &
+                        elapsed_time, ', bandwidth: ', bandwidth, ' MB/s'
+            !print *, 'process ', myrank, ' bytes_written = ', bytes_written, ' elapsed_time (s) = ', &
+            !            elapsed_time, ' bandwidth = ', bandwidth, ' MB/s'
           end if
         end do
 
+        call synchronize_all()
         ! write total bandwidth
         if (myrank == 0) then
-          print *, 'total bytes_written = ', total_bytes, ' max_elapsed_time (s) = ', max_elapsed_time, &
-                        ' total bandwidth = ', total_bandwidth, ' MB/s'
+          print *, 'mygroup: ', mygroup, ', total_bytes_written: ', total_bytes, ', max_elapsed_time (s): ', max_elapsed_time, &
+                      ', total_bandwidth: ', total_bandwidth, ' MB/s'
+          !print *, 'total bytes_written = ', total_bytes, ' max_elapsed_time (s) = ', max_elapsed_time, &
+          !              ' total bandwidth = ', total_bandwidth, ' MB/s'
         end if
-        call synchronize_all()
 
 
       else
