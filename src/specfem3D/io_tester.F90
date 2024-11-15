@@ -31,8 +31,10 @@ module io_bandwidth
         implicit none
         integer, intent(in):: element_size, num_elements
 
+        ! element_size is the size of each element in bits (as storage_size returns in bits)
+
         ! Calculate the total bytes written and add to the existing value
-        bytes_written = bytes_written + element_size * num_elements
+        bytes_written = bytes_written + element_size * num_elements / 8 ! Convert bits to bytes
 
       end subroutine set_bytes_written_from_array
 

@@ -1763,7 +1763,7 @@ contains
 
 
     ! count the bytes written
-    call set_bytes_written_from_array(data_size, msg_size)
+    call set_bytes_written_from_array(data_size*8, msg_size) ! converting to bits from bytes
 
     ! close file
     call h5_close_file_p()
