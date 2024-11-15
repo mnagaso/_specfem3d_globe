@@ -57,50 +57,75 @@ module io_bandwidth
       use specfem_par
       use shared_parameters
       implicit none
-      integer :: i,total_bytes
+      integer :: i, total_bytes, unit_number, ierr
       double precision :: elapsed_time, max_elapsed_time, &
               bandwidth, total_bandwidth
+      character(len=20) :: filename
+      logical :: file_exists
 
+      filename = 'io_band.txt'
+      unit_number = 1000010010
+
+      ! Check if the file exists
+      inquire(file=filename, exist=file_exists)
+
+      ! Open the file for writing
       if (myrank == 0) then
-        print *, '-------------------------------------------------------------------------------'
-      endif
+        ! create the file if it does not exist
+        if (file_exists) then
+          open(unit=unit_number, file=filename, status='old', action='write', position='append', iostat=ierr)
+        else
+          open(unit=unit_number, file=filename, status='new', action='write', iostat=ierr)
+        end if
+        if (ierr /= 0) then
+            print*, 'Error opening file: ', filename
+            stop
+        end if
+        write(unit_number, *) '-------------------------------------------------------------------------------'
+        close(unit_number)
+      end if
+
+      call synchronize_all()
 
       elapsed_time = time_delta
       if (elapsed_time > 0.0) then
-        bandwidth = bytes_written / (elapsed_time * 1.0e6)  ! Bandwidth in MB/s
+          bandwidth = bytes_written / (elapsed_time * 1.0e6)  ! Bandwidth in MB/s
 
-        ! calculate total bytes written across all processes
-        call sum_all_all_i(bytes_written, total_bytes)
-        ! get the maximum elapsed time across all processes
-        call max_all_dp(elapsed_time, max_elapsed_time)
+          ! calculate total bytes written across all processes
+          call sum_all_all_i(bytes_written, total_bytes)
+          ! get the maximum elapsed time across all processes
+          call max_all_dp(elapsed_time, max_elapsed_time)
 
-        ! calculate total bandwidth
-        total_bandwidth = total_bytes / (max_elapsed_time * 1.0e6) ! Bandwidth in MB/s
+          ! calculate total bandwidth
+          total_bandwidth = total_bytes / (max_elapsed_time * 1.0e6) ! Bandwidth in MB/s
 
-        !print*, "DEBUG: elapsed and max_elapsed_time = ", elapsed_time, max_elapsed_time
+          ! Each process writes to the file sequentially
+          do i = 0, NPROCTOT_VAL-1
+              if (myrank == i) then
+                  open(unit=unit_number, file=filename, status='old', action='write', position='append', iostat=ierr)
+                  if (ierr /= 0) then
+                      print*, 'Error opening file: ', filename
+                      stop
+                  end if
+                  write(unit_number, *) 'mygroup: ', mygroup, ', myrank: ', myrank, ', bytes_written: ', bytes_written, &
+                                        ', elapsed_time (s): ', elapsed_time, ', bandwidth: ', bandwidth, ' MB/s'
+                  close(unit_number)
+              end if
+              call synchronize_all()
+          end do
 
-        do i = 0, NPROCTOT_VAL-1
-          if (myrank == i) then
-            print *, 'mygroup: ', mygroup, ', myrank: ', myrank, ', bytes_written: ', bytes_written, ', elapsed_time (s): ', &
-                        elapsed_time, ', bandwidth: ', bandwidth, ' MB/s'
-            !print *, 'process ', myrank, ' bytes_written = ', bytes_written, ' elapsed_time (s) = ', &
-            !            elapsed_time, ' bandwidth = ', bandwidth, ' MB/s'
+          ! Only the root process writes the total bandwidth
+          if (myrank == 0) then
+              open(unit=unit_number, file=filename, status='old', action='write', position='append', iostat=ierr)
+              if (ierr /= 0) then
+                  print*, 'Error opening file: ', filename
+                  stop
+              end if
+              write(unit_number, *) 'mygroup: ', mygroup, ', total_bytes_written: ', total_bytes, ', max_elapsed_time (s): ', &
+                                    max_elapsed_time, ', total_bandwidth: ', total_bandwidth, ' MB/s'
+              close(unit_number)
           end if
-        end do
-
-        call synchronize_all()
-        ! write total bandwidth
-        if (myrank == 0) then
-          print *, 'mygroup: ', mygroup, ', total_bytes_written: ', total_bytes, ', max_elapsed_time (s): ', max_elapsed_time, &
-                      ', total_bandwidth: ', total_bandwidth, ' MB/s'
-          !print *, 'total bytes_written = ', total_bytes, ' max_elapsed_time (s) = ', max_elapsed_time, &
-          !              ' total bandwidth = ', total_bandwidth, ' MB/s'
-        end if
-
-
-      else
-        print *, 'Elapsed time is zero, cannot calculate bandwidth'
-      endif
+      end if
     end subroutine calculate_bandwidth_all_procs
 
   end module io_bandwidth
