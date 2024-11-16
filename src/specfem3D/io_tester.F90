@@ -61,10 +61,15 @@ module io_bandwidth
       double precision :: elapsed_time, max_elapsed_time, &
               bandwidth, total_bandwidth
       character(len=20) :: filename
+      character(len=10) :: mygroup_str
       logical :: file_exists
 
-      filename = 'io_band.txt'
-      unit_number = 1000010010
+      ! Convert mygroup to a character string
+      write(mygroup_str, '(I0)') mygroup
+
+      ! Create the filename
+      filename = 'io_band_' // trim(adjustl(mygroup_str)) // '.txt'
+      unit_number = 1000010010 + mygroup
 
       ! Check if the file exists
       inquire(file=filename, exist=file_exists)
@@ -107,8 +112,9 @@ module io_bandwidth
                       print*, 'Error opening file: ', filename
                       stop
                   end if
-                  write(unit_number, *) 'mygroup: ', mygroup, ', myrank: ', myrank, ', bytes_written: ', bytes_written, &
-                                        ', elapsed_time (s): ', elapsed_time, ', bandwidth: ', bandwidth, ' MB/s'
+                  write(unit_number, '(A, I0, A, I0, A, I0, A, F12.6, A, F12.6, A, F12.6)') &
+                      'mygroup: ', mygroup, ', myrank: ', myrank, ', bytes_written: ', bytes_written, &
+                      ', elapsed_time (s): ', elapsed_time, ', bandwidth: ', bandwidth, ' MB/s'
                   close(unit_number)
               end if
               call synchronize_all()
@@ -121,8 +127,9 @@ module io_bandwidth
                   print*, 'Error opening file: ', filename
                   stop
               end if
-              write(unit_number, *) 'mygroup: ', mygroup, ', total_bytes_written: ', total_bytes, ', max_elapsed_time (s): ', &
-                                    max_elapsed_time, ', total_bandwidth: ', total_bandwidth, ' MB/s'
+              write(unit_number, '(A, I0, A, I0, A, F12.6, A, F12.6, A, F12.6)') &
+                  'mygroup: ', mygroup, ', total_bytes_written: ', total_bytes, ', max_elapsed_time (s): ', &
+                  max_elapsed_time, ', total_bandwidth: ', total_bandwidth, ' MB/s'
               close(unit_number)
           end if
       end if
